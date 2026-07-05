@@ -91,7 +91,9 @@ Rules:
 - Movement screen results are below. If the phase is Phase 1 (Neuromuscular Development & Corrective), build the listed corrective drills directly into Workouts B and C as warm-up or accessory work, and bias main-lift variations around the flagged faults. In later phases keep the corrective bias in exercise selection but prioritize the phase goal.
 - Keep rep ranges consistent with the phase goal.
 - tempo: 4 digits like "2011". rest: like "60s". sets/reps as strings.
-- Every exercise gets a one-line coaching note in a direct, no-BS voice.
+- MAXIMUM 7 exercises per workout, including any corrective warm-up drills.
+- Coaching notes: 12 words or fewer, direct, no-BS voice.
+- Output compact JSON on a single line — no pretty-printing, no extra whitespace.
 
 Phase: ${c.phase || "Phase 1"}
 Client goals: ${c.goals || "not stated"}
@@ -143,7 +145,7 @@ exports.handler = async function (event) {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 3000 : 1500, messages }),
+      body: JSON.stringify({ model: formType === "workoutBC" ? "claude-haiku-4-5" : "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 3000 : 1500, messages }),
     });
     if (!response.ok) {
       const errText = await response.text();
