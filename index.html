@@ -661,7 +661,7 @@ function renderProgramTab_OLD(c){
     daysHtml += `
       <div class="day-block">
         <div class="day-head-row">
-          <input class="day-name-input" data-day="${dIdx}" data-field="dayName" value="${esc(day.name)}" placeholder="e.g. Monday — Lifting A">
+          <input class="day-name-input" data-day="${dIdx}" data-field="dayName" value="${esc(day.name)}" placeholder="Day label (optional) — Day 1 · Mon · Push">
           <button class="day-del" onclick="removeDay(${dIdx})">✕</button>
         </div>
         ${exHtml}
@@ -928,7 +928,7 @@ function saveClient(){
 
 const DEFAULT_PHASES = [
   {name:"Phase 1 · Neuromuscular Development & Corrective", weeks:"Weeks 1–4", focus:"Form & technique foundation · mobility & flexibility · stability & balance. Nervous system learns to recruit muscle efficiently — movement patterns get hardwired.", days:[]},
-  {name:"Phase 2 · Muscle Building & Results Pt. 1", weeks:"Weeks 5–12", focus:"Progressive overload begins. Muscle protein synthesis accelerates, metabolism rises, clothes start fitting differently.", days:[]},
+  {name:"Phase 2 · Muscle Building & Results Pt. 1", weeks:"Weeks 5–12", focus:"Progressive overload begins. Muscle protein synthesis accelerates, metabolism rises, clothes start fitting differently.", days:[{name:"Day 1",exercises:[]},{name:"Day 2",exercises:[]},{name:"Day 3",exercises:[]},{name:"Day 4",exercises:[]}]},
   {name:"Phase 3 · Muscle Building & Results Pt. 2", weeks:"Weeks 13–20", focus:"Visible definition. Improved insulin sensitivity accelerates fat loss — strength jumps across every movement pattern.", days:[]},
   {name:"Phase 4 · Peak Performance", weeks:"Weeks 21–24", focus:"Stubborn fat mobilizes. VO2 max and cardiac output peak, EPOC maximized, fastest recovery of the entire program.", days:[]},
 ];
@@ -967,6 +967,12 @@ function migrateClient(c){
 
   if(!c.program.cardio) c.program.cardio = [];
   if(c.program.workoutAText === undefined) c.program.workoutAText = "";
+  if(!c.program.seedP2){
+    if(c.program.phases && c.program.phases[1] && c.program.phases[1].days.length === 0){
+      c.program.phases[1].days = [1,2,3,4].map(n=>({name:"Day "+n, exercises:[]}));
+    }
+    c.program.seedP2 = true;
+  }
 
   c.nutrition = c.nutrition || {};
   if(!c.nutrition.meals) c.nutrition.meals = [];
@@ -1501,7 +1507,7 @@ function renderProgramTab(c){
     html += `
       <div class="day-block">
         <div class="day-head-row">
-          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="e.g. Monday — Lifting A">
+          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="Day label (optional) — Day 1 · Mon · Push">
           <button class="day-del" onclick="pDelDay(${dIdx})">✕</button>
         </div>
         ${exHtml}
@@ -1686,13 +1692,14 @@ function renderNutritionTab(c){
     <div class="section-head">Auto Targets (Mifflin-St Jeor × 1.35)</div>
     ${lbmCallout(c)}
     ${nutriModeControls(c)}
+    ${nutriDataLine(c)}
     <div class="calc-card">
       ${calc ? `
         <div class="calc-row"><span class="lbl">Calories${calc.mode==="cut" ? " · −" + calc.deficit + " DEFICIT" : calc.mode==="bulk" ? " · +250 LEAN BULK" : ""}</span><span class="val hi">${calc.calories} kcal</span></div>
         <div class="calc-row"><span class="lbl">Protein (1g/lb LBM)</span><span class="val">${calc.protein} g</span></div>
         <div class="calc-row"><span class="lbl">Fat (25–30%)</span><span class="val">${calc.fat} g</span></div>
         <div class="calc-row"><span class="lbl">Carbs (remainder)</span><span class="val">${calc.carbs} g</span></div>
-      ` : `<div class="calc-row"><span class="lbl">Missing data</span><span class="val">Need height, age, gender (Intake) + weight, BF% (InBody)</span></div>`}
+      ` : `${missingNutriData(c)}`}
     </div>
 
     <div class="section-head">Day Builder — USDA-Verified Macros</div>
@@ -2185,7 +2192,7 @@ function renderProgramTab(c){
     html += `
       <div class="day-block">
         <div class="day-head-row">
-          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="e.g. Monday — Lifting A">
+          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="Day label (optional) — Day 1 · Mon · Push">
           <button class="day-del" onclick="pDelDay(${dIdx})">✕</button>
         </div>
         ${exHtml}
@@ -2208,7 +2215,7 @@ function renderProgramTab(c){
           <button class="ex-del" onclick="cDel(${i})">✕</button>
         </div>
         <div class="ex-row-mid">
-          <div style="flex:1.2"><input class="ex-mini-input" data-cardio="${i}" data-cfield="days" type="text" value="${esc(cd.days)}" placeholder="Tue/Thu/Sat"><div class="ex-mini-lbl">Days</div></div>
+          <div style="flex:1.2"><input class="ex-mini-input" data-cardio="${i}" data-cfield="days" type="text" value="${esc(cd.days)}" placeholder="client’s days (optional)"><div class="ex-mini-lbl">Days</div></div>
           <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="timeMin" type="text" inputmode="numeric" value="${esc(cd.timeMin)}" placeholder="30"><div class="ex-mini-lbl">Min</div></div>
           <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="speed" type="text" inputmode="decimal" value="${esc(cd.speed)}" placeholder="3.5"><div class="ex-mini-lbl">Speed</div></div>
           <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="level" type="text" inputmode="numeric" value="${esc(cd.level)}" placeholder="8"><div class="ex-mini-lbl">Level</div></div>
@@ -2272,6 +2279,251 @@ function exportClientPdf(){
   document.body.classList.add("printing");
   window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
   setTimeout(()=>{ window.print(); }, 80);
+}
+
+/* ================================================================
+   ERN IT COACH HUB v5 — goal-driven recommendations (price-blind),
+   A/B/C auto-build with movement screen data, nutrition data pulls
+   ================================================================ */
+
+/* ---- frequency the GOAL needs — price never enters this ---- */
+function neededFrequency(c){
+  const goals = c.intake.goals || [];
+  const w = parseFloat(c.inbody.weightLbs), gw = parseFloat(c.inbody.weightGoal), wk = parseFloat(c.inbody.timelineWeeks);
+  let freq = 2;
+  const why = [];
+
+  const muscle = goals.some(g => /Muscle|Strength/i.test(g));
+  const loss = goals.some(g => /Lose Weight/i.test(g));
+
+  if(muscle){
+    freq = 3;
+    why.push("Muscle / strength goal — frequency drives progressive overload. 3×/week hits every movement pattern at least twice.");
+  }
+
+  let rate = null, pct = null;
+  if(!isNaN(w) && !isNaN(gw) && !isNaN(wk) && wk > 0 && gw < w){
+    rate = (w - gw) / wk;
+    pct = rate / w * 100;
+    const inBand = pct <= 1;
+    why.push((w - gw).toFixed(1) + " lbs \u00f7 " + wk + " wks = " + rate.toFixed(2) + " lb/wk (" + pct.toFixed(2) + "% BW/wk" + (inBand ? " — inside the safe 0.5\u20131% band" : " — ABOVE the safe 1% band; adjust the timeline or the expectation") + ")");
+    if(pct > 0.85 || rate >= 1.5){
+      freq = 3;
+      why.push("Aggressive rate for this window — 3\u00d7/week lifting + the cardio Rx keeps the deficit muscle-sparing.");
+    }
+  } else if(loss){
+    why.push("Timeline math incomplete — set weight goal + timeline on the InBody tab to run the deficit calc.");
+  }
+
+  const redTests = ["squat","pushup","plank"].map(t => gradeTest(c, t)).filter(g => g.cls === "r").length;
+  if(redTests >= 1){
+    why.push("Movement screen has priority-level faults — Phase 1 needs coached frequency to hardwire clean patterns before loading.");
+    if(redTests >= 2 || muscle) freq = 3;
+  }
+
+  if(freq === 2 && !muscle) why.push("2\u00d7/week coached sessions cover the goal — independent cardio days carry the rest.");
+  return {freq: Math.min(freq, 3), why, rate, pct};
+}
+
+function computeRecommendation(c){
+  const r = c.recommend;
+  if(!r.daysPerWeek || !r.style) return null;
+  const nf = neededFrequency(c);
+  const freq = nf.freq;
+  const stated = parseInt(r.daysPerWeek);
+  const mo = MONTHLY[freq], pk = PACKS[freq * 4];
+
+  const primary = {
+    name: mo.label,
+    priceNum: mo.total,
+    priceLabel: "$" + mo.total.toLocaleString() + "/mo \u00b7 $" + mo.per + "/session",
+    detail: (freq * 4) + " sessions per month — picked from the goal, the timeline, and the movement screen. Not the budget."
+  };
+  const compare = {sessions: freq * 4, monthly: mo, pack: pk, save: pk.total - mo.total};
+
+  const alternates = [];
+  if(freq < 3) alternates.push({name: MONTHLY[freq+1].label, priceLabel: "$" + MONTHLY[freq+1].total.toLocaleString() + "/mo \u00b7 $" + MONTHLY[freq+1].per + "/session", detail: "Faster pace through the 24-week plan."});
+  if(freq > 1) alternates.push({name: MONTHLY[freq-1].label, priceLabel: "$" + MONTHLY[freq-1].total.toLocaleString() + "/mo \u00b7 $" + MONTHLY[freq-1].per + "/session", detail: "Slower pace — the timeline stretches with it."});
+
+  const gapNote = (!isNaN(stated) && stated < freq)
+    ? "Client says " + stated + "\u00d7/week — the goal math says " + freq + "\u00d7. Have that conversation before shrinking the target."
+    : "";
+
+  const addons = [];
+  if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
+  else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
+  if(r.energy === "yes") addons.push({name:"Active Metabolic Assessment", low:189, priceLabel:"$189 single / $300 test + re-test", detail:"Measures calories burned during activity — dials in training zones."});
+
+  const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
+  const styleNote = r.style === "programming"
+    ? "Client leans self-guided — position monthly coaching as the accelerator. Program Design Only stays out of the consult; it's a follow-up-email fallback."
+    : "";
+
+  return {primary, compare, alternates, addons, firstMonth, styleNote, rationale: nf.why, gapNote};
+}
+
+function renderRecommendTab(c){
+  const r = c.recommend;
+  const rec = computeRecommendation(c);
+  return `
+    <div class="section-head">Guided Questions</div>
+    <div class="field-group"><label class="field-label">How many days per week can you realistically train with me?</label>
+      <div class="rate-row">
+        ${["1","2","3"].map(d=>`<div class="rate-btn ${r.daysPerWeek===d?"on":""}" onclick="setRecField('daysPerWeek','${d}')">${d}${d==="3"?"+":""}</div>`).join("")}
+      </div></div>
+    <div class="field-group"><label class="field-label">Hands-on coaching, or programming you run yourself?</label>
+      <div class="rate-row">
+        <div class="rate-btn ${r.style==="coaching"?"on":""}" onclick="setRecField('style','coaching')">Coach Me</div>
+        <div class="rate-btn ${r.style==="programming"?"on":""}" onclick="setRecField('style','programming')">Program Only</div>
+      </div></div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Nutrition support?</label>${ynHtml("nutrition", r.nutrition, "setRecField")}</div>
+      <div class="field-group"><label class="field-label">Energy / endurance goal?</label>${ynHtml("energy", r.energy, "setRecField")}</div>
+    </div>
+
+    ${rec ? renderRecCard(rec) : `<div style="font-size:12.5px;color:var(--grey-dim);margin-top:14px;">Answer days + style. The recommendation is built from the client's goals, timeline, and movement screen — price only shows up as the payment comparison.</div>`}
+  `;
+}
+
+function renderRecCard(rec){
+  let html = `<div class="rec-card">
+    <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Recommended</div>
+    <div class="rec-primary">${rec.primary.name}</div>
+    <div class="rec-price">${rec.primary.priceLabel}</div>
+    <div class="rec-line">${rec.primary.detail}</div>`;
+
+  if(rec.rationale && rec.rationale.length){
+    html += `<div style="border-top:1px solid var(--line);margin:12px 0 8px;"></div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Why this</div>` +
+      rec.rationale.map(w=>`<div class="rec-line">\u2022 ${w}</div>`).join("");
+  }
+  if(rec.gapNote) html += `<div class="rec-line" style="color:var(--amber);font-weight:800;margin-top:6px;">\u26a0 ${rec.gapNote}</div>`;
+
+  if(rec.compare){
+    const cm = rec.compare;
+    html += `<div class="cmp-wrap">
+      <div class="cmp-title">${cm.note || "Same " + cm.sessions + " sessions — two ways to pay"}</div>
+      <div class="cmp-grid">
+        <div class="cmp-col hl">
+          <div class="cmp-lbl">Monthly Commit</div>
+          <div class="cmp-total">$${cm.monthly.total.toLocaleString()}</div>
+          <div class="cmp-per">$${cm.monthly.per}/session</div>
+          <div class="cmp-save">SAVE $${cm.save.toLocaleString()}/MO</div>
+        </div>
+        <div class="cmp-col">
+          <div class="cmp-lbl">No Commitment</div>
+          <div class="cmp-total">$${cm.pack.total.toLocaleString()}</div>
+          <div class="cmp-per">$${cm.pack.per}/session</div>
+          <div class="cmp-note">${cm.pack.label} \u00b7 expires 90 days</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if(rec.alternates.length){
+    html += `<div style="border-top:1px solid var(--line);margin:12px 0 8px;"></div>`;
+    rec.alternates.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
+  }
+  if(rec.addons.length){
+    html += `<div style="border-top:1px solid var(--line);margin:12px 0 8px;"></div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Add-Ons</div>`;
+    rec.addons.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
+  }
+  html += `<div class="rec-total-bar">
+    <span class="rt-lbl">First-Month Bundle</span>
+    <span class="rt-val">$${rec.firstMonth.toLocaleString()}</span>
+  </div>`;
+  if(rec.styleNote) html += `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:9px;line-height:1.45;">${rec.styleNote}</div>`;
+  return html + `</div>`;
+}
+
+/* ---- nutrition: pull straight from Intake + InBody ---- */
+function computeNutrition(c){
+  const i = c.intake, b = c.inbody;
+  const w = parseFloat(b.weightLbs), bf = parseFloat(b.bodyFatPct);
+  const h = parseFloat(i.heightIn), age = parseFloat(i.age);
+  const gender = i.gender;
+  if(isNaN(w) || isNaN(bf) || isNaN(h) || isNaN(age) || !gender) return null;
+  const kg = w / 2.2046, cm = h * 2.54;
+  const bmr = 10*kg + 6.25*cm - 5*age + (gender === "male" ? 5 : -161);
+  let cal = bmr * 1.35;
+  const derivedLbm = w * (1 - bf/100);
+  const lbmUsed = !isNaN(lbmValue(c)) ? lbmValue(c) : Math.round(derivedLbm*10)/10;  /* InBody LBM field wins; derived fallback */
+  const rec = recommendedMode(c);
+  const mode = (c.nutrition && c.nutrition.mode && c.nutrition.mode !== "auto") ? c.nutrition.mode : rec;
+  const deficit = parseFloat((c.nutrition && c.nutrition.deficitLevel) || "500");
+  if(mode === "bulk") cal += 250;
+  else if(mode === "cut") cal -= deficit;
+  cal = Math.round(cal);
+  const protein = Math.round(lbmUsed);          /* 1g per lb LBM from the InBody tab */
+  const fat = Math.round(cal * 0.275 / 9);
+  const carbs = Math.round((cal - protein*4 - fat*9) / 4);
+  return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:Math.round(derivedLbm*10)/10, lbmUsed};
+}
+
+function missingNutriData(c){
+  const miss = [];
+  if(!parseFloat(c.intake.heightIn)) miss.push("height (Intake)");
+  if(!parseFloat(c.intake.age)) miss.push("age (Intake)");
+  if(!c.intake.gender) miss.push("gender (Intake)");
+  if(!parseFloat(c.inbody.weightLbs)) miss.push("weight (InBody)");
+  if(!parseFloat(c.inbody.bodyFatPct)) miss.push("body fat % (InBody)");
+  return `<div class="calc-row"><span class="lbl">Missing</span><span class="val">${miss.join(" \u00b7 ") || "—"}</span></div>`;
+}
+
+function nutriDataLine(c){
+  const calc = computeNutrition(c);
+  if(!calc) return "";
+  return `<div style="font-size:11px;color:var(--grey-dim);margin:-2px 0 12px;line-height:1.5;">Pulled from client file — Intake: ${esc(c.intake.heightIn)}" \u00b7 ${esc(c.intake.age)}y \u00b7 ${c.intake.gender === "male" ? "M" : "F"} \u00b7 InBody: ${esc(c.inbody.weightLbs)} lbs \u00b7 ${esc(c.inbody.bodyFatPct)}% BF \u00b7 LBM ${calc.lbmUsed} lbs \u2192 protein target</div>`;
+}
+
+/* ---- A/B/C generation: A parses in too, screen data guides selection ---- */
+function upsertDay(ph, name, exercises){
+  const idx = ph.days.findIndex(d => d.name === name);
+  if(idx >= 0) ph.days[idx].exercises = exercises;
+  else ph.days.push({name, exercises});
+}
+
+async function generateBC(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const txt = (c.program.workoutAText || "").trim();
+  const st = document.getElementById("bcStatus");
+  const btn = document.getElementById("bcBtn");
+  if(!txt){ st.textContent = "Paste Workout A first."; return; }
+  btn.disabled = true;
+  st.textContent = "Structuring A, building B & C from the 7-pattern framework + movement screen...";
+  const screenGrades = ["squat","pushup","plank"].map(t=>{
+    const g = gradeTest(c, t);
+    return ASSESS[t].label.split(" ")[0] + ": " + g.chip + (g.scored ? " (" + g.total + "/" + g.max + ")" : "");
+  }).join("; ");
+  const faults = assessmentFixes(c).map(f => f.fault + " [" + f.severity + "] \u2192 " + f.fix).join("; ");
+  try{
+    const res = await fetch("/.netlify/functions/read-form", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({formType:"workoutBC", client:{
+        workoutA: txt,
+        goals: (c.intake.goals || []).join(" + "),
+        phase: c.program.phases[progPhase].name,
+        screenGrades: screenGrades,
+        faults: faults
+      }})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){ st.textContent = data.error || "Generation failed."; btn.disabled = false; return; }
+    const ex = data.extracted;
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const ph = clients[activeClientId].program.phases[progPhase];
+    upsertDay(ph, "Workout A", mk(ex.workoutA));
+    upsertDay(ph, "Workout B", mk(ex.workoutB));
+    upsertDay(ph, "Workout C", mk(ex.workoutC));
+    saveClients(clients);
+    pushClientToFirebase(c.id, c);
+    renderModal();
+  }catch(e){
+    st.textContent = "Network error: " + e.message;
+    btn.disabled = false;
+  }
 }
 
 /* ============ INIT ============ */
