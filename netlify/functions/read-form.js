@@ -60,6 +60,8 @@ Client summary:
 - Body comp: ${client.currentStats || "not measured"}
 - Program discussed: ${client.recommendation || "not discussed"}
 
+If it fits naturally, you may offer Program Design Only ($250/month — custom program + one monthly check-in, no in-person sessions) in the EMAIL as a lower-commitment way to start. Never make it the headline — it's a door-opener, not the pitch. Do not mention it in the text message.
+
 Respond with ONLY this raw JSON object (no markdown fences, no commentary):
 {
   "emailSubject": "",
@@ -73,6 +75,29 @@ Ernest Joseph
 Personal Training Leader · Life Time
 - textMessage: max 45 words and MUST begin exactly: "Hey ${(client.name || "").split(" ")[0] || "there"} — this is Ernest, your trainer from Life Time."
 - No emojis. Plain text only, use \\n for line breaks in emailBody.`;
+}
+
+function workoutBCPrompt(c) {
+  return `You are Ernest Joseph, an elite ISSA-certified personal trainer. A client's Workout A for the current training phase is below. Build complementary Workouts B and C for the same phase.
+
+Framework — each workout covers these 7 movement patterns: squat, unilateral lower body, hip hinge, horizontal pull, vertical push, horizontal push, anti-extension core.
+Rules:
+- Match Workout A's difficulty level, session length, and equipment style.
+- Use DIFFERENT exercise variations for the same patterns — complementary, never repeats of Workout A.
+- Bias exercise selection and coaching notes toward the flagged movement faults (corrective emphasis).
+- Keep rep ranges consistent with the phase goal.
+- tempo: 4 digits like "2011". rest: like "60s". sets/reps as strings.
+- Every exercise gets a one-line coaching note in a direct, no-BS voice.
+
+Phase: ${c.phase || "Phase 1"}
+Client goals: ${c.goals || "not stated"}
+Flagged movement faults: ${c.faults || "none"}
+
+WORKOUT A (verbatim):
+${c.workoutA}
+
+Respond with ONLY this raw JSON object (no markdown fences, no commentary):
+{"workoutB":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}],"workoutC":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}]}`;
 }
 
 exports.handler = async function (event) {
@@ -91,7 +116,10 @@ exports.handler = async function (event) {
   const { image, mediaType, formType, client } = payload;
 
   let messages;
-  if (formType === "followup") {
+  if (formType === "workoutBC") {
+    if (!client || !client.workoutA) return { statusCode: 400, body: JSON.stringify({ error: "Missing Workout A text" }) };
+    messages = [{ role: "user", content: [{ type: "text", text: workoutBCPrompt(client) }] }];
+  } else if (formType === "followup") {
     if (!client) return { statusCode: 400, body: JSON.stringify({ error: "Missing client summary" }) };
     messages = [{ role: "user", content: [{ type: "text", text: followupPrompt(client) }] }];
   } else {
@@ -110,7 +138,7 @@ exports.handler = async function (event) {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: 1500, messages }),
+      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 2500 : 1500, messages }),
     });
     if (!response.ok) {
       const errText = await response.text();
