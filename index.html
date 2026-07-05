@@ -233,6 +233,52 @@
     font-size:13px;line-height:1.55;white-space:pre-wrap;margin-bottom:8px;}
   .copy-btn{background:var(--card);border:1px solid var(--line);color:var(--grey);border-radius:7px;
     padding:8px 14px;font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:14px;}
+
+  /* ===== v4: classifications, comparison card, cardio, print ===== */
+  .band-chip{display:inline-block;padding:8px 18px;border-radius:9px;font-weight:900;font-size:18px;color:#fff;letter-spacing:0.3px;}
+  .band-card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px;}
+  .band-range{font-size:13px;color:var(--grey);margin-top:7px;}
+  .band-means{font-size:14px;color:var(--white);font-weight:700;margin-top:3px;}
+  .threshold-box{background:var(--dark);border:1px solid var(--line);border-left:4px solid #b80f0f;border-radius:9px;padding:11px 13px;font-size:12.5px;color:var(--grey);margin-bottom:12px;line-height:1.5;}
+  .threshold-box b{color:var(--white);}
+  .flag-banner{background:#2a1414;border:1px solid #b80f0f;border-radius:10px;padding:13px;margin-bottom:12px;}
+  .flag-banner .fb-title{color:#ff8080;font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+  .flag-banner .fb-body{font-size:13px;color:var(--grey);line-height:1.5;}
+
+  .cmp-wrap{margin-top:12px;}
+  .cmp-title{font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+  .cmp-grid{display:flex;gap:10px;}
+  .cmp-col{flex:1;background:var(--dark);border:1px solid var(--line);border-radius:11px;padding:14px 10px;text-align:center;}
+  .cmp-col.hl{border-color:var(--red);}
+  .cmp-lbl{font-size:11px;font-weight:800;color:var(--grey);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+  .cmp-total{font-size:27px;font-weight:900;color:var(--white);}
+  .cmp-per{font-size:14px;color:var(--grey);margin-top:3px;}
+  .cmp-save{font-size:13px;color:var(--green);font-weight:800;margin-top:6px;}
+  .cmp-note{font-size:12px;color:var(--grey-dim);margin-top:6px;}
+  .rec-total-bar{background:#000;border:1px solid var(--red);border-radius:11px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+  .rec-total-bar .rt-lbl{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--grey);}
+  .rec-total-bar .rt-val{font-size:25px;font-weight:900;color:var(--white);}
+  .rec-primary{font-size:21px !important;}
+  .rec-price{font-size:18px !important;}
+  .rec-line{font-size:14px !important;}
+
+  #printArea{display:none;}
+  @media print{
+    body.printing > *:not(#printArea){display:none !important;}
+    #printArea{display:block !important;background:#fff;color:#000;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;}
+    .p-head{background:#CC0000 !important;color:#fff !important;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .p-phase-head{font-size:15px;font-weight:900;border-bottom:3px solid #CC0000;margin:18px 0 4px;padding-bottom:3px;}
+    .p-focus{font-size:10px;color:#444;margin-bottom:8px;}
+    .p-day{font-size:12.5px;font-weight:800;margin:12px 0 4px;}
+    .p-table{width:100%;border-collapse:collapse;font-size:10.5px;}
+    .p-table th,.p-table td{border:1px solid #999;padding:5px 6px;text-align:center;}
+    .p-table th{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .p-cue{font-size:9px;color:#555;font-weight:400;}
+    .p-track{width:36px;}
+    .p-break{page-break-before:always;}
+    .p-foot{margin-top:20px;text-align:center;font-weight:900;font-size:11px;color:#CC0000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+
 </style>
 </head>
 <body>
@@ -919,9 +965,14 @@ function migrateClient(c){
     if(c.program.days && c.program.days.length){ c.program.phases[0].days = c.program.days; }
   }
 
+  if(!c.program.cardio) c.program.cardio = [];
+  if(c.program.workoutAText === undefined) c.program.workoutAText = "";
+
   c.nutrition = c.nutrition || {};
   if(!c.nutrition.meals) c.nutrition.meals = [];
   if(!c.nutrition.customFoods) c.nutrition.customFoods = {};
+  if(!c.nutrition.mode) c.nutrition.mode = "auto";
+  if(!c.nutrition.deficitLevel) c.nutrition.deficitLevel = "500";
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
   c.followup = c.followup || null;
 }
@@ -1633,9 +1684,11 @@ function renderNutritionTab(c){
 
   return `
     <div class="section-head">Auto Targets (Mifflin-St Jeor × 1.35)</div>
+    ${lbmCallout(c)}
+    ${nutriModeControls(c)}
     <div class="calc-card">
       ${calc ? `
-        <div class="calc-row"><span class="lbl">Calories</span><span class="val hi">${calc.calories} kcal</span></div>
+        <div class="calc-row"><span class="lbl">Calories${calc.mode==="cut" ? " · −" + calc.deficit + " DEFICIT" : calc.mode==="bulk" ? " · +250 LEAN BULK" : ""}</span><span class="val hi">${calc.calories} kcal</span></div>
         <div class="calc-row"><span class="lbl">Protein (1g/lb LBM)</span><span class="val">${calc.protein} g</span></div>
         <div class="calc-row"><span class="lbl">Fat (25–30%)</span><span class="val">${calc.fat} g</span></div>
         <div class="calc-row"><span class="lbl">Carbs (remainder)</span><span class="val">${calc.carbs} g</span></div>
@@ -1711,6 +1764,12 @@ function collectFormIntoClient(){
       const dIdx = inp.getAttribute('data-pday'), eIdx = inp.getAttribute('data-pex'), field = inp.getAttribute('data-pfield');
       if(ph.days[dIdx] && ph.days[dIdx].exercises[eIdx]) ph.days[dIdx].exercises[eIdx][field] = inp.value;
     });
+    document.querySelectorAll('#modalScroll [data-cardio]').forEach(inp=>{
+      const idx = inp.getAttribute('data-cardio'), field = inp.getAttribute('data-cfield');
+      if(c.program.cardio[idx]) c.program.cardio[idx][field] = inp.value;
+    });
+    const waEl = document.getElementById('g_workoutA');
+    if(waEl) c.program.workoutAText = waEl.value;
   } else if(activeTab === "nutrition"){
     const n = c.nutrition;
     const notesEl = document.getElementById("n_notes");
@@ -1726,6 +1785,493 @@ function collectFormIntoClient(){
     const calc = computeNutrition(c);
     if(calc){ n.calories = calc.calories; n.protein = calc.protein; n.fat = calc.fat; n.carbs = calc.carbs; }
   }
+}
+
+/* ================================================================
+   ERN IT COACH HUB v4 — sheet classifications, nutrition modes,
+   pack-vs-monthly recs, B&C generator, cardio Rx, client PDF
+   ================================================================ */
+
+/* ---- Roadmap sheet color codes (sampled from the printed sheet) ---- */
+const SHEET = { green:"#1f6b38", teal:"#145c66", amber:"#b8700f", red:"#b80f0f" };
+
+const BF_BANDS = {
+  female: [
+    {name:"Essential", lo:0,  hi:13.9, range:"10–13%", color:SHEET.green, means:"Vital body functions"},
+    {name:"Athletic",  lo:14, hi:20.9, range:"14–20%", color:SHEET.teal,  means:"Peak performance"},
+    {name:"Fit",       lo:21, hi:24.9, range:"21–24%", color:SHEET.teal,  means:"Healthy & active"},
+    {name:"Average",   lo:25, hi:31.9, range:"25–31%", color:SHEET.amber, means:"Room to improve"},
+    {name:"Overfat",   lo:32, hi:41.9, range:"32–41%", color:SHEET.red,   means:"Elevated health risk"},
+    {name:"Obese",     lo:42, hi:200,  range:"42%+",   color:SHEET.red,   means:"High health risk"},
+  ],
+  male: [
+    {name:"Essential", lo:0,  hi:5.9,  range:"2–5%",   color:SHEET.green, means:"Vital body functions"},
+    {name:"Athletic",  lo:6,  hi:13.9, range:"6–13%",  color:SHEET.teal,  means:"Peak performance"},
+    {name:"Fit",       lo:14, hi:17.9, range:"14–17%", color:SHEET.teal,  means:"Healthy & active"},
+    {name:"Average",   lo:18, hi:24.9, range:"18–24%", color:SHEET.amber, means:"Room to improve"},
+    {name:"Overfat",   lo:25, hi:30.9, range:"25–30%", color:SHEET.red,   means:"Elevated health risk"},
+    {name:"Obese",     lo:31, hi:200,  range:"31%+",   color:SHEET.red,   means:"High health risk"},
+  ],
+};
+
+function bfClassify(gender, bf){
+  const bands = BF_BANDS[gender];
+  if(!bands) return null;
+  return bands.find(b => bf >= b.lo && bf <= b.hi) || bands[bands.length-1];
+}
+
+function scoreBand(score){
+  if(score < 60)  return {name:"High Risk", range:"Below 60", color:SHEET.red,
+    means:"Low lean mass or excess body fat — elevated metabolic risk. Below the healthy baseline."};
+  if(score < 80)  return {name:"Average", range:"60–79", color:SHEET.amber,
+    means:"Reasonably balanced body composition. Acceptable baseline with clear room to improve toward optimal."};
+  return {name:"Optimal", range:"80+", color:SHEET.green,
+    means:"Balanced and healthy body composition. Strong lean mass relative to body fat. Baseline = 80 points."};
+}
+
+function lbmValue(c){
+  const v = parseFloat(c.inbody.muscleMassLbs);
+  if(!isNaN(v)) return v;
+  const w = parseFloat(c.inbody.weightLbs), bf = parseFloat(c.inbody.bodyFatPct);
+  if(isNaN(w) || isNaN(bf)) return NaN;
+  return Math.round(w * (1 - bf/100) * 10) / 10;
+}
+function lbmLow(c){
+  const h = parseFloat(c.intake.heightIn);
+  const lv = lbmValue(c);
+  return !isNaN(h) && h > 60 && !isNaN(lv) && lv < 100;
+}
+
+/* ---- Nutrition modes: recommendation + coach override ---- */
+function recommendedMode(c){
+  const gender = c.intake.gender, bf = parseFloat(c.inbody.bodyFatPct);
+  if(lbmLow(c) && gender && !isNaN(bf)){
+    const threshold = gender === "male" ? 22 : 32;
+    return bf >= threshold ? "cut" : "bulk";
+  }
+  return "recomp";
+}
+const MODE_LABEL = {bulk:"Bulk", recomp:"Recomp", cut:"Deficit"};
+
+function computeNutrition(c){
+  const i = c.intake, b = c.inbody;
+  const w = parseFloat(b.weightLbs), bf = parseFloat(b.bodyFatPct);
+  const h = parseFloat(i.heightIn), age = parseFloat(i.age);
+  const gender = i.gender;
+  if(isNaN(w) || isNaN(bf) || isNaN(h) || isNaN(age) || !gender) return null;
+  const kg = w / 2.2046, cm = h * 2.54;
+  const bmr = 10*kg + 6.25*cm - 5*age + (gender === "male" ? 5 : -161);
+  let cal = bmr * 1.35;
+  const lbm = w * (1 - bf/100);
+  const rec = recommendedMode(c);
+  const mode = (c.nutrition && c.nutrition.mode && c.nutrition.mode !== "auto") ? c.nutrition.mode : rec;
+  const deficit = parseFloat((c.nutrition && c.nutrition.deficitLevel) || "500");
+  if(mode === "bulk") cal += 250;
+  else if(mode === "cut") cal -= deficit;
+  cal = Math.round(cal);
+  const protein = Math.round(lbm);              /* 1g per lb LBM — held high in every mode */
+  const fat = Math.round(cal * 0.275 / 9);
+  const carbs = Math.round((cal - protein*4 - fat*9) / 4);
+  return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:Math.round(lbm*10)/10};
+}
+
+function setNutriMode(v){
+  collectFormIntoClient();
+  clients[activeClientId].nutrition.mode = v;
+  renderModal();
+}
+function setDeficitLevel(v){
+  collectFormIntoClient();
+  clients[activeClientId].nutrition.deficitLevel = v;
+  renderModal();
+}
+
+function nutriModeControls(c){
+  const n = c.nutrition;
+  const rec = recommendedMode(c);
+  const mode = n.mode || "auto";
+  const applied = mode === "auto" ? rec : mode;
+  const lvl = n.deficitLevel || "500";
+  let html = `<div class="field-group" style="margin-bottom:10px;">
+    <label class="field-label">Nutrition Approach — recommended: <b style="color:var(--red);">${MODE_LABEL[rec]}${rec==="cut" ? " (high protein)" : ""}</b></label>
+    <div class="rate-row">
+      <div class="rate-btn ${mode==="auto"?"on":""}" onclick="setNutriMode('auto')" style="font-size:12px;">Auto</div>
+      <div class="rate-btn ${mode==="bulk"?"on":""}" onclick="setNutriMode('bulk')" style="font-size:12px;">Bulk +250</div>
+      <div class="rate-btn ${mode==="recomp"?"on":""}" onclick="setNutriMode('recomp')" style="font-size:12px;">Recomp</div>
+      <div class="rate-btn ${mode==="cut"?"on":""}" onclick="setNutriMode('cut')" style="font-size:12px;">Deficit</div>
+    </div>`;
+  if(applied === "cut"){
+    html += `<div class="rate-row" style="margin-top:7px;">
+      <div class="rate-btn ${lvl==="300"?"on":""}" onclick="setDeficitLevel('300')" style="font-size:12px;">Mild −300</div>
+      <div class="rate-btn ${lvl==="500"?"on":""}" onclick="setDeficitLevel('500')" style="font-size:12px;">Normal −500</div>
+      <div class="rate-btn ${lvl==="750"?"on":""}" onclick="setDeficitLevel('750')" style="font-size:12px;">Aggressive −750</div>
+    </div>`;
+  }
+  return html + `</div>`;
+}
+
+function lbmCallout(c){
+  if(!lbmLow(c)) return "";
+  const lv = lbmValue(c);
+  const gender = c.intake.gender, bf = parseFloat(c.inbody.bodyFatPct);
+  const threshold = gender === "male" ? 22 : 32;
+  const overT = !isNaN(bf) && bf >= threshold;
+  const line = overT
+    ? `BF% is above the ${threshold}% health threshold — priority is fat loss: <b>high-protein deficit</b> (protein held at 1g/lb LBM to protect muscle while weight drops).`
+    : `BF% is under the health threshold — priority is building lean mass: <b>lean bulk (+250 kcal)</b> recommended.`;
+  return `<div class="flag-banner">
+    <div class="fb-title">Low Lean Body Mass — ${lv} lbs</div>
+    <div class="fb-body">Under 100 lbs LBM at 5'0"+ height. ${line} Override with the pills below if needed.</div>
+  </div>`;
+}
+
+/* ============ INBODY TAB v4 — sheet-exact classifications ============ */
+function renderInbodyTab(c){
+  const b = c.inbody;
+  const gender = c.intake.gender;
+  const bf = parseFloat(b.bodyFatPct);
+  const cls = (gender && !isNaN(bf)) ? bfClassify(gender, bf) : null;
+  const score = parseFloat(b.inbodyScore);
+  const sb = !isNaN(score) ? scoreBand(score) : null;
+  const lv = lbmValue(c);
+  const low = lbmLow(c);
+  const threshold = gender === "male" ? 22 : gender === "female" ? 32 : null;
+
+  return `
+    ${renderScanCard("inbody")}
+
+    <div class="section-head">Current Numbers</div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Weight (lbs)</label>
+        <input class="field-input" id="b_weightLbs" type="text" inputmode="decimal" value="${esc(b.weightLbs)}"></div>
+      <div class="field-group"><label class="field-label">Body Fat %</label>
+        <input class="field-input" id="b_bodyFatPct" type="text" inputmode="decimal" value="${esc(b.bodyFatPct)}"></div>
+    </div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Lean Body Mass (lbs)</label>
+        <input class="field-input" id="b_muscleMassLbs" type="text" inputmode="decimal" value="${esc(b.muscleMassLbs)}" placeholder="${!isNaN(lv) && !b.muscleMassLbs ? lv + " (derived)" : "weight − fat mass"}"></div>
+      <div class="field-group"><label class="field-label">InBody Score</label>
+        <input class="field-input" id="b_inbodyScore" type="text" inputmode="numeric" value="${esc(b.inbodyScore)}"></div>
+    </div>
+
+    <div class="section-head">Classifications — Roadmap Sheet</div>
+    ${threshold !== null ? `<div class="threshold-box"><b>HEALTH RISK THRESHOLD:</b> ${gender === "male" ? "Men" : "Women"} should target <b>${threshold}% body fat or below</b>. Body fat percentage — not just the number on the scale — is the true indicator of metabolic health.</div>` : ""}
+
+    ${cls ? `<div class="band-card" style="border-color:${cls.color};">
+        <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">Body Fat Classification</div>
+        <span class="band-chip" style="background:${cls.color};">${cls.name}</span>
+        <div class="band-range">${gender === "male" ? "Men" : "Women"} ${cls.range} · client at ${bf}%</div>
+        <div class="band-means">${cls.means}</div>
+      </div>`
+    : `<div style="font-size:12.5px;color:var(--grey-dim);margin-bottom:12px;">Set gender (Intake) + Body Fat % to classify.</div>`}
+
+    ${sb ? `<div class="band-card" style="border-color:${sb.color};">
+        <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">InBody Score</div>
+        <span class="band-chip" style="background:${sb.color};">${sb.name}</span>
+        <div class="band-range">${sb.range} · client at ${score} pts</div>
+        <div class="band-means">${sb.means}</div>
+      </div>` : ""}
+
+    ${low ? `<div class="flag-banner">
+        <div class="fb-title">Low Lean Body Mass — ${lv} lbs</div>
+        <div class="fb-body">Under 100 lbs LBM at 5'0"+ height. Muscle-building priority — nutrition plan adjusts automatically (see Nutrition tab).</div>
+      </div>` : ""}
+
+    <div class="section-head">Goals &amp; Timeline</div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Weight Goal (lbs)</label>
+        <input class="field-input" id="b_weightGoal" type="text" inputmode="decimal" value="${esc(b.weightGoal)}"></div>
+      <div class="field-group"><label class="field-label">Body Fat Goal %</label>
+        <input class="field-input" id="b_bodyFatGoal" type="text" inputmode="decimal" value="${esc(b.bodyFatGoal)}"></div>
+    </div>
+    <div class="field-group"><label class="field-label">Timeline (weeks)</label>
+      <input class="field-input" id="b_timelineWeeks" type="text" value="${esc(b.timelineWeeks)}"></div>
+  `;
+}
+
+/* ============ PROGRAM REC v4 — never Program Design Only ============ */
+const MONTHLY = {
+  1:{total:660,  per:165, label:"1× / Week — Flexible"},
+  2:{total:1200, per:150, label:"2× / Week — Popular"},
+  3:{total:1620, per:135, label:"3× / Week — Best Value"},
+};
+const PACKS = {
+  4:{total:700,  per:175, label:"4-Session Pack"},
+  8:{total:1320, per:165, label:"8-Session Pack"},
+  12:{total:1860, per:155, label:"12-Session Pack"},
+};
+
+function computeRecommendation(c){
+  const r = c.recommend;
+  if(!r.daysPerWeek || !r.budget || !r.style) return null;
+  const d = parseInt(r.daysPerWeek);
+  const tierIdx = {"under250":0,"250-660":1,"660-1200":2,"1200-1620":3,"1620plus":4}[r.budget];
+  /* highest monthly frequency the budget covers */
+  let maxAfford = 0;
+  if(tierIdx >= 4) maxAfford = 3;
+  else if(tierIdx === 3) maxAfford = 2;
+  else if(tierIdx === 2) maxAfford = 1;
+  const m = Math.min(d, maxAfford);
+
+  let primary, compare, alternates = [], addons = [];
+
+  if(m >= 1){
+    const mo = MONTHLY[m], pk = PACKS[m*4];
+    primary = {name:mo.label, priceNum:mo.total, priceLabel:"$" + mo.total.toLocaleString() + "/mo · $" + mo.per + "/session",
+      detail:(m*4) + " sessions per month. Locks in the rate — renews monthly, cancel anytime."};
+    compare = {sessions:m*4, monthly:mo, pack:pk, save:pk.total - mo.total};
+    if(m < d) primary.detail += " Budget caps at " + m + "×/week for now — upgrade path below.";
+    if(m < 3) alternates.push({name:MONTHLY[m+1].label, priceLabel:"$" + MONTHLY[m+1].total.toLocaleString() + "/mo · $" + MONTHLY[m+1].per + "/session", detail:"Upgrade path — faster route through the 24-week plan."});
+    if(m > 1) alternates.push({name:MONTHLY[m-1].label, priceLabel:"$" + MONTHLY[m-1].total.toLocaleString() + "/mo · $" + MONTHLY[m-1].per + "/session", detail:"Step-down option if the schedule tightens."});
+  } else {
+    /* budget below any monthly package → no-commitment starter, never Program Design Only */
+    primary = {name:"2-Session Pack", priceNum:350, priceLabel:"$350 · $175/session",
+      detail:"No-commitment starting point — two sessions to build the plan and nail form. Expires 90 days."};
+    compare = {sessions:4, monthly:MONTHLY[1], pack:PACKS[4], save:PACKS[4].total - MONTHLY[1].total,
+      note:"When ready for weekly training — same 4 sessions, two ways to pay:"};
+    alternates.push({name:"4-Session Pack", priceLabel:"$700 · $175/session", detail:"A full month of hands-on starts."});
+  }
+
+  if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
+  else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
+  if(r.energy === "yes") addons.push({name:"Active Metabolic Assessment", low:189, priceLabel:"$189 single / $300 test + re-test", detail:"Measures calories burned during activity — dials in training zones."});
+
+  const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
+  const styleNote = r.style === "programming"
+    ? "Client leans self-guided — position monthly coaching as the accelerator. Program Design Only stays out of the consult; it's a follow-up-email fallback."
+    : "";
+
+  return {primary, compare, alternates, addons, firstMonth, styleNote};
+}
+
+function renderRecCard(rec){
+  let html = `<div class="rec-card">
+    <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Recommended</div>
+    <div class="rec-primary">${rec.primary.name}</div>
+    <div class="rec-price">${rec.primary.priceLabel}</div>
+    <div class="rec-line">${rec.primary.detail}</div>`;
+
+  if(rec.compare){
+    const cm = rec.compare;
+    html += `<div class="cmp-wrap">
+      <div class="cmp-title">${cm.note || "Same " + cm.sessions + " sessions — two ways to pay"}</div>
+      <div class="cmp-grid">
+        <div class="cmp-col hl">
+          <div class="cmp-lbl">Monthly Commit</div>
+          <div class="cmp-total">$${cm.monthly.total.toLocaleString()}</div>
+          <div class="cmp-per">$${cm.monthly.per}/session</div>
+          <div class="cmp-save">SAVE $${cm.save.toLocaleString()}/MO</div>
+        </div>
+        <div class="cmp-col">
+          <div class="cmp-lbl">No Commitment</div>
+          <div class="cmp-total">$${cm.pack.total.toLocaleString()}</div>
+          <div class="cmp-per">$${cm.pack.per}/session</div>
+          <div class="cmp-note">${cm.pack.label} · expires 90 days</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if(rec.alternates.length){
+    html += `<div style="border-top:1px solid var(--line);margin:12px 0 8px;"></div>`;
+    rec.alternates.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
+  }
+  if(rec.addons.length){
+    html += `<div style="border-top:1px solid var(--line);margin:12px 0 8px;"></div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Add-Ons</div>`;
+    rec.addons.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
+  }
+  html += `<div class="rec-total-bar">
+    <span class="rt-lbl">First-Month Bundle</span>
+    <span class="rt-val">$${rec.firstMonth.toLocaleString()}</span>
+  </div>`;
+  if(rec.styleNote) html += `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:9px;line-height:1.45;">${rec.styleNote}</div>`;
+  return html + `</div>`;
+}
+
+/* ============ BUILDER v4 — B&C generator, cardio Rx, client PDF ============ */
+const ZONES = [
+  {z:"1", label:"Z1 · Recovery · 50–60% max HR"},
+  {z:"2", label:"Z2 · Base · 60–70% max HR"},
+  {z:"3", label:"Z3 · Tempo · 70–80% max HR"},
+  {z:"4", label:"Z4 · Threshold · 80–90% max HR"},
+  {z:"5", label:"Z5 · Max · 90–100% max HR"},
+];
+const CARDIO_MODES = ["Treadmill","Elliptical","Assault Bike","Arc Trainer","Class"];
+
+function cAdd(){
+  collectFormIntoClient();
+  clients[activeClientId].program.cardio.push({modality:"Treadmill", days:"", timeMin:"", speed:"", level:"", distance:"", zone:"2", notes:""});
+  renderModal();
+}
+function cDel(i){
+  collectFormIntoClient();
+  clients[activeClientId].program.cardio.splice(i,1);
+  renderModal();
+}
+
+async function generateBC(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const txt = (c.program.workoutAText || "").trim();
+  const st = document.getElementById("bcStatus");
+  const btn = document.getElementById("bcBtn");
+  if(!txt){ st.textContent = "Paste Workout A first."; return; }
+  btn.disabled = true;
+  st.textContent = "Building Workouts B & C from the 7-pattern framework...";
+  const faults = assessmentFixes(c).map(f => f.fault + " (" + f.test + ")").join("; ");
+  try{
+    const res = await fetch("/.netlify/functions/read-form", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({formType:"workoutBC", client:{
+        workoutA: txt,
+        goals: (c.intake.goals || []).join(" + "),
+        faults: faults,
+        phase: c.program.phases[progPhase].name
+      }})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){ st.textContent = data.error || "Generation failed."; btn.disabled = false; return; }
+    const ex = data.extracted;
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const ph = clients[activeClientId].program.phases[progPhase];
+    ph.days.push({name:"Workout B", exercises: mk(ex.workoutB)});
+    ph.days.push({name:"Workout C", exercises: mk(ex.workoutC)});
+    saveClients(clients);
+    pushClientToFirebase(c.id, c);
+    renderModal();
+  }catch(e){
+    st.textContent = "Network error: " + e.message;
+    btn.disabled = false;
+  }
+}
+
+function renderProgramTab(c){
+  const phases = c.program.phases;
+  const ph = phases[progPhase];
+
+  let html = `
+    <div class="section-head">Auto-Build B &amp; C from Workout A</div>
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:16px;">
+      <textarea class="field-textarea" id="g_workoutA" style="min-height:110px;" placeholder="Paste Workout A exactly as you wrote it — exercise, sets × reps, tempo, rest...">${esc(c.program.workoutAText || "")}</textarea>
+      <button class="scan-btn" style="width:100%;margin-top:8px;" id="bcBtn" onclick="generateBC()">Generate Workouts B &amp; C → added to this phase</button>
+      <div id="bcStatus" style="font-size:11.5px;color:var(--grey);margin-top:6px;"></div>
+    </div>
+
+    <div class="phase-tabs">` + phases.map((p,idx)=>
+      `<div class="phase-tab ${idx===progPhase?"on":""}" onclick="setProgPhase(${idx})">P${idx+1}</div>`).join("") + `</div>
+    <div class="phase-focus"><b>${ph.name}</b> · ${ph.weeks}<br>${ph.focus}</div>`;
+
+  ph.days.forEach((day, dIdx)=>{
+    let exHtml = "";
+    (day.exercises || []).forEach((ex, eIdx)=>{
+      exHtml += `
+        <div class="ex-row">
+          <div class="ex-row-top">
+            <input class="ex-name-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="name" value="${esc(ex.name)}" placeholder="Exercise name">
+            <button class="ex-del" onclick="pDelEx(${dIdx},${eIdx})">✕</button>
+          </div>
+          <div class="ex-row-mid">
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="sets" type="text" inputmode="numeric" value="${esc(ex.sets)}" placeholder="4"><div class="ex-mini-lbl">Sets</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="reps" type="text" value="${esc(ex.reps)}" placeholder="10"><div class="ex-mini-lbl">Reps</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="tempo" type="text" inputmode="numeric" value="${esc(ex.tempo)}" placeholder="2011"><div class="ex-mini-lbl">Tempo</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="rest" type="text" value="${esc(ex.rest)}" placeholder="60s"><div class="ex-mini-lbl">Rest</div></div>
+          </div>
+          <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
+          <div class="video-badge">▶ How-to video</div>
+          <input class="ex-video-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
+        </div>`;
+    });
+    html += `
+      <div class="day-block">
+        <div class="day-head-row">
+          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="e.g. Monday — Lifting A">
+          <button class="day-del" onclick="pDelDay(${dIdx})">✕</button>
+        </div>
+        ${exHtml}
+        <button class="add-row-btn" onclick="pAddEx(${dIdx})">+ Add Exercise</button>
+      </div>`;
+  });
+
+  html += (ph.days.length ? "" : '<div class="empty-state">No days in this phase yet.</div>') +
+    `<button class="add-day-btn" onclick="pAddDay()">+ Add Training Day to ${ph.weeks}</button>`;
+
+  /* ---- cardio prescriptions ---- */
+  html += `<div class="section-head" style="margin-top:22px;">Cardio Prescriptions</div>`;
+  (c.program.cardio || []).forEach((cd, i)=>{
+    html += `
+      <div class="ex-row">
+        <div class="ex-row-top">
+          <select class="field-select" style="flex:1;font-size:13.5px;padding:9px 8px;" data-cardio="${i}" data-cfield="modality">
+            ${CARDIO_MODES.map(mo=>`<option value="${mo}" ${cd.modality===mo?"selected":""}>${mo}</option>`).join("")}
+          </select>
+          <button class="ex-del" onclick="cDel(${i})">✕</button>
+        </div>
+        <div class="ex-row-mid">
+          <div style="flex:1.2"><input class="ex-mini-input" data-cardio="${i}" data-cfield="days" type="text" value="${esc(cd.days)}" placeholder="Tue/Thu/Sat"><div class="ex-mini-lbl">Days</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="timeMin" type="text" inputmode="numeric" value="${esc(cd.timeMin)}" placeholder="30"><div class="ex-mini-lbl">Min</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="speed" type="text" inputmode="decimal" value="${esc(cd.speed)}" placeholder="3.5"><div class="ex-mini-lbl">Speed</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="level" type="text" inputmode="numeric" value="${esc(cd.level)}" placeholder="8"><div class="ex-mini-lbl">Level</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="distance" type="text" value="${esc(cd.distance)}" placeholder="1.5 mi"><div class="ex-mini-lbl">Dist</div></div>
+        </div>
+        <select class="field-select" style="font-size:13px;padding:9px 8px;margin-bottom:8px;" data-cardio="${i}" data-cfield="zone">
+          ${ZONES.map(z=>`<option value="${z.z}" ${String(cd.zone)===z.z?"selected":""}>${z.label}</option>`).join("")}
+        </select>
+        <input class="ex-note-input" data-cardio="${i}" data-cfield="notes" value="${esc(cd.notes)}" placeholder="Notes — e.g. incline 3%, no hands on rails...">
+      </div>`;
+  });
+  html += `<button class="add-row-btn" onclick="cAdd()">+ Add Cardio Prescription</button>
+
+    <button class="scan-btn" style="width:100%;margin-top:20px;" onclick="exportClientPdf()">⬇ Export Client PDF — program + cardio + tracking</button>
+    <div style="font-size:11px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">Opens the print dialog — on iPad, pinch out on the preview or choose Save to Files / Share to send the PDF to the client.</div>`;
+  return html;
+}
+
+/* ---- client PDF (print view: black on white, red header) ---- */
+function buildPrintHtml(c){
+  let h = `<div class="p-head"><div>ERN IT · CUSTOM PROGRAM</div><div>${esc(c.name)} · ${new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</div></div>`;
+  c.program.phases.forEach((ph, pi)=>{
+    if(!ph.days.length) return;
+    h += `<div class="${pi > 0 ? "p-break" : ""}">
+      <div class="p-phase-head">${ph.name} · ${ph.weeks}</div>
+      <div class="p-focus">${ph.focus}</div>`;
+    ph.days.forEach(day=>{
+      h += `<div class="p-day">${esc(day.name) || "Training Day"}</div>
+        <table class="p-table"><tr><th style="text-align:left;">Exercise</th><th>Sets</th><th>Reps</th><th>Tempo</th><th>Rest</th><th class="p-track">W1</th><th class="p-track">W2</th><th class="p-track">W3</th><th class="p-track">W4</th></tr>`;
+      (day.exercises || []).forEach(ex=>{
+        h += `<tr><td style="text-align:left;"><b>${esc(ex.name)}</b>${ex.note ? `<br><span class="p-cue">${esc(ex.note)}</span>` : ""}${ex.videoUrl ? `<br><span class="p-cue">▶ ${esc(ex.videoUrl)}</span>` : ""}</td><td>${esc(ex.sets)}</td><td>${esc(ex.reps)}</td><td>${esc(ex.tempo)}</td><td>${esc(ex.rest)}</td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td></tr>`;
+      });
+      h += `</table>`;
+    });
+    h += `</div>`;
+  });
+  if((c.program.cardio || []).length){
+    h += `<div class="p-phase-head" style="margin-top:16px;">Cardio Prescriptions</div>
+      <table class="p-table"><tr><th>Modality</th><th>Days</th><th>Min</th><th>Speed</th><th>Level</th><th>Distance</th><th style="text-align:left;">Zone</th><th class="p-track">✓</th><th class="p-track">✓</th><th class="p-track">✓</th><th class="p-track">✓</th></tr>`;
+    c.program.cardio.forEach(cd=>{
+      const zl = (ZONES.find(z => z.z === String(cd.zone)) || {}).label || "";
+      h += `<tr><td><b>${esc(cd.modality)}</b>${cd.notes ? `<br><span class="p-cue">${esc(cd.notes)}</span>` : ""}</td><td>${esc(cd.days)}</td><td>${esc(cd.timeMin)}</td><td>${esc(cd.speed)}</td><td>${esc(cd.level)}</td><td>${esc(cd.distance)}</td><td style="text-align:left;">${zl}</td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td></tr>`;
+    });
+    h += `</table>`;
+  }
+  h += `<div class="p-foot">#ERN_IT · I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+function exportClientPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  saveClients(clients);
+  let area = document.getElementById("printArea");
+  if(!area){
+    area = document.createElement("div");
+    area.id = "printArea";
+    document.body.appendChild(area);
+  }
+  area.innerHTML = buildPrintHtml(c);
+  document.body.classList.add("printing");
+  window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
+  setTimeout(()=>{ window.print(); }, 80);
 }
 
 /* ============ INIT ============ */
