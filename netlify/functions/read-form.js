@@ -78,26 +78,31 @@ Personal Training Leader · Life Time
 }
 
 function workoutBCPrompt(c) {
-  return `You are Ernest Joseph, an elite ISSA-certified personal trainer. A client's Workout A for the current training phase is below. Build complementary Workouts B and C for the same phase.
+  return `You are Ernest Joseph, an elite ISSA-certified personal trainer. The client's Workout A for the current training phase is below, as the coach wrote it. Do two jobs:
+
+JOB 1 — Parse WORKOUT A verbatim into structured rows. Do NOT redesign it: keep the coach's exercises, order, sets, reps, tempo, and rest exactly as written. Fill only genuinely missing values with phase-appropriate defaults and keep any existing coaching cues.
+
+JOB 2 — Build complementary Workouts B and C for the same phase.
 
 Framework — each workout covers these 7 movement patterns: squat, unilateral lower body, hip hinge, horizontal pull, vertical push, horizontal push, anti-extension core.
 Rules:
 - Match Workout A's difficulty level, session length, and equipment style.
 - Use DIFFERENT exercise variations for the same patterns — complementary, never repeats of Workout A.
-- Bias exercise selection and coaching notes toward the flagged movement faults (corrective emphasis).
+- Movement screen results are below. If the phase is Phase 1 (Neuromuscular Development & Corrective), build the listed corrective drills directly into Workouts B and C as warm-up or accessory work, and bias main-lift variations around the flagged faults. In later phases keep the corrective bias in exercise selection but prioritize the phase goal.
 - Keep rep ranges consistent with the phase goal.
 - tempo: 4 digits like "2011". rest: like "60s". sets/reps as strings.
 - Every exercise gets a one-line coaching note in a direct, no-BS voice.
 
 Phase: ${c.phase || "Phase 1"}
 Client goals: ${c.goals || "not stated"}
-Flagged movement faults: ${c.faults || "none"}
+Movement screen grades: ${c.screenGrades || "not assessed"}
+Flagged faults + prescribed correctives: ${c.faults || "none"}
 
 WORKOUT A (verbatim):
 ${c.workoutA}
 
 Respond with ONLY this raw JSON object (no markdown fences, no commentary):
-{"workoutB":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}],"workoutC":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}]}`;
+{"workoutA":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}],"workoutB":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}],"workoutC":[{"name":"","sets":"","reps":"","tempo":"","rest":"","note":""}]}`;
 }
 
 exports.handler = async function (event) {
@@ -138,7 +143,7 @@ exports.handler = async function (event) {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 2500 : 1500, messages }),
+      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 3000 : 1500, messages }),
     });
     if (!response.ok) {
       const errText = await response.text();
