@@ -279,6 +279,14 @@
     .p-foot{margin-top:20px;text-align:center;font-weight:900;font-size:11px;color:#CC0000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 
+
+  .prog-pill{flex:1 1 30%;min-width:100px;text-align:center;padding:11px 8px;border-radius:10px;background:var(--card);border:1px solid var(--line);}
+  .prog-pill .pp-name{font-size:12px;font-weight:800;color:var(--grey);line-height:1.3;}
+  .prog-pill .pp-price{display:block;font-size:17px;font-weight:900;color:var(--white);margin-top:3px;}
+  .prog-pill .pp-per{display:block;font-size:10.5px;color:var(--grey-dim);margin-top:2px;}
+  .prog-pill.on{background:var(--red-dim);border-color:var(--red);}
+  .prog-pill.on .pp-name{color:#ffd6d6;}
+
 </style>
 </head>
 <body>
@@ -958,6 +966,9 @@ function migrateClient(c){
   if(c.assessment.plank.timeSec === undefined) c.assessment.plank.timeSec = "";
 
   c.recommend = c.recommend || {daysPerWeek:"",budget:"",style:"",nutrition:"",energy:"",decision:""};
+  if(c.recommend.selected === undefined) c.recommend.selected = "";
+  if(!c.recommend.nutriSel) c.recommend.nutriSel = "none";
+  if(!c.recommend.amaSel) c.recommend.amaSel = "none";
 
   c.program = c.program || {};
   if(!c.program.phases){
@@ -1371,7 +1382,7 @@ function renderSummaryTab(c){
       ${calc ? `Nutrition targets: <b>${calc.calories} kcal</b> · ${calc.protein}g P · ${calc.fat}g F · ${calc.carbs}g C` : "Nutrition targets: missing height/age/gender/weight/BF%"}</div></div>
 
     <div class="sum-block"><div class="sum-title">Program Recommendation</div>
-      <div class="sum-line">${rec ? `<b>${rec.primary.name}</b> — ${rec.primary.price}${rec.addons.length ? "<br>Add-ons: " + rec.addons.map(a=>a.name).join(", ") : ""}` : "Complete the Program Rec tab."}</div></div>
+      <div class="sum-line">${summaryProgramLine(c)}</div></div>
 
     <div class="section-head">Decision</div>
     <div class="rate-row" style="margin-bottom:16px;">
@@ -1417,7 +1428,7 @@ async function generateFollowup(){
       lifeChange: c.intake.lifeChange,
       assessmentNotes: fixes.slice(0,3).map(f=>f.fault + " (" + f.test + ")").join("; "),
       currentStats: c.inbody.weightLbs ? `${c.inbody.weightLbs} lbs, ${c.inbody.bodyFatPct}% BF, goal ${c.inbody.weightGoal} lbs / ${c.inbody.bodyFatGoal}%` : "",
-      recommendation: rec ? rec.primary.name + " — " + rec.primary.price : "",
+      recommendation: selectedProgramText(c),
       decision: c.recommend.decision
     }
   };
@@ -1693,6 +1704,7 @@ function renderNutritionTab(c){
     ${lbmCallout(c)}
     ${nutriModeControls(c)}
     ${nutriDataLine(c)}
+    ${lowCalWarning(c)}
     <div class="calc-card">
       ${calc ? `
         <div class="calc-row"><span class="lbl">Calories${calc.mode==="cut" ? " · −" + calc.deficit + " DEFICIT" : calc.mode==="bulk" ? " · +250 LEAN BULK" : ""}</span><span class="val hi">${calc.calories} kcal</span></div>
@@ -1749,6 +1761,7 @@ function collectFormIntoClient(){
       const el = document.getElementById("i_" + k);
       if(el) i[k] = el.value;
     });
+    if(i.heightIn){ const hp = parseHeightIn(i.heightIn); if(!isNaN(hp)) i.heightIn = String(hp); }
   } else if(activeTab === "assess"){
     Object.keys(ASSESS).forEach(t=>{
       const el = document.getElementById("a_" + t + "Notes");
@@ -2511,6 +2524,245 @@ async function generateBC(){
     });
     const data = await res.json();
     if(!res.ok || data.error){ st.textContent = data.error || "Generation failed."; btn.disabled = false; return; }
+    const ex = data.extracted;
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const ph = clients[activeClientId].program.phases[progPhase];
+    upsertDay(ph, "Workout A", mk(ex.workoutA));
+    upsertDay(ph, "Workout B", mk(ex.workoutB));
+    upsertDay(ph, "Workout C", mk(ex.workoutC));
+    saveClients(clients);
+    pushClientToFirebase(c.id, c);
+    renderModal();
+  }catch(e){
+    st.textContent = "Network error: " + e.message;
+    btn.disabled = false;
+  }
+}
+
+/* ================================================================
+   ERN IT COACH HUB v6 — height parser fix, program selection,
+   faster workout generation, low-cal guard
+   ================================================================ */
+
+/* ---- robust height parsing: 5'4" / 5-4 / 5 ft 4 / 64 / 163cm ---- */
+function parseHeightIn(v){
+  if(v === undefined || v === null) return NaN;
+  const s = String(v).trim().toLowerCase();
+  if(!s) return NaN;
+  const m = s.match(/^(\d)\s*(?:'|\u2019|-|ft|feet)\s*(\d{1,2})/);
+  if(m) return parseInt(m[1]) * 12 + parseInt(m[2]);
+  const n = parseFloat(s.replace(/[^0-9.]/g, ""));
+  if(isNaN(n)) return NaN;
+  if(n > 90) return Math.round(n / 2.54);      /* cm */
+  if(n >= 36 && n <= 90) return Math.round(n); /* inches */
+  if(n >= 3 && n < 9) return Math.round(n * 12); /* bare feet like "5" or "5.5" */
+  return NaN;
+}
+
+function lbmLow(c){
+  const h = parseHeightIn(c.intake.heightIn);
+  const lv = lbmValue(c);
+  return !isNaN(h) && h > 60 && !isNaN(lv) && lv < 100;
+}
+
+function computeNutrition(c){
+  const i = c.intake, b = c.inbody;
+  const w = parseFloat(b.weightLbs), bf = parseFloat(b.bodyFatPct);
+  const h = parseHeightIn(i.heightIn), age = parseFloat(i.age);
+  const gender = i.gender;
+  if(isNaN(w) || isNaN(bf) || isNaN(h) || isNaN(age) || !gender) return null;
+  const kg = w / 2.2046, cm = h * 2.54;
+  const bmr = 10*kg + 6.25*cm - 5*age + (gender === "male" ? 5 : -161);
+  let cal = bmr * 1.35;
+  const derivedLbm = Math.round(w * (1 - bf/100) * 10) / 10;
+  const lbmUsed = !isNaN(lbmValue(c)) ? lbmValue(c) : derivedLbm;
+  const rec = recommendedMode(c);
+  const mode = (c.nutrition && c.nutrition.mode && c.nutrition.mode !== "auto") ? c.nutrition.mode : rec;
+  const deficit = parseFloat((c.nutrition && c.nutrition.deficitLevel) || "500");
+  if(mode === "bulk") cal += 250;
+  else if(mode === "cut") cal -= deficit;
+  cal = Math.round(cal);
+  const protein = Math.round(lbmUsed);
+  const fat = Math.round(cal * 0.275 / 9);
+  const carbs = Math.round((cal - protein*4 - fat*9) / 4);
+  return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:derivedLbm, lbmUsed, heightIn:h};
+}
+
+function nutriDataLine(c){
+  const calc = computeNutrition(c);
+  if(!calc) return "";
+  return `<div style="font-size:11px;color:var(--grey-dim);margin:-2px 0 12px;line-height:1.5;">Pulled from client file \u2014 Intake: ${calc.heightIn}" \u00b7 ${esc(c.intake.age)}y \u00b7 ${c.intake.gender === "male" ? "M" : "F"} \u00b7 InBody: ${esc(c.inbody.weightLbs)} lbs \u00b7 ${esc(c.inbody.bodyFatPct)}% BF \u00b7 LBM ${calc.lbmUsed} lbs \u2192 protein target</div>`;
+}
+
+function missingNutriData(c){
+  const miss = [];
+  if(isNaN(parseHeightIn(c.intake.heightIn))) miss.push("height (Intake)");
+  if(!parseFloat(c.intake.age)) miss.push("age (Intake)");
+  if(!c.intake.gender) miss.push("gender (Intake)");
+  if(!parseFloat(c.inbody.weightLbs)) miss.push("weight (InBody)");
+  if(!parseFloat(c.inbody.bodyFatPct)) miss.push("body fat % (InBody)");
+  return `<div class="calc-row"><span class="lbl">Missing</span><span class="val">${miss.join(" \u00b7 ") || "\u2014"}</span></div>`;
+}
+
+function lowCalWarning(c){
+  const calc = computeNutrition(c);
+  if(!calc || calc.calories >= 1200) return "";
+  return `<div class="flag-banner" style="margin-top:0;">
+    <div class="fb-title">${calc.calories} kcal \u2014 below the 1,200 floor</div>
+    <div class="fb-body">Check the inputs (height, age, weight) and the deficit level before this goes anywhere near a client.</div>
+  </div>`;
+}
+
+/* ---- full price sheet as selectable options ---- */
+const PROGRAM_OPTIONS = [
+  {key:"m1",  group:"monthly", label:"1\u00d7 / Week Monthly", price:660,  per:"$165/session \u00b7 4/mo", recur:true},
+  {key:"m2",  group:"monthly", label:"2\u00d7 / Week Monthly", price:1200, per:"$150/session \u00b7 8/mo", recur:true},
+  {key:"m3",  group:"monthly", label:"3\u00d7 / Week Monthly", price:1620, per:"$135/session \u00b7 12/mo", recur:true},
+  {key:"p2",  group:"pack", label:"2-Session Pack",  price:350,  per:"$175/session \u00b7 90 days"},
+  {key:"p4",  group:"pack", label:"4-Session Pack",  price:700,  per:"$175/session \u00b7 90 days"},
+  {key:"p8",  group:"pack", label:"8-Session Pack",  price:1320, per:"$165/session \u00b7 90 days"},
+  {key:"p12", group:"pack", label:"12-Session Pack", price:1860, per:"$155/session \u00b7 90 days"},
+  {key:"pdo", group:"pack", label:"Program Design Only", price:250, per:"program + 1 check-in/mo", recur:true},
+];
+
+function selectedProgram(c){
+  const key = c.recommend.selected;
+  if(key){
+    const o = PROGRAM_OPTIONS.find(o => o.key === key);
+    if(o) return o;
+  }
+  const rec = computeRecommendation(c);
+  if(!rec) return null;
+  return PROGRAM_OPTIONS.find(o => o.price === rec.primary.priceNum && o.recur) || null;
+}
+
+function selectedExtras(c){
+  const r = c.recommend;
+  const items = [];
+  if(r.nutriSel === "30") items.push({label:"Nutrition Consult 30 min", price:70});
+  if(r.nutriSel === "60") items.push({label:"Nutrition Consult 60 min", price:130});
+  if(r.amaSel === "single") items.push({label:"AMA single test", price:189});
+  if(r.amaSel === "bundle") items.push({label:"AMA test + re-test", price:300});
+  return items;
+}
+
+function selectedProgramText(c){
+  const o = selectedProgram(c);
+  if(!o) return "";
+  const extras = selectedExtras(c);
+  let t = o.label + " \u2014 $" + o.price.toLocaleString() + (o.recur ? "/mo" : "");
+  if(extras.length) t += " + " + extras.map(e => e.label).join(", ");
+  return t;
+}
+
+function summaryProgramLine(c){
+  const o = selectedProgram(c);
+  if(!o) return "Complete the Program Rec tab.";
+  const extras = selectedExtras(c);
+  const total = o.price + extras.reduce((s,e)=>s+e.price, 0);
+  return `<b>${o.label}</b> \u2014 $${o.price.toLocaleString()}${o.recur ? "/mo" : ""}${extras.length ? "<br>Add-ons: " + extras.map(e => e.label + " ($" + e.price + ")").join(", ") : ""}<br>First month: <b>$${total.toLocaleString()}</b>`;
+}
+
+function renderSelectionSection(c){
+  const r = c.recommend;
+  const sel = selectedProgram(c);
+  const selKey = sel ? sel.key : "";
+  const extras = selectedExtras(c);
+  const total = (sel ? sel.price : 0) + extras.reduce((s,e)=>s+e.price, 0);
+
+  const pill = (o)=>`<div class="prog-pill ${o.key===selKey?"on":""}" onclick="setRecField('selected','${o.key}')">
+      <div class="pp-name">${o.label}</div>
+      <span class="pp-price">$${o.price.toLocaleString()}${o.recur?"/mo":""}</span>
+      <span class="pp-per">${o.per}</span>
+    </div>`;
+
+  return `
+    <div class="section-head" style="margin-top:20px;">Select Program — pricing follows the pick</div>
+    <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">Monthly Commitment</div>
+    <div class="pill-row" style="margin-bottom:12px;">${PROGRAM_OPTIONS.filter(o=>o.group==="monthly").map(pill).join("")}</div>
+    <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">No Commitment / Other</div>
+    <div class="pill-row" style="margin-bottom:14px;">${PROGRAM_OPTIONS.filter(o=>o.group==="pack").map(pill).join("")}</div>
+
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Nutrition Consultation</label>
+        <div class="rate-row">
+          <div class="rate-btn ${(r.nutriSel||"none")==="none"?"on":""}" onclick="setRecField('nutriSel','none')" style="font-size:11.5px;">None</div>
+          <div class="rate-btn ${r.nutriSel==="30"?"on":""}" onclick="setRecField('nutriSel','30')" style="font-size:11.5px;">30m $70</div>
+          <div class="rate-btn ${r.nutriSel==="60"?"on":""}" onclick="setRecField('nutriSel','60')" style="font-size:11.5px;">60m $130</div>
+        </div></div>
+      <div class="field-group"><label class="field-label">Metabolic Assessment</label>
+        <div class="rate-row">
+          <div class="rate-btn ${(r.amaSel||"none")==="none"?"on":""}" onclick="setRecField('amaSel','none')" style="font-size:11.5px;">None</div>
+          <div class="rate-btn ${r.amaSel==="single"?"on":""}" onclick="setRecField('amaSel','single')" style="font-size:11.5px;">$189</div>
+          <div class="rate-btn ${r.amaSel==="bundle"?"on":""}" onclick="setRecField('amaSel','bundle')" style="font-size:11.5px;">$300</div>
+        </div></div>
+    </div>
+
+    <div class="rec-total-bar">
+      <span class="rt-lbl">Selected \u00b7 First Month</span>
+      <span class="rt-val">$${total.toLocaleString()}${sel && sel.recur ? `<span style="font-size:13px;color:var(--grey);"> then $${sel.price.toLocaleString()}/mo</span>` : ""}</span>
+    </div>`;
+}
+
+function renderRecommendTab(c){
+  const r = c.recommend;
+  const rec = computeRecommendation(c);
+  return `
+    <div class="section-head">Guided Questions</div>
+    <div class="field-group"><label class="field-label">How many days per week can you realistically train with me?</label>
+      <div class="rate-row">
+        ${["1","2","3"].map(d=>`<div class="rate-btn ${r.daysPerWeek===d?"on":""}" onclick="setRecField('daysPerWeek','${d}')">${d}${d==="3"?"+":""}</div>`).join("")}
+      </div></div>
+    <div class="field-group"><label class="field-label">Hands-on coaching, or programming you run yourself?</label>
+      <div class="rate-row">
+        <div class="rate-btn ${r.style==="coaching"?"on":""}" onclick="setRecField('style','coaching')">Coach Me</div>
+        <div class="rate-btn ${r.style==="programming"?"on":""}" onclick="setRecField('style','programming')">Program Only</div>
+      </div></div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Nutrition support?</label>${ynHtml("nutrition", r.nutrition, "setRecField")}</div>
+      <div class="field-group"><label class="field-label">Energy / endurance goal?</label>${ynHtml("energy", r.energy, "setRecField")}</div>
+    </div>
+
+    ${rec ? renderRecCard(rec) + renderSelectionSection(c) : `<div style="font-size:12.5px;color:var(--grey-dim);margin-top:14px;">Answer days + style. The recommendation is built from the client's goals, timeline, and movement screen \u2014 price only shows up as the payment comparison.</div>`}
+  `;
+}
+
+/* ---- workout generation with real error reporting ---- */
+async function generateBC(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const txt = (c.program.workoutAText || "").trim();
+  const st = document.getElementById("bcStatus");
+  const btn = document.getElementById("bcBtn");
+  if(!txt){ st.textContent = "Paste Workout A first."; return; }
+  btn.disabled = true;
+  st.textContent = "Structuring A, building B & C from the 7-pattern framework + movement screen...";
+  const screenGrades = ["squat","pushup","plank"].map(t=>{
+    const g = gradeTest(c, t);
+    return ASSESS[t].label.split(" ")[0] + ": " + g.chip + (g.scored ? " (" + g.total + "/" + g.max + ")" : "");
+  }).join("; ");
+  const faults = assessmentFixes(c).map(f => f.fault + " [" + f.severity + "] \u2192 " + f.fix).join("; ");
+  try{
+    const res = await fetch("/.netlify/functions/read-form", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({formType:"workoutBC", client:{
+        workoutA: txt,
+        goals: (c.intake.goals || []).join(" + "),
+        phase: c.program.phases[progPhase].name,
+        screenGrades: screenGrades,
+        faults: faults
+      }})
+    });
+    let data;
+    try{ data = await res.json(); }
+    catch(parseErr){
+      st.textContent = "Server error (HTTP " + res.status + ") \u2014 likely the 10-second function limit. Tap Generate again.";
+      btn.disabled = false; return;
+    }
+    if(!res.ok || data.error){
+      st.textContent = (data.error || "Generation failed") + " (HTTP " + res.status + "). If this repeats, it's the 10s function limit \u2014 tap Generate again.";
+      btn.disabled = false; return;
+    }
     const ex = data.extracted;
     const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
     const ph = clients[activeClientId].program.phases[progPhase];
