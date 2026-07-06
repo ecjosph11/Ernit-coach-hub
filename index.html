@@ -493,10 +493,10 @@ function deleteClient(){
 const TABS = [
   {id:"overview", label:"Overview"},
   {id:"intake", label:"Intake"},
-  {id:"assess", label:"Assess"},
   {id:"inbody", label:"InBody"},
-  {id:"recommend", label:"Program Rec"},
+  {id:"assess", label:"Assess"},
   {id:"summary", label:"Summary"},
+  {id:"recommend", label:"Program Rec"},
   {id:"program", label:"Builder"},
   {id:"nutrition", label:"Nutrition"},
 ];
@@ -1337,7 +1337,7 @@ function computeRecommendation(c){
   let primary, alternates = [], addons = [];
 
   if(r.style === "programming"){
-    primary = {name:"Program Design Only", price:"$250/mo", detail:"Custom program + 1 check-in meeting per month — no in-person sessions."};
+    primary = {name:"Program Design Only", price:"$300/mo", detail:"Custom program + 1 check-in meeting per month — no in-person sessions."};
     alternates.push({name:"4-Session Pack", price:"$700 ($175/session)", detail:"Add hands-on sessions to dial in form — expires 90 days."});
   } else if(d >= 3 && b === "1620plus"){
     primary = {name:"3× / Week — Best Value", price:"$1,620/mo · $135/session", detail:"12 sessions/month. Saves $480/mo vs pack rate. Fastest route to the 24-week plan."};
@@ -1350,11 +1350,11 @@ function computeRecommendation(c){
     primary = {name:"1× / Week — Flexible", price:"$660/mo · $165/session", detail:"4 sessions/month. Saves $40/mo vs pack rate. Pair with independent days from your program."};
     alternates.push({name:"2× / Week — Popular", price:"$1,200/mo · $150/session", detail:"Upgrade when budget allows — better rate per session."});
   } else if(b === "250-660"){
-    primary = {name:"Program Design Only", price:"$250/mo", detail:"Custom program + monthly check-in. Best results-per-dollar at this budget."};
+    primary = {name:"Program Design Only", price:"$300/mo", detail:"Custom program + monthly check-in. Best results-per-dollar at this budget."};
     alternates.push({name:"4-Session Pack", price:"$700 ($175/session)", detail:"One month of hands-on starts, then transition to programming."});
   } else {
     primary = {name:"2-Session Pack", price:"$350 ($175/session)", detail:"Lowest-commitment starting point — 2 sessions to build the plan and nail form. Expires 90 days."};
-    alternates.push({name:"Program Design Only", price:"$250/mo", detail:"If monthly cash flow works better than a lump sum."});
+    alternates.push({name:"Program Design Only", price:"$300/mo", detail:"If monthly cash flow works better than a lump sum."});
   }
 
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", price:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
@@ -2653,7 +2653,7 @@ const PROGRAM_OPTIONS = [
   {key:"p4",  group:"pack", label:"4-Session Pack",  price:700,  per:"$175/session \u00b7 90 days"},
   {key:"p8",  group:"pack", label:"8-Session Pack",  price:1320, per:"$165/session \u00b7 90 days"},
   {key:"p12", group:"pack", label:"12-Session Pack", price:1860, per:"$155/session \u00b7 90 days"},
-  {key:"pdo", group:"pack", label:"Program Design Only", price:250, per:"program + 1 check-in/mo", recur:true},
+  {key:"pdo", group:"pack", label:"Program Design Only", price:300, per:"program + 1 check-in/mo", recur:true},
 ];
 
 function selectedProgram(c){
@@ -3395,6 +3395,105 @@ async function importFile(kind){
     st.textContent = "Network error: " + e.message;
     btn.disabled = false; inp.value = "";
   }
+}
+
+/* ================================================================
+   ERN IT COACH HUB v13 — client-safe Summary: recommendation w/o pricing,
+   coach tools tucked away, days/week asked in the consult moment
+   ================================================================ */
+
+let sumCoachOpen = false;
+
+function toggleSumCoach(){
+  collectFormIntoClient();
+  sumCoachOpen = !sumCoachOpen;
+  renderModal();
+}
+
+function renderSummaryTab(c){
+  const i = c.intake;
+  const fixes = assessmentFixes(c);
+  const calc = computeNutrition(c);
+  const r = c.recommend;
+  const nf = neededFrequency(c);
+  const stated = parseInt(r.daysPerWeek);
+  const tl = c.inbody.timelineWeeks;
+
+  const grades = Object.keys(ASSESS).map(t=>{
+    const g = gradeTest(c, t);
+    return `<span class="grade-chip ${g.cls}" style="margin-right:6px;">${ASSESS[t].label.split(" ")[0]}: ${g.chip}</span>`;
+  }).join("");
+
+  const gapLine = !isNaN(stated)
+    ? (stated < nf.freq
+        ? `<div style="background:rgba(184,112,15,.14);border:1px solid #b8700f;border-radius:8px;padding:9px 11px;font-size:12px;color:#e8a94f;margin-top:10px;">You\u2019re planning <b>${stated}\u00d7/week</b> \u2014 this plan calls for <b>${nf.freq}\u00d7</b>. Let\u2019s look at what that changes.</div>`
+        : `<div style="background:rgba(31,107,56,.14);border:1px solid #1f6b38;border-radius:8px;padding:9px 11px;font-size:12px;color:#5fbf7f;margin-top:10px;">Your <b>${stated}\u00d7/week</b> matches the plan. That\u2019s the pace the timeline is built on.</div>`)
+    : "";
+
+  let html = `
+    <div class="sum-block"><div class="sum-title">Client</div>
+      <div class="sum-line"><b>${esc(c.name) || "—"}</b> · ${esc(i.age) || "—"} yrs · ${esc(i.occupation) || "—"}<br>
+      Activity: ${esc(i.activityLevel) || "—"} · Stress ${esc(i.stressLevel) || "—"}/5 · Sleep ${esc(i.sleepHours) || "—"} hrs</div></div>
+
+    <div class="sum-block"><div class="sum-title">Goals &amp; Why</div>
+      <div class="sum-line"><b>${(i.goals||[]).join(" + ") || "—"}</b> · Focus: ${i.scaleVsLook==="scale"?"Scale number":i.scaleVsLook==="look"?"Look & feel":"—"}${i.loseInches==="yes" ? " · Inches: "+esc(i.inchesWhere) : ""}<br>
+      "${esc(i.whyImportant) || "—"}"<br>
+      Blocked before by: ${esc(i.preventedBefore) || "—"} · Struggles: ${(i.struggles||[]).join(", ") || "—"}<br>
+      Commitment ${esc(i.commitment) || "—"}/5 · Ready today ${esc(i.readyToday) || "—"}/5</div></div>
+
+    <div class="sum-block"><div class="sum-title">Movement Game Plan — what we fix first</div>
+      <div class="sum-line" style="margin-bottom:7px;">${grades}</div>
+      ${fixes.length ? fixes.map(f=>`<div class="sum-line" style="font-size:12px;">• <b>${f.fault}</b> (${f.test.split(" ")[0]}) → ${f.fix}</div>`).join("") : '<div class="sum-line">Screen came back clean — we build from a strong base.</div>'}</div>
+
+    <div class="sum-block"><div class="sum-title">Body Comp &amp; Targets</div>
+      <div class="sum-line">Current: ${esc(c.inbody.weightLbs) || "—"} lbs · ${esc(c.inbody.bodyFatPct) || "—"}% BF · Goal: ${esc(c.inbody.weightGoal) || "—"} lbs · ${esc(c.inbody.bodyFatGoal) || "—"}% BF · Timeline: ${esc(tl) || "—"} wks<br>
+      ${calc ? `Nutrition targets: <b>${calc.calories} kcal</b> · ${calc.protein}g P · ${calc.fat}g F · ${calc.carbs}g C` : "Nutrition targets: missing height/age/gender/weight/BF%"}</div></div>
+
+    <div class="sum-block" style="border:1px solid var(--red);">
+      <div class="sum-title">My Recommendation</div>
+      <div style="font-size:21px;font-weight:900;color:var(--white);margin:4px 0 2px;">${nf.freq}\u00d7 per week${tl ? ` <span style="font-size:13px;font-weight:700;color:var(--grey);">\u00b7 ${esc(tl)}-week plan</span>` : ""}</div>
+      ${(nf.why||[]).map(w=>`<div class="sum-line" style="font-size:12px;">• ${w}</div>`).join("")}
+      <div class="field-group" style="margin-top:12px;margin-bottom:0;">
+        <label class="field-label">How many days a week are you planning to come in?</label>
+        <div class="rate-row">
+          ${["1","2","3"].map(d=>`<div class="rate-btn ${r.daysPerWeek===d?"on":""}" onclick="setRecField('daysPerWeek','${d}')">${d}${d==="3"?"+":""}</div>`).join("")}
+        </div>
+        ${gapLine}
+      </div>
+      <div style="font-size:11px;color:var(--grey-dim);margin-top:10px;">Options for making this happen are on the next tab.</div>
+    </div>
+
+    <button onclick="toggleSumCoach()" style="background:none;border:1px solid var(--line);border-radius:8px;color:var(--grey-dim);font-size:11px;font-weight:700;letter-spacing:.5px;padding:7px 13px;margin-bottom:14px;">COACH TOOLS ${sumCoachOpen ? "\u25be" : "\u25b8"}</button>
+  `;
+
+  if(sumCoachOpen){
+    html += `
+    <div class="sum-block"><div class="sum-title">Selected Program</div>
+      <div class="sum-line">${summaryProgramLine(c)}</div></div>
+
+    <div class="section-head">Decision</div>
+    <div class="rate-row" style="margin-bottom:16px;">
+      <div class="rate-btn ${r.decision==="signed"?"on":""}" onclick="setRecField('decision','signed')" style="font-size:11.5px;">Signed Up</div>
+      <div class="rate-btn ${r.decision==="thinking"?"on":""}" onclick="setRecField('decision','thinking')" style="font-size:11.5px;">Thinking</div>
+      <div class="rate-btn ${r.decision==="declined"?"on":""}" onclick="setRecField('decision','declined')" style="font-size:11.5px;">Declined</div>
+    </div>`;
+
+    if(r.decision === "thinking" || r.decision === "declined"){
+      html += `<div class="section-head">Warm Follow-Up</div>
+        <button class="scan-btn" style="width:100%;" onclick="generateFollowup()" id="followupBtn">Generate Follow-Up Email + Text</button>
+        <div id="followupStatus" style="font-size:11.5px;color:var(--grey);margin-top:8px;"></div>`;
+      if(c.followup){
+        html += `
+          <div class="section-head" style="margin-top:16px;">Email</div>
+          <div class="followup-box" id="fu_email"><b>Subject:</b> ${esc(c.followup.emailSubject)}\n\n${esc(c.followup.emailBody)}</div>
+          <button class="copy-btn" onclick="copyFollow('email')">Copy Email</button>
+          <div class="section-head">Text</div>
+          <div class="followup-box" id="fu_text">${esc(c.followup.textMessage)}</div>
+          <button class="copy-btn" onclick="copyFollow('text')">Copy Text</button>`;
+      }
+    }
+  }
+  return html;
 }
 
 /* ============ INIT ============ */
