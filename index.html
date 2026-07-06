@@ -337,7 +337,15 @@
 
 <script>
 /* ============ FIREBASE (shared single project — fill in once created) ============ */
-const HUB_FIREBASE_CONFIG = null; /* set this to { apiKey, authDomain, databaseURL, projectId, storageBucket, messagingSenderId, appId } once the shared project exists */
+const HUB_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCzdJ9_7j_8dTXN_q3jxVx3wb8USf5XnZg",
+  authDomain: "ernit-coach-hub.firebaseapp.com",
+  databaseURL: "https://ernit-coach-hub-default-rtdb.firebaseio.com",
+  projectId: "ernit-coach-hub",
+  storageBucket: "ernit-coach-hub.firebasestorage.app",
+  messagingSenderId: "762133520389",
+  appId: "1:762133520389:web:1057d1ecfa18a38e297c6c"
+};
 
 let hubDb = null;
 const firebaseSdkAvailable = typeof firebase !== "undefined";
@@ -1741,6 +1749,7 @@ function renderNutritionTab(c){
 
     <div class="section-head">Day Builder — USDA-Verified Macros</div>
     <div style="font-size:11px;color:var(--grey-dim);margin-bottom:12px;line-height:1.5;">Every calorie computed from macros (P×4 + C×4 + F×9) — never hand-entered. Portions in grams, USDA FoodData Central values per 100g.</div>
+    ${importCardHtml("nutrition")}
     ${genPlanControls(c)}
     ${mealsHtml || '<div class="empty-state" style="padding:24px;">No meals yet.</div>'}
     <button class="add-day-btn" onclick="nAddMeal()">+ Add Meal</button>
@@ -2202,6 +2211,7 @@ function renderProgramTab(c){
       <button class="scan-btn" style="width:100%;margin-top:8px;" id="bcBtn" onclick="generateBC()">Generate Workouts B &amp; C → added to this phase</button>
       <div id="bcStatus" style="font-size:11.5px;color:var(--grey);margin-top:6px;"></div>
     </div>
+    ${importCardHtml("program")}
 
     <div class="phase-tabs">` + phases.map((p,idx)=>
       `<div class="phase-tab ${idx===progPhase?"on":""}" onclick="setProgPhase(${idx})">P${idx+1}</div>`).join("") + `</div>
@@ -2856,6 +2866,7 @@ function renderProgramTab(c){
       <button class="scan-btn" style="width:100%;margin-top:8px;" id="bcBtn" onclick="generateBC()">Generate A, B &amp; C \u2192 added to Week ${progWeek + 1} of this phase</button>
       <div id="bcStatus" style="font-size:11.5px;color:var(--grey);margin-top:6px;"></div>
     </div>
+    ${importCardHtml("program")}
 
     <div class="phase-tabs">` + phases.map((p, idx) =>
       `<div class="phase-tab ${idx === progPhase ? "on" : ""}" onclick="setProgPhase(${idx})">P${idx + 1}</div>`).join("") + `</div>
@@ -3275,6 +3286,115 @@ function lthRecommendations(c){
   }
   add("LTH Glow Omega-3", "Dinner", "Joint, heart & recovery support.");
   return recs;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v11 — import existing client PDFs (program + nutrition)
+   ================================================================ */
+
+function importCardHtml(kind){
+  const isP = kind === "program";
+  return `<div style="background:var(--card);border:1px dashed var(--line);border-radius:11px;padding:12px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:800;color:var(--white);margin-bottom:4px;">Import existing ${isP ? "program" : "nutrition"} file \u2014 PDF or photo</div>
+    <div style="font-size:11px;color:var(--grey-dim);margin-bottom:9px;line-height:1.45;">${isP ? "Training days + cardio prescriptions land in the phase/week you\u2019re viewing \u2014 editable after." : "Meals import with the file\u2019s exact printed macros (as custom foods) \u2014 editable after."}</div>
+    <input type="file" id="imp_${kind}_file" accept="application/pdf,image/*" style="display:none;" onchange="importFile('${kind}')">
+    <button class="scan-btn" style="width:100%;" id="imp_${kind}_btn" onclick="document.getElementById('imp_${kind}_file').click()">Choose PDF / Photo</button>
+    <div id="imp_${kind}_status" style="font-size:11.5px;color:var(--grey);margin-top:6px;"></div>
+  </div>`;
+}
+
+async function importFile(kind){
+  const inp = document.getElementById("imp_" + kind + "_file");
+  const st = document.getElementById("imp_" + kind + "_status");
+  const btn = document.getElementById("imp_" + kind + "_btn");
+  const file = inp.files && inp.files[0];
+  if(!file) return;
+  if(file.size > 4.2 * 1024 * 1024){
+    st.textContent = "File over 4MB \u2014 export a lighter PDF or photograph the key pages.";
+    inp.value = ""; return;
+  }
+  collectFormIntoClient();
+  btn.disabled = true;
+  st.textContent = "Reading " + file.name + "...";
+  let b64;
+  try{
+    b64 = await new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = ()=>res(String(r.result).split(",")[1]);
+      r.onerror = ()=>rej(new Error("could not read file"));
+      r.readAsDataURL(file);
+    });
+  }catch(e){ st.textContent = e.message; btn.disabled = false; inp.value = ""; return; }
+
+  let doneMsg = "";
+  try{
+    const res = await fetch("/.netlify/functions/read-form", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        formType: kind === "program" ? "importProgram" : "importNutrition",
+        image: b64,
+        mediaType: file.type || "application/pdf"
+      })
+    });
+    let data;
+    try{ data = await res.json(); }
+    catch(e){ st.textContent = "Server error (HTTP " + res.status + ") \u2014 large files can hit the 10s limit. Photograph the key pages instead."; btn.disabled = false; inp.value = ""; return; }
+    if(!res.ok || data.error){ st.textContent = (data.error || "Import failed") + " (HTTP " + res.status + ")"; btn.disabled = false; inp.value = ""; return; }
+    const ex = data.extracted;
+    const c = clients[activeClientId];
+
+    if(kind === "program"){
+      const ph = c.program.phases[progPhase];
+      (ex.days || []).forEach(d=>{
+        upsertDay(ph, String(d.name || "Imported Day"), (d.exercises || []).map(e=>({
+          name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""),
+          tempo:String(e.tempo||""), rest:String(e.rest||""), load:String(e.load||""),
+          note:String(e.note||""), videoUrl:""
+        })));
+      });
+      (ex.cardio || []).forEach(cd=>{
+        c.program.cardio.push({
+          modality: CARDIO_MODES.includes(cd.modality) ? cd.modality : "Treadmill",
+          days:String(cd.days||""), timeMin:String(cd.timeMin||""), speed:String(cd.speed||""),
+          level:String(cd.level||""), distance:String(cd.distance||""),
+          zone:String(cd.zone||"2"), notes:String(cd.notes||"")
+        });
+      });
+      doneMsg = "Imported " + (ex.days||[]).length + " day(s) + " + (ex.cardio||[]).length + " cardio Rx into Week " + (progWeek + 1) + " \u2014 review before saving.";
+    } else {
+      if((c.nutrition.meals || []).length && !confirm("Replace the current meals with the imported plan?")){
+        btn.disabled = false; inp.value = ""; st.textContent = ""; return;
+      }
+      const meals = [];
+      (ex.meals || []).forEach((m, mi)=>{
+        const items = [];
+        (m.items || []).forEach((it, ii)=>{
+          const key = "imp_" + String(it.name || "item").toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 28) + "_" + mi + ii;
+          c.nutrition.customFoods[key] = {
+            n: String(it.name || "Imported item") + (it.portion ? " \u00b7 " + String(it.portion) : ""),
+            g: "Custom", kcal: 0,
+            p: parseFloat(it.p) || 0, f: parseFloat(it.f) || 0, c: parseFloat(it.c) || 0,
+            per: "srv"
+          };
+          items.push({f: key, q: "1"});
+        });
+        meals.push({name: String(m.name || ("Meal " + (mi + 1))), items});
+      });
+      c.nutrition.meals = meals;
+      if(ex.notes) c.nutrition.notes = ((c.nutrition.notes || "") + "\n" + String(ex.notes)).trim();
+      doneMsg = "Imported " + meals.length + " meal(s) \u2014 macros exactly as printed in the file.";
+    }
+    saveClients(clients);
+    pushClientToFirebase(c.id, c);
+    renderModal();
+    setTimeout(()=>{
+      const s2 = document.getElementById("imp_" + kind + "_status");
+      if(s2) s2.textContent = doneMsg;
+    }, 60);
+  }catch(e){
+    st.textContent = "Network error: " + e.message;
+    btn.disabled = false; inp.value = "";
+  }
 }
 
 /* ============ INIT ============ */
