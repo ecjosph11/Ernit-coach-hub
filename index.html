@@ -8,6 +8,7 @@
 <title>ERN IT | Coach Hub</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
   :root{
     --black:#0a0a0a; --dark:#151515; --card:#1c1c1c; --line:#2c2c2c;
@@ -335,6 +336,18 @@
   </div>
 </div>
 
+<div id="loginWall" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;align-items:center;justify-content:center;">
+  <div style="width:min(360px,88vw);background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:28px 24px;">
+    <div style="font-size:13px;font-weight:900;letter-spacing:2.5px;color:#CC0000;">ERN IT <span style="color:#888;font-weight:600;letter-spacing:2px;">COACHING</span></div>
+    <div style="font-size:24px;font-weight:900;color:#fff;margin:2px 0 18px;">Coach Hub</div>
+    <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" style="width:100%;box-sizing:border-box;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:9px;color:#fff;font-size:15px;padding:12px 13px;margin-bottom:10px;">
+    <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:9px;color:#fff;font-size:15px;padding:12px 13px;margin-bottom:14px;">
+    <button onclick="hubSignIn()" id="loginBtn" style="width:100%;background:#CC0000;border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:800;padding:13px;">Sign In</button>
+    <div id="loginErr" style="font-size:12px;color:#e05252;margin-top:10px;min-height:15px;"></div>
+    <div onclick="hubOffline()" style="font-size:11px;color:#666;margin-top:12px;text-decoration:underline;cursor:pointer;">Continue offline (this device only)</div>
+  </div>
+</div>
+
 <script>
 /* ============ FIREBASE (shared single project — fill in once created) ============ */
 const HUB_FIREBASE_CONFIG = {
@@ -371,7 +384,7 @@ function loadClients(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) 
 function saveClients(obj){ localStorage.setItem(STORE_KEY, JSON.stringify(obj)); }
 
 function pushClientToFirebase(id, client){
-  if(!hubDb) return;
+  if(!hubDb || !hubAuthed) return;
   hubDb.ref("clients/" + id).set(client).catch(e=>console.warn("write failed", e.message));
 }
 
@@ -485,7 +498,7 @@ function deleteClient(){
   if(!confirm("Delete this client permanently? This can't be undone.")) return;
   delete clients[activeClientId];
   saveClients(clients);
-  if(hubDb) hubDb.ref("clients/" + activeClientId).remove();
+  if(hubDb && hubAuthed) hubDb.ref("clients/" + activeClientId).remove();
   closeModal();
 }
 
@@ -3124,7 +3137,7 @@ function startHubSync(){
     renderRoster();
   }, err => console.warn("hub sync read failed:", err.message));
 }
-startHubSync();
+/* startHubSync is gated behind sign-in (v14) */
 
 /* ================================================================
    ERN IT COACH HUB v8 — 1-day meal plan generator (macro solver)
@@ -3494,6 +3507,84 @@ function renderSummaryTab(c){
     }
   }
   return html;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v14 — coach sign-in (Firebase Auth) protecting client data
+   ================================================================ */
+
+let hubAuthed = false;
+let hubOfflineMode = false;
+
+function showLoginWall(v){
+  const w = document.getElementById("loginWall");
+  if(w) w.style.display = v ? "flex" : "none";
+}
+
+async function hubSignIn(){
+  const email = (document.getElementById("loginEmail").value || "").trim();
+  const pass = document.getElementById("loginPass").value || "";
+  const err = document.getElementById("loginErr");
+  const btn = document.getElementById("loginBtn");
+  if(!email || !pass){ err.textContent = "Email and password."; return; }
+  btn.disabled = true; err.textContent = "Signing in...";
+  try{
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    err.textContent = "";
+  }catch(e){
+    const map = {
+      "auth/invalid-credential": "Wrong email or password.",
+      "auth/user-not-found": "Wrong email or password.",
+      "auth/wrong-password": "Wrong email or password.",
+      "auth/invalid-email": "That email is not valid.",
+      "auth/too-many-requests": "Too many tries — wait a minute and retry.",
+      "auth/network-request-failed": "No connection — check wifi or continue offline."
+    };
+    err.textContent = map[e.code] || e.message;
+  }
+  btn.disabled = false;
+}
+
+function hubOffline(){
+  hubOfflineMode = true;
+  showLoginWall(false);
+  setSyncStatus();
+}
+
+function hubSignOut(){
+  if(typeof firebase !== "undefined" && firebase.auth) firebase.auth().signOut();
+}
+
+function setSyncStatus(){
+  const dot = document.getElementById("syncDot");
+  const txt = document.getElementById("syncText");
+  if(!dot || !txt) return;
+  if(hubDb && hubAuthed){
+    dot.className = "sync-dot live";
+    txt.innerHTML = 'Live sync — signed in · <span style="text-decoration:underline;cursor:pointer;" onclick="hubSignOut()">sign out</span>';
+  } else if(hubDb && hubOfflineMode){
+    dot.className = "sync-dot off";
+    txt.innerHTML = 'Offline — this device only · <span style="text-decoration:underline;cursor:pointer;" onclick="hubOfflineMode=false;showLoginWall(true);">sign in</span>';
+  } else if(hubDb){
+    dot.className = "sync-dot off";
+    txt.textContent = "Waiting for sign-in...";
+  } else {
+    dot.className = "sync-dot off";
+    txt.textContent = "Local only";
+  }
+}
+
+if(hubDb && typeof firebase !== "undefined" && firebase.auth){
+  firebase.auth().onAuthStateChanged(user=>{
+    hubAuthed = !!user;
+    if(user){
+      showLoginWall(false);
+      startHubSync();
+    } else if(!hubOfflineMode){
+      showLoginWall(true);
+    }
+    setSyncStatus();
+  });
 }
 
 /* ============ INIT ============ */
