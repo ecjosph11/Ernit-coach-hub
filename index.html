@@ -1008,6 +1008,7 @@ function migrateClient(c){
   if(!c.nutrition.customFoods) c.nutrition.customFoods = {};
   if(!c.nutrition.mode) c.nutrition.mode = "auto";
   if(!c.nutrition.deficitLevel) c.nutrition.deficitLevel = "500";
+  if(!c.nutrition.dietStyle) c.nutrition.dietStyle = "normal";
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
   c.followup = c.followup || null;
 }
@@ -1734,6 +1735,7 @@ function renderNutritionTab(c){
 
     <div class="section-head">Day Builder — USDA-Verified Macros</div>
     <div style="font-size:11px;color:var(--grey-dim);margin-bottom:12px;line-height:1.5;">Every calorie computed from macros (P×4 + C×4 + F×9) — never hand-entered. Portions in grams, USDA FoodData Central values per 100g.</div>
+    ${genPlanControls(c)}
     ${mealsHtml || '<div class="empty-state" style="padding:24px;">No meals yet.</div>'}
     <button class="add-day-btn" onclick="nAddMeal()">+ Add Meal</button>
 
@@ -3106,6 +3108,168 @@ function startHubSync(){
   }, err => console.warn("hub sync read failed:", err.message));
 }
 startHubSync();
+
+/* ================================================================
+   ERN IT COACH HUB v8 — 1-day meal plan generator (macro solver)
+   ================================================================ */
+
+const DIET_TEMPLATES = {
+  normal: [
+    {label:"Meal 1 \u2014 Breakfast", pct:0.24, items:[
+      {f:"egg_whole", q:100, fixed:true}, {f:"mixed_berries", q:80, fixed:true},
+      {f:"egg_whites", role:"P"}, {f:"oats_dry", role:"C"}, {f:"almonds", role:"F"} ]},
+    {label:"Snack 1", pct:0.11, items:[
+      {f:"greek_yogurt_nonfat", role:"P"}, {f:"apple", role:"C"}, {f:"walnuts", role:"F"} ]},
+    {label:"Meal 2 \u2014 Lunch", pct:0.28, items:[
+      {f:"broccoli", q:100, fixed:true},
+      {f:"chicken_breast_cooked", role:"P"}, {f:"white_rice_cooked", role:"C"}, {f:"olive_oil", role:"F"} ]},
+    {label:"Snack 2", pct:0.11, items:[
+      {f:"cottage_cheese_lowfat", role:"P"}, {f:"rice_cake", role:"C"} ]},
+    {label:"Meal 3 \u2014 Dinner", pct:0.26, items:[
+      {f:"spinach", q:100, fixed:true},
+      {f:"salmon_cooked", role:"P"}, {f:"sweet_potato", role:"C"}, {f:"avocado", role:"F"} ]},
+  ],
+  vegetarian: [
+    {label:"Meal 1 \u2014 Breakfast", pct:0.24, items:[
+      {f:"mixed_berries", q:80, fixed:true},
+      {f:"greek_yogurt_nonfat", role:"P"}, {f:"oats_dry", role:"C"}, {f:"chia_seeds", role:"F"} ]},
+    {label:"Snack 1", pct:0.11, items:[
+      {f:"lth_fuel_vegan", role:"P"}, {f:"banana", role:"C"} ]},
+    {label:"Meal 2 \u2014 Lunch", pct:0.28, items:[
+      {f:"broccoli", q:100, fixed:true},
+      {f:"firm_tofu", role:"P"}, {f:"quinoa_cooked", role:"C"}, {f:"olive_oil", role:"F"} ]},
+    {label:"Snack 2", pct:0.11, items:[
+      {f:"cottage_cheese_lowfat", role:"P"}, {f:"apple", role:"C"} ]},
+    {label:"Meal 3 \u2014 Dinner", pct:0.26, items:[
+      {f:"zucchini", q:100, fixed:true},
+      {f:"tempeh", role:"P"}, {f:"brown_rice_cooked", role:"C"}, {f:"tahini", role:"F"} ]},
+  ],
+  vegan: [
+    {label:"Meal 1 \u2014 Breakfast", pct:0.24, items:[
+      {f:"mixed_berries", q:80, fixed:true},
+      {f:"firm_tofu", role:"P"}, {f:"oats_dry", role:"C"}, {f:"flax_meal", role:"F"} ]},
+    {label:"Snack 1", pct:0.11, items:[
+      {f:"lth_fuel_vegan", role:"P"}, {f:"banana", role:"C"} ]},
+    {label:"Meal 2 \u2014 Lunch", pct:0.28, items:[
+      {f:"broccoli", q:100, fixed:true},
+      {f:"tempeh", role:"P"}, {f:"quinoa_cooked", role:"C"}, {f:"hummus", role:"F"} ]},
+    {label:"Snack 2", pct:0.11, items:[
+      {f:"edamame", role:"P"}, {f:"almonds", role:"F"} ]},
+    {label:"Meal 3 \u2014 Dinner", pct:0.26, items:[
+      {f:"kale", q:100, fixed:true},
+      {f:"firm_tofu", role:"P"}, {f:"sweet_potato", role:"C"}, {f:"tahini", role:"F"} ]},
+  ],
+};
+
+function solveDayPlan(c, calc, style){
+  const tpl = DIET_TEMPLATES[style] || DIET_TEMPLATES.normal;
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  let rem = {p: calc.protein, c: calc.carbs, f: calc.fat};
+  const meals = [];
+  tpl.forEach((slot, si) => {
+    const last = si === tpl.length - 1;
+    const tgt = last
+      ? {p: Math.max(rem.p, 0), c: Math.max(rem.c, 0), f: Math.max(rem.f, 0)}
+      : {p: Math.min(calc.protein * slot.pct, Math.max(rem.p, 0)),
+         c: Math.min(calc.carbs * slot.pct, Math.max(rem.c, 0)),
+         f: Math.min(calc.fat * slot.pct, Math.max(rem.f, 0))};
+    const acc = {p:0, c:0, f:0};
+    const items = [];
+    const addItem = (key, q) => {
+      const m = foodMacros(key, q, c);
+      if(!m) return;
+      acc.p += m.p; acc.c += m.c; acc.f += m.f;
+      items.push({f:key, q:String(q)});
+    };
+    slot.items.filter(it => it.fixed).forEach(it => addItem(it.f, it.q));
+    ["P","C","F"].forEach(role => {
+      slot.items.filter(it => it.role === role).forEach(it => {
+        const food = db[it.f];
+        if(!food) return;
+        let q;
+        if(food.per === "srv"){
+          q = 1; /* one scoop — the remaining-budget solver absorbs the extra protein downstream */
+        } else {
+          const perg = {P: food.p/100, C: food.c/100, F: food.f/100}[role];
+          if(!perg || perg <= 0) return;
+          const need = {P: tgt.p - acc.p, C: tgt.c - acc.c, F: tgt.f - acc.f}[role];
+          q = Math.round(Math.max(need, 0) / perg / 5) * 5;
+          const cap = role === "P" ? 300 : role === "C" ? 350 : ((it.f === "olive_oil" || it.f === "tahini") ? 20 : 60);
+          q = Math.min(q, cap);
+        }
+        if(food.per === "srv" ? q >= 1 : q >= 10) addItem(it.f, q);
+      });
+    });
+    rem.p -= acc.p; rem.c -= acc.c; rem.f -= acc.f;
+    meals.push({name: slot.label, items});
+  });
+  return meals;
+}
+
+function setDietStyle(v){
+  collectFormIntoClient();
+  clients[activeClientId].nutrition.dietStyle = v;
+  renderModal();
+}
+
+function generateMealPlan(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const calc = computeNutrition(c);
+  if(!calc){ alert("Targets first — need height, age, gender (Intake) + weight, BF% (InBody)."); return; }
+  if((c.nutrition.meals || []).length && !confirm("Replace the current meals with a generated 1-day plan?")) return;
+  c.nutrition.meals = solveDayPlan(c, calc, c.nutrition.dietStyle || "normal");
+  saveClients(clients);
+  pushClientToFirebase(c.id, c);
+  renderModal();
+}
+
+function genPlanControls(c){
+  const style = c.nutrition.dietStyle || "normal";
+  return `<div style="background:var(--card);border:1px solid var(--red);border-radius:11px;padding:13px;margin-bottom:14px;">
+    <div style="font-size:12px;font-weight:800;color:var(--white);margin-bottom:8px;">Generate 1-Day Plan \u2014 3 meals + 2 snacks, solved to the targets</div>
+    <div class="rate-row" style="margin-bottom:10px;">
+      <div class="rate-btn ${style==="normal"?"on":""}" onclick="setDietStyle('normal')" style="font-size:12px;">Normal</div>
+      <div class="rate-btn ${style==="vegetarian"?"on":""}" onclick="setDietStyle('vegetarian')" style="font-size:12px;">Vegetarian</div>
+      <div class="rate-btn ${style==="vegan"?"on":""}" onclick="setDietStyle('vegan')" style="font-size:12px;">Vegan</div>
+    </div>
+    <button class="scan-btn" style="width:100%;" onclick="generateMealPlan()">Generate Plan \u2192 fills the meals below (editable after)</button>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">Gram quantities solved food-by-food from USDA macros \u2014 dinner absorbs the day\u2019s remainder so totals land on target. Swap any food after.</div>
+  </div>`;
+}
+
+/* plant-based swap in the LTH protocol */
+function lthRecommendations(c){
+  const goals = c.intake.goals || [];
+  const calc = computeNutrition(c);
+  const mode = calc ? calc.mode : null;
+  const sleep = parseFloat(c.intake.sleepHours);
+  const stress = parseInt(c.intake.stressLevel);
+  const plant = (c.nutrition.dietStyle === "vegan" || c.nutrition.dietStyle === "vegetarian");
+  const proteinName = plant ? "LTH Fuel Vegan+ All-In-One" : "LTH Build Whey+";
+  const has = (re) => goals.some(g => re.test(g));
+  const recs = [];
+  const add = (name, when, why) => { if(!recs.find(r => r.name === name)) recs.push({name, when, why}); };
+
+  add("LTH Armor D3+K2", "Breakfast", "Daily foundation \u2014 immune, bone & hormone support.");
+  if(has(/Lose Weight/i) || mode === "cut"){
+    add(proteinName, "Post-workout / protein-short meals", "Protects lean mass in a deficit \u2014 hitting the protein number is the whole game.");
+    add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
+  }
+  if(has(/Muscle|Strength/i) || mode === "bulk"){
+    add(proteinName, "Post-workout", "Muscle is built in recovery \u2014 this closes the protein gap on training days.");
+    add("LTH Power Creatine", "Any meal, every day", "The most-proven supplement in existence for strength & lean mass.");
+  }
+  if(has(/Energy|Endurance/i)){
+    add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
+    add("LTH Power Creatine", "Any meal, every day", "Supports repeat high-effort output \u2014 not just a muscle supplement.");
+  }
+  if(has(/Anxiety|Stress/i) || (!isNaN(sleep) && sleep < 7) || (!isNaN(stress) && stress >= 4)){
+    add("LTH Dream Multi-Mag", "Before bed", "Magnesium for sleep quality & stress \u2014 results are built overnight.");
+  }
+  add("LTH Glow Omega-3", "Dinner", "Joint, heart & recovery support.");
+  return recs;
+}
 
 /* ============ INIT ============ */
 setSyncStatus();
