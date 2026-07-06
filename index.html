@@ -276,6 +276,14 @@
     .p-cue{font-size:9px;color:#555;font-weight:400;}
     .p-track{width:36px;}
     .p-break{page-break-before:always;}
+    .p-band{background:#000 !important;color:#fff !important;font-weight:900;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .p-week{font-size:13px;font-weight:900;margin:14px 0 2px;}
+    .p-rule{font-size:9.5px;color:#555;margin:2px 0 8px;}
+    .p-lth{background:#CC0000 !important;color:#fff !important;font-weight:900;padding:8px 10px;font-size:12px;margin:16px 0 4px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .p-qr{text-align:center;margin:12px 0;}
+    .p-qr img{width:150px;height:150px;}
+    .p-qr .pq-line{font-size:11px;font-weight:800;margin-top:6px;}
+    .p-qr .pq-sub{font-size:10px;color:#333;margin-top:2px;}
     .p-foot{margin-top:20px;text-align:center;font-weight:900;font-size:11px;color:#CC0000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 
@@ -700,6 +708,9 @@ function renderNutritionTab_OLD(c){
       ` : `<div class="calc-row"><span class="lbl">Missing data</span><span class="val">Need height, age, gender (Intake) + weight, body fat% (InBody) to calculate</span></div>`}
     </div>
 
+    <button class="scan-btn" style="width:100%;margin-top:18px;" onclick="exportNutritionPdf()">⬇ Export Nutrition PDF — targets + day plan + LTH protocol</button>
+    <div style="font-size:11px;color:var(--grey-dim);margin:6px 0 4px;">Print dialog → Save to Files / Share to send to the client.</div>
+
     <div class="section-head">Nutrition Notes</div>
     <div class="field-group">
       <textarea class="field-textarea" id="n_notes" placeholder="Meal timing, supplement schedule, food preferences/allergies, batch-prep notes...">${esc(n.notes)}</textarea>
@@ -983,6 +994,13 @@ function migrateClient(c){
       c.program.phases[1].days = [1,2,3,4].map(n=>({name:"Day "+n, exercises:[]}));
     }
     c.program.seedP2 = true;
+  }
+  c.program.phases.forEach(ph=>{
+    if(!ph.weekPlans || !ph.weekPlans.length) ph.weekPlans = [{days: ph.days || []}];
+    ph.weekPlans.forEach(wp=>{ wp.days = wp.days || []; wp.days.forEach(d=>{ d.exercises = d.exercises || []; }); });
+    ph.days = ph.weekPlans[0].days;
+  });
+  if(true){
   }
 
   c.nutrition = c.nutrition || {};
@@ -1736,6 +1754,9 @@ function renderNutritionTab(c){
     <input type="hidden" id="cf_kcal" value="">
     <button class="copy-btn" onclick="nAddCustomFood()">+ Save Custom Food</button>
 
+    <button class="scan-btn" style="width:100%;margin-top:18px;" onclick="exportNutritionPdf()">⬇ Export Nutrition PDF — targets + day plan + LTH protocol</button>
+    <div style="font-size:11px;color:var(--grey-dim);margin:6px 0 4px;">Print dialog → Save to Files / Share to send to the client.</div>
+
     <div class="section-head">Nutrition Notes</div>
     <div class="field-group">
       <textarea class="field-textarea" id="n_notes" placeholder="Meal timing, supplement schedule, allergies, batch-prep notes...">${esc(n.notes)}</textarea>
@@ -2101,10 +2122,6 @@ function renderRecCard(rec){
       <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Add-Ons</div>`;
     rec.addons.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
   }
-  html += `<div class="rec-total-bar">
-    <span class="rt-lbl">First-Month Bundle</span>
-    <span class="rt-val">$${rec.firstMonth.toLocaleString()}</span>
-  </div>`;
   if(rec.styleNote) html += `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:9px;line-height:1.45;">${rec.styleNote}</div>`;
   return html + `</div>`;
 }
@@ -2153,7 +2170,7 @@ async function generateBC(){
     const data = await res.json();
     if(!res.ok || data.error){ st.textContent = data.error || "Generation failed."; btn.disabled = false; return; }
     const ex = data.extracted;
-    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), load:String(e.load||""), videoUrl:""}));
     const ph = clients[activeClientId].program.phases[progPhase];
     ph.days.push({name:"Workout B", exercises: mk(ex.workoutB)});
     ph.days.push({name:"Workout C", exercises: mk(ex.workoutC)});
@@ -2442,10 +2459,6 @@ function renderRecCard(rec){
       <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Add-Ons</div>`;
     rec.addons.forEach(a=>{ html += `<div class="rec-line"><b>${a.name}</b> — ${a.priceLabel}. ${a.detail}</div>`; });
   }
-  html += `<div class="rec-total-bar">
-    <span class="rt-lbl">First-Month Bundle</span>
-    <span class="rt-val">$${rec.firstMonth.toLocaleString()}</span>
-  </div>`;
   if(rec.styleNote) html += `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:9px;line-height:1.45;">${rec.styleNote}</div>`;
   return html + `</div>`;
 }
@@ -2525,7 +2538,7 @@ async function generateBC(){
     const data = await res.json();
     if(!res.ok || data.error){ st.textContent = data.error || "Generation failed."; btn.disabled = false; return; }
     const ex = data.extracted;
-    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), load:String(e.load||""), videoUrl:""}));
     const ph = clients[activeClientId].program.phases[progPhase];
     upsertDay(ph, "Workout A", mk(ex.workoutA));
     upsertDay(ph, "Workout B", mk(ex.workoutB));
@@ -2764,7 +2777,7 @@ async function generateBC(){
       btn.disabled = false; return;
     }
     const ex = data.extracted;
-    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), videoUrl:""}));
+    const mk = (arr)=> (arr || []).map(e=>({name:String(e.name||""), sets:String(e.sets||""), reps:String(e.reps||""), tempo:String(e.tempo||""), rest:String(e.rest||""), note:String(e.note||""), load:String(e.load||""), videoUrl:""}));
     const ph = clients[activeClientId].program.phases[progPhase];
     upsertDay(ph, "Workout A", mk(ex.workoutA));
     upsertDay(ph, "Workout B", mk(ex.workoutB));
@@ -2777,6 +2790,322 @@ async function generateBC(){
     btn.disabled = false;
   }
 }
+
+/* ================================================================
+   ERN IT COACH HUB v7 — weekly progression builder, nutrition PDF
+   with LTH protocol + QR, cross-device pull sync
+   ================================================================ */
+
+const PHASE_WEEKS = [4, 8, 8, 4];
+const PROG_RULE = "Progression rule: add 5% load next week when every set was completed at the load with 12+ reps across 3 sets.";
+let progWeek = 0;
+
+function setProgPhase(i){
+  collectFormIntoClient();
+  progPhase = i;
+  progWeek = 0;
+  renderModal();
+}
+function setProgWeek(i){
+  collectFormIntoClient();
+  progWeek = i;
+  renderModal();
+}
+
+function dupWeek(withProg){
+  collectFormIntoClient();
+  const ph = clients[activeClientId].program.phases[progPhase];
+  const prev = ph.weekPlans[progWeek - 1];
+  if(!prev || !prev.days.length){ alert("Week " + progWeek + " is empty — build it first."); return; }
+  const copy = JSON.parse(JSON.stringify(prev.days));
+  if(withProg){
+    copy.forEach(d => (d.exercises || []).forEach(ex => {
+      const L = parseFloat(ex.load);
+      if(!isNaN(L) && L > 0){
+        ex.load = String(Math.round(L * 1.05 / 2.5) * 2.5);
+        ex.note = ((ex.note || "").replace(/\s*\u25b25%$/, "") + " \u25b25%").trim();
+      }
+    }));
+  }
+  ph.weekPlans[progWeek] = {days: copy};
+  renderModal();
+}
+
+function renderProgramTab(c){
+  const phases = c.program.phases;
+  const ph = phases[progPhase];
+  if(!ph.weekPlans || !ph.weekPlans.length) ph.weekPlans = [{days: ph.days || []}];
+  const totalWeeks = PHASE_WEEKS[progPhase] || 4;
+  if(progWeek >= totalWeeks) progWeek = 0;
+  if(!ph.weekPlans[progWeek]) ph.weekPlans[progWeek] = {days: []};
+  ph.weekPlans.forEach(wp => { wp.days = wp.days || []; });
+  ph.days = ph.weekPlans[progWeek].days; /* alias: all day/exercise actions hit the current week */
+
+  let html = `
+    <div class="section-head">Auto-Build A, B &amp; C from Workout A</div>
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:16px;">
+      <textarea class="field-textarea" id="g_workoutA" style="min-height:110px;" placeholder="Paste Workout A exactly as you wrote it — exercise, sets \u00d7 reps, tempo, rest...">${esc(c.program.workoutAText || "")}</textarea>
+      <button class="scan-btn" style="width:100%;margin-top:8px;" id="bcBtn" onclick="generateBC()">Generate A, B &amp; C \u2192 added to Week ${progWeek + 1} of this phase</button>
+      <div id="bcStatus" style="font-size:11.5px;color:var(--grey);margin-top:6px;"></div>
+    </div>
+
+    <div class="phase-tabs">` + phases.map((p, idx) =>
+      `<div class="phase-tab ${idx === progPhase ? "on" : ""}" onclick="setProgPhase(${idx})">P${idx + 1}</div>`).join("") + `</div>
+    <div class="phase-focus"><b>${ph.name}</b> \u00b7 ${ph.weeks}<br>${ph.focus}</div>
+
+    <div class="phase-tabs" style="margin-top:-4px;">` +
+      Array.from({length: totalWeeks}, (_, w) => {
+        const built = ph.weekPlans[w] && ph.weekPlans[w].days && ph.weekPlans[w].days.length;
+        return `<div class="phase-tab ${w === progWeek ? "on" : ""}" style="${built || w === progWeek ? "" : "opacity:0.5;"}" onclick="setProgWeek(${w})">WK ${w + 1}</div>`;
+      }).join("") + `</div>`;
+
+  const prevBuilt = progWeek > 0 && ph.weekPlans[progWeek - 1] && ph.weekPlans[progWeek - 1].days.length;
+  if(!ph.days.length && prevBuilt){
+    html += `<div style="background:var(--card);border:1px solid var(--red);border-radius:11px;padding:13px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:800;color:var(--white);margin-bottom:4px;">Week ${progWeek + 1} is empty — build it from Week ${progWeek}:</div>
+      <div style="font-size:11px;color:var(--grey);margin-bottom:10px;line-height:1.45;">${PROG_RULE}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="scan-btn" style="flex:1;" onclick="dupWeek(false)">Duplicate Week ${progWeek}</button>
+        <button class="scan-btn" style="flex:1;" onclick="dupWeek(true)">Duplicate + 5% Progression</button>
+      </div>
+    </div>`;
+  }
+
+  ph.days.forEach((day, dIdx) => {
+    let exHtml = "";
+    (day.exercises || []).forEach((ex, eIdx) => {
+      exHtml += `
+        <div class="ex-row">
+          <div class="ex-row-top">
+            <input class="ex-name-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="name" value="${esc(ex.name)}" placeholder="Exercise name">
+            <button class="ex-del" onclick="pDelEx(${dIdx},${eIdx})">\u2715</button>
+          </div>
+          <div class="ex-row-mid">
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="sets" type="text" inputmode="numeric" value="${esc(ex.sets)}" placeholder="4"><div class="ex-mini-lbl">Sets</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="reps" type="text" value="${esc(ex.reps)}" placeholder="10"><div class="ex-mini-lbl">Reps</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="tempo" type="text" inputmode="numeric" value="${esc(ex.tempo)}" placeholder="2011"><div class="ex-mini-lbl">Tempo</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="rest" type="text" value="${esc(ex.rest)}" placeholder="60s"><div class="ex-mini-lbl">Rest</div></div>
+            <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="load" type="text" inputmode="decimal" value="${esc(ex.load || "")}" placeholder="lbs"><div class="ex-mini-lbl">Load</div></div>
+          </div>
+          <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
+          <div class="video-badge">\u25b6 How-to video</div>
+          <input class="ex-video-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
+        </div>`;
+    });
+    html += `
+      <div class="day-block">
+        <div class="day-head-row">
+          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="Day label (optional) — Day 1 \u00b7 Mon \u00b7 Push">
+          <button class="day-del" onclick="pDelDay(${dIdx})">\u2715</button>
+        </div>
+        ${exHtml}
+        <button class="add-row-btn" onclick="pAddEx(${dIdx})">+ Add Exercise</button>
+      </div>`;
+  });
+
+  html += (ph.days.length ? "" : (prevBuilt ? "" : '<div class="empty-state">No days in this week yet.</div>')) +
+    `<button class="add-day-btn" onclick="pAddDay()">+ Add Training Day — Week ${progWeek + 1}</button>`;
+
+  /* cardio + export unchanged */
+  html += `<div class="section-head" style="margin-top:22px;">Cardio Prescriptions</div>`;
+  (c.program.cardio || []).forEach((cd, i) => {
+    html += `
+      <div class="ex-row">
+        <div class="ex-row-top">
+          <select class="field-select" style="flex:1;font-size:13.5px;padding:9px 8px;" data-cardio="${i}" data-cfield="modality">
+            ${CARDIO_MODES.map(mo => `<option value="${mo}" ${cd.modality === mo ? "selected" : ""}>${mo}</option>`).join("")}
+          </select>
+          <button class="ex-del" onclick="cDel(${i})">\u2715</button>
+        </div>
+        <div class="ex-row-mid">
+          <div style="flex:1.2"><input class="ex-mini-input" data-cardio="${i}" data-cfield="days" type="text" value="${esc(cd.days)}" placeholder="client\u2019s days (optional)"><div class="ex-mini-lbl">Days</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="timeMin" type="text" inputmode="numeric" value="${esc(cd.timeMin)}" placeholder="30"><div class="ex-mini-lbl">Min</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="speed" type="text" inputmode="decimal" value="${esc(cd.speed)}" placeholder="3.5"><div class="ex-mini-lbl">Speed</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="level" type="text" inputmode="numeric" value="${esc(cd.level)}" placeholder="8"><div class="ex-mini-lbl">Level</div></div>
+          <div style="flex:1"><input class="ex-mini-input" data-cardio="${i}" data-cfield="distance" type="text" value="${esc(cd.distance)}" placeholder="1.5 mi"><div class="ex-mini-lbl">Dist</div></div>
+        </div>
+        <select class="field-select" style="font-size:13px;padding:9px 8px;margin-bottom:8px;" data-cardio="${i}" data-cfield="zone">
+          ${ZONES.map(z => `<option value="${z.z}" ${String(cd.zone) === z.z ? "selected" : ""}>${z.label}</option>`).join("")}
+        </select>
+        <input class="ex-note-input" data-cardio="${i}" data-cfield="notes" value="${esc(cd.notes)}" placeholder="Notes — e.g. incline 3%, no hands on rails...">
+      </div>`;
+  });
+  html += `<button class="add-row-btn" onclick="cAdd()">+ Add Cardio Prescription</button>
+
+    <button class="scan-btn" style="width:100%;margin-top:20px;" onclick="exportClientPdf()">\u2b07 Export Client PDF — all built weeks + cardio + log columns</button>
+    <div style="font-size:11px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">Opens the print dialog — Save to Files / Share to send the PDF to the client.</div>`;
+  return html;
+}
+
+/* ---- client PDF v7: every built week, load column, progression rule ---- */
+function buildPrintHtml(c){
+  let h = `<div class="p-head"><div>ERN IT \u00b7 CUSTOM PROGRAM</div><div>${esc(c.name)} \u00b7 ${new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</div></div>`;
+  let printedAny = false;
+  c.program.phases.forEach((ph, pi) => {
+    const wps = (ph.weekPlans && ph.weekPlans.length) ? ph.weekPlans : [{days: ph.days || []}];
+    const builtWeeks = wps.map((wp, w) => ({wp, w})).filter(x => x.wp && x.wp.days && x.wp.days.length);
+    if(!builtWeeks.length) return;
+    h += `<div class="${printedAny ? "p-break" : ""}">
+      <div class="p-phase-head">${ph.name} \u00b7 ${ph.weeks}</div>
+      <div class="p-focus">${ph.focus}</div>
+      <div class="p-rule">${PROG_RULE}</div>`;
+    printedAny = true;
+    builtWeeks.forEach(({wp, w}) => {
+      h += `<div class="p-week">Week ${w + 1}</div>`;
+      wp.days.forEach(day => {
+        h += `<div class="p-day">${esc(day.name) || "Training Day"}</div>
+          <table class="p-table"><tr><th style="text-align:left;">Exercise</th><th>Sets</th><th>Reps</th><th>Tempo</th><th>Rest</th><th>Load</th><th style="width:120px;">Log</th></tr>`;
+        (day.exercises || []).forEach(ex => {
+          h += `<tr><td style="text-align:left;"><b>${esc(ex.name)}</b>${ex.note ? `<br><span class="p-cue">${esc(ex.note)}</span>` : ""}${ex.videoUrl ? `<br><span class="p-cue">\u25b6 ${esc(ex.videoUrl)}</span>` : ""}</td><td>${esc(ex.sets)}</td><td>${esc(ex.reps)}</td><td>${esc(ex.tempo)}</td><td>${esc(ex.rest)}</td><td>${esc(ex.load || "")}</td><td></td></tr>`;
+        });
+        h += `</table>`;
+      });
+    });
+    h += `</div>`;
+  });
+  if((c.program.cardio || []).length){
+    h += `<div class="p-phase-head" style="margin-top:16px;">Cardio Prescriptions</div>
+      <table class="p-table"><tr><th>Modality</th><th>Days</th><th>Min</th><th>Speed</th><th>Level</th><th>Distance</th><th style="text-align:left;">Zone</th><th class="p-track">\u2713</th><th class="p-track">\u2713</th><th class="p-track">\u2713</th><th class="p-track">\u2713</th></tr>`;
+    c.program.cardio.forEach(cd => {
+      const zl = (ZONES.find(z => z.z === String(cd.zone)) || {}).label || "";
+      h += `<tr><td><b>${esc(cd.modality)}</b>${cd.notes ? `<br><span class="p-cue">${esc(cd.notes)}</span>` : ""}</td><td>${esc(cd.days)}</td><td>${esc(cd.timeMin)}</td><td>${esc(cd.speed)}</td><td>${esc(cd.level)}</td><td>${esc(cd.distance)}</td><td style="text-align:left;">${zl}</td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td><td class="p-track"></td></tr>`;
+    });
+    h += `</table>`;
+  }
+  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+/* ---- LTH protocol: goal-based supplement recommendations ---- */
+const LTH_QR = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQAAAABRBrPYAAABWGlDQ1BJQ0MgUHJvZmlsZQAAeJx9kLFLw1AQxr9WpaB1EB0cHDKJQ5SSCro4tBVEcQhVweqUvqapkMZHkiIFN/+Bgv+BCs5uFoc6OjgIopPo5uSk4KLleS+JpCJ6j+N+fO+74zggOW5wbvcDqDu+W1zKK5ulLSX1jAS9IAzm8Zyur0r+rj/j/T703k7LWb///43Biukxqp+UGcZdH0ioxPqezyXvE4+5tBRxS7IV8onkcsjngWe9WCC+JlZYzagQvxCr5R7d6uG63WDRDnL7tOlsrMk5lBNYxA48cNgw0IQCHdk//LOBv4BdcjfhUp+FGnzqyZEiJ5jEy3DAMAOVWEOGUpN3ju53F91PjbWDJ2ChI4S4iLWVDnA2Rydrx9rUPDAyBFy1ueEagdRHmaxWgddTYLgEjN5Qz7ZXzWrh9uk8MPAoxNskkDoEui0hPo6E6B5T8wNw6XwBA6diE8HYWhMAAAQbSURBVHja7VpLcus2EGy4XEXtwGV2wE2GOUmuoJwA0Mne4CbDZXbgjl51FiAly5JtJpXyexGNhVRljWCqa6an5+OIDWd6wrYztzdfESoQSBMDADEkTdo+rU/zzRfN2hv0/Ke88Z8+gBlqR5LVV8+KQAOAYACEJDWRJI53b4uPCMhrs/qh2YtzPQBMERjFQvMjOQ1lAHByLl/dVh/bkf6pmR/FMEqREoMiaBkgp3zvtn6Jz3jrcU8bfPLXAcS2mX38E6Z+7ANLRLAyAEKehl070p0zLC/5Fb+xwlugBZIatNHbx/y27zh9cc65HlMwAKOUOA4rvZWMk3POffvb7eGrswa8UEWXjEqSrF/wbLbN7Gcl8bePN3vWVcEBCCRVlpSqSMwpA8enef4on+oD+dvhgM8oDsggZz97ckXNVuUmCiEzUsaX+NuvE4CzJ2cAnrRQEahLFGYAiRkJKyDzqi/qLbb7KgSeGhiHT+sFwM/+THDBEBSBClHRRDIDO8+nMd44UsNtiVJvwYDQdAiE1LQ/HYKKjqyetBUQE5qoqCgSqWB+TVz9/WsUeVcC4/lwUxrBljy+pD8t/BPkDPjqqzdPC4ZgkCUvIGnK2HOc9u8ph5Y+qq+e1tohgSoGoQqZgbQzfsMMeFagAUINBoitdJ+RiITj28ZavMZ2APYWpxf8etQLIle6Nx+f0c3T4S8/9n2tfSxiIDBiHATA6UcmgDTtq4BaxFhYQjCokFSIApKBxFyft1yVd6d7a0dWBPNNmmGtoKgpI10ExqFl4JUGzfZbsM++UVeoXaN7C9qaRHmxSGQ9F54Vv12TXBz+55X4v9VvHWt3CdbmbqQJW3Mtp5zeLzxtr/727Gf4yQGewBiBUQiMf5yKA1B+ODrm0/FjflP9/YH5Lb4Tp+TctU4uPDXQ1oZalqXEX+N0oTf0V3cNu+S32s2eFb4i0EJrgRsgKiqfNMDtIQNwk3I4onbkjI6sgbS1s7ZIkbQgV1/n03fq00fyt3mD2YtzPaZ+CgaE4mIw0TFpcQPEDWij0e/BwZ04RVd9I7hgwYQqbFHKLDll3M2n9ti4zVd5wW5L9hangK/wXPpqEJVWL2DNC9hEcA+B22GT3XkW5S+DqpXhNJF5Z4ODrWaTc20yCkxiwVoPV0vSMgAlA4n3+C3uBDdbXuJbszaIBwBf4jggUEc3hBakkgGcvgfK98zWRSNMQgvLIB4AytC2jLBP3KYGSyhCDaeMcQgZEDpA3hUYCkMclvUQ/YqfsLGu/wliOyLG66fLTYegrQP6Jnzb0UX8ZqT8vTBzz6xr9OY5RoQSRzcAxQ0obf00vVkIfHhAlg2iVg/EUIQnN4gCosXlQkde9clxGcOfg0Hd7hzpSr71LUwREZe1tiEjI2f3n65PbzT7G6Zhu8Az8vRLAAAAAElFTkSuQmCC";
+
+function lthRecommendations(c){
+  const goals = c.intake.goals || [];
+  const calc = computeNutrition(c);
+  const mode = calc ? calc.mode : null;
+  const sleep = parseFloat(c.intake.sleepHours);
+  const stress = parseInt(c.intake.stressLevel);
+  const has = (re) => goals.some(g => re.test(g));
+  const recs = [];
+  const add = (name, when, why) => { if(!recs.find(r => r.name === name)) recs.push({name, when, why}); };
+
+  add("LTH Armor D3+K2", "Breakfast", "Daily foundation — immune, bone & hormone support.");
+  if(has(/Lose Weight/i) || mode === "cut"){
+    add("LTH Build Whey+ (Fuel Vegan+ if plant-based)", "Post-workout / protein-short meals", "Protects lean mass in a deficit — hitting the protein number is the whole game.");
+    add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
+  }
+  if(has(/Muscle|Strength/i) || mode === "bulk"){
+    add("LTH Build Whey+ (Fuel Vegan+ if plant-based)", "Post-workout", "Muscle is built in recovery — this closes the protein gap on training days.");
+    add("LTH Power Creatine", "Any meal, every day", "The most-proven supplement in existence for strength & lean mass.");
+  }
+  if(has(/Energy|Endurance/i)){
+    add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
+    add("LTH Power Creatine", "Any meal, every day", "Supports repeat high-effort output — not just a muscle supplement.");
+  }
+  if(has(/Anxiety|Stress/i) || (!isNaN(sleep) && sleep < 7) || (!isNaN(stress) && stress >= 4)){
+    add("LTH Dream Multi-Mag", "Before bed", "Magnesium for sleep quality & stress — results are built overnight.");
+  }
+  add("LTH Glow Omega-3", "Dinner", "Joint, heart & recovery support.");
+  return recs;
+}
+
+/* ---- nutrition guide PDF ---- */
+function buildNutritionPrintHtml(c){
+  const calc = computeNutrition(c);
+  let h = `<div class="p-head"><div>ERN IT \u00b7 NUTRITION GUIDE</div><div>${esc(c.name)} \u00b7 ${new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</div></div>`;
+
+  if(calc){
+    const modeLine = calc.mode === "cut" ? "High-Protein Deficit \u2014 \u2212" + calc.deficit + " kcal/day"
+      : calc.mode === "bulk" ? "Lean Bulk \u2014 +250 kcal/day"
+      : "Recomposition \u2014 maintenance calories";
+    h += `<div class="p-phase-head">Daily Targets</div>
+      <table class="p-table">
+        <tr><th style="text-align:left;">Approach</th><th>Calories</th><th>Protein</th><th>Fat</th><th>Carbs</th></tr>
+        <tr><td style="text-align:left;"><b>${modeLine}</b></td><td><b>${calc.calories} kcal</b></td><td>${calc.protein} g</td><td>${calc.fat} g</td><td>${calc.carbs} g</td></tr>
+      </table>
+      <div class="p-rule">Protein = 1g per lb of lean body mass (${calc.lbmUsed} lbs). Every calorie is computed from macros \u2014 P\u00d74 + C\u00d74 + F\u00d79. Portions are gram-weighed.</div>`;
+  } else {
+    h += `<div class="p-phase-head">Daily Targets</div><div class="p-rule">Targets pending \u2014 complete Intake (height, age, gender) and InBody (weight, BF%).</div>`;
+  }
+
+  const meals = (c.nutrition.meals || []).filter(m => (m.items || []).some(it => it.f));
+  if(meals.length){
+    h += `<div class="p-phase-head" style="margin-top:14px;">Day Plan</div>`;
+    let day = {kcal:0, p:0, f:0, c:0};
+    meals.forEach(meal => {
+      h += `<div class="p-day">${esc(meal.name)}</div>
+        <table class="p-table"><tr><th style="text-align:left;">FOOD</th><th>AMOUNT</th><th>CAL</th><th>PRO</th><th>CARB</th><th>FAT</th></tr>`;
+      let mt = {kcal:0, p:0, f:0, c:0};
+      (meal.items || []).forEach(it => {
+        if(!it.f) return;
+        const m = foodMacros(it.f, it.q, c);
+        if(!m) return;
+        const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+        const unit = (db[it.f] || {}).per === "srv" ? " scoop" : " g";
+        mt.kcal += m.kcal; mt.p += m.p; mt.f += m.f; mt.c += m.c;
+        h += `<tr><td style="text-align:left;">${esc(m.name)}</td><td>${esc(it.q)}${unit}</td><td>${m.kcal}</td><td>${m.p}</td><td>${m.c}</td><td>${m.f}</td></tr>`;
+      });
+      day.kcal += mt.kcal; day.p += mt.p; day.f += mt.f; day.c += mt.c;
+      h += `<tr><td style="text-align:left;"><b>Meal total</b></td><td></td><td><b>${Math.round(mt.kcal)}</b></td><td><b>${Math.round(mt.p)}</b></td><td><b>${Math.round(mt.c)}</b></td><td><b>${Math.round(mt.f)}</b></td></tr></table>`;
+    });
+    h += `<table class="p-table" style="margin-top:8px;"><tr class="p-band"><td style="text-align:left;padding:7px 8px;"><b>DAY TOTAL</b></td><td style="padding:7px 8px;"><b>${Math.round(day.kcal)} kcal</b></td><td style="padding:7px 8px;">${Math.round(day.p)}P</td><td style="padding:7px 8px;">${Math.round(day.c)}C</td><td style="padding:7px 8px;">${Math.round(day.f)}F</td></tr></table>`;
+    if(calc) h += `<div class="p-rule">vs target: ${Math.round(day.kcal - calc.calories) >= 0 ? "+" : ""}${Math.round(day.kcal - calc.calories)} kcal \u00b7 ${Math.round(day.p - calc.protein) >= 0 ? "+" : ""}${Math.round(day.p - calc.protein)}P</div>`;
+  } else {
+    h += `<div class="p-rule" style="margin-top:10px;">Day plan pending \u2014 the targets above are the guardrails until the meal plan is built.</div>`;
+  }
+
+  const recs = lthRecommendations(c);
+  h += `<div class="p-lth">LTH SUPPLEMENT PROTOCOL \u2014 BUILT FOR THIS CLIENT\u2019S GOALS</div>
+    <table class="p-table"><tr><th style="text-align:left;">SUPPLEMENT</th><th style="text-align:left;">WHEN</th><th style="text-align:left;">WHY</th></tr>` +
+    recs.map(r => `<tr><td style="text-align:left;"><b>${r.name}</b></td><td style="text-align:left;">${r.when}</td><td style="text-align:left;">${r.why}</td></tr>`).join("") +
+    `</table>
+    <div class="p-qr">
+      <img src="${LTH_QR}" alt="LTH order QR">
+      <div class="pq-line">SCAN TO ORDER \u00b7 AUTO-SHIP SAVES 10% ON EVERY ORDER</div>
+      <div class="pq-sub">LTH Rewards: every 100 points = $1 off \u2014 points stack on every auto-ship delivery.</div>
+    </div>`;
+
+  if(c.nutrition.notes && c.nutrition.notes.trim()){
+    h += `<div class="p-phase-head" style="margin-top:10px;">Coach Notes</div><div style="font-size:11px;line-height:1.5;">${esc(c.nutrition.notes)}</div>`;
+  }
+  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+function exportNutritionPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  saveClients(clients);
+  let area = document.getElementById("printArea");
+  if(!area){ area = document.createElement("div"); area.id = "printArea"; document.body.appendChild(area); }
+  area.innerHTML = buildNutritionPrintHtml(c);
+  document.body.classList.add("printing");
+  window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
+  setTimeout(()=>{ window.print(); }, 80);
+}
+
+/* ---- cross-device sync: pull + live listen (push already existed) ---- */
+let hubSyncStarted = false;
+function startHubSync(){
+  if(!hubDb || hubSyncStarted) return;
+  hubSyncStarted = true;
+  let firstSnapshot = true;
+  hubDb.ref("clients").on("value", snap => {
+    const remote = snap.val() || {};
+    if(firstSnapshot){
+      /* push up anything this device has that the cloud doesn't */
+      Object.keys(clients).forEach(id => { if(!remote[id]) pushClientToFirebase(id, clients[id]); });
+      firstSnapshot = false;
+    }
+    Object.keys(remote).forEach(id => {
+      if(id === activeClientId) return; /* don't stomp the client being edited */
+      clients[id] = remote[id];
+    });
+    saveClients(clients);
+    renderRoster();
+  }, err => console.warn("hub sync read failed:", err.message));
+}
+startHubSync();
 
 /* ============ INIT ============ */
 setSyncStatus();
