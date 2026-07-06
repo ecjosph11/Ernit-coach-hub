@@ -66,7 +66,9 @@ Respond with ONLY this raw JSON object, compact on a single line, no markdown fe
 
 Rules:
 - Maximum 6 meals, maximum 6 items per meal.
-- p/f/c: grams for the stated portion, as printed. If the document only gives per-meal totals, create one item per meal named after the meal with the meal totals.
+- Every item MUST carry real p/f/c numbers. Use per-item macros when the document prints them.
+- If macros are only printed per MEAL, output exactly ONE item for that meal: name = the foods joined with " + " (e.g. "Grilled chicken 6oz + white rice + roasted veggies"), portion = "1 meal", p/f/c = the meal totals.
+- Never output an item whose p, f and c are all zero or blank.
 - "portion": the printed serving (e.g. "6oz", "1.5 scoop", "1 cup"). Empty if absent.
 - "notes": supplement timing and key guidance from the document, 50 words max.
 - Never invent foods or numbers that are not in the document.`;
@@ -86,7 +88,7 @@ Client summary:
 - Body comp: ${client.currentStats || "not measured"}
 - Program discussed: ${client.recommendation || "not discussed"}
 
-If it fits naturally, you may offer Program Design Only ($250/month — custom program + one monthly check-in, no in-person sessions) in the EMAIL as a lower-commitment way to start. Never make it the headline — it's a door-opener, not the pitch. Do not mention it in the text message.
+If it fits naturally, you may offer Program Design Only ($300/month — custom program + one monthly check-in, no in-person sessions) in the EMAIL as a lower-commitment way to start. Never make it the headline — it's a door-opener, not the pitch. Do not mention it in the text message.
 
 Respond with ONLY this raw JSON object (no markdown fences, no commentary):
 {
