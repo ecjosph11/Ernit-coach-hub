@@ -45,6 +45,32 @@ Rules:
 - Weights: if printed in kg, multiply by 2.2046, round to 1 decimal.
 - Respond with ONLY the raw JSON object. No markdown fences, no commentary.`;
 
+const IMPORT_PROGRAM_PROMPT = `You are reading a client training program document (PDF or photo).
+Extract the training days and any cardio prescriptions.
+
+Respond with ONLY this raw JSON object, compact on a single line, no markdown fences:
+{"days":[{"name":"","exercises":[{"name":"","sets":"","reps":"","tempo":"","rest":"","load":"","note":""}]}],"cardio":[{"modality":"","days":"","timeMin":"","speed":"","level":"","distance":"","zone":"","notes":""}]}
+
+Rules:
+- Maximum 5 days, maximum 8 exercises per day. All values as strings; empty string when absent.
+- Keep exercise names, sets, reps, tempo, rest, and loads exactly as printed. Put coaching cues in "note".
+- cardio.modality: one of "Treadmill","Elliptical","Assault Bike","Arc Trainer","Class" (closest match).
+- cardio.zone: "1"-"5". Map percentages: 50-60%->1, 60-70%->2, 70-80%->3, 80-90%->4, 90-100%->5.
+- Never invent content that is not in the document.`;
+
+const IMPORT_NUTRITION_PROMPT = `You are reading a client nutrition plan document (PDF or photo).
+Extract the meals with per-item macros exactly as printed.
+
+Respond with ONLY this raw JSON object, compact on a single line, no markdown fences:
+{"meals":[{"name":"","items":[{"name":"","portion":"","p":"","f":"","c":""}]}],"notes":""}
+
+Rules:
+- Maximum 6 meals, maximum 6 items per meal.
+- p/f/c: grams for the stated portion, as printed. If the document only gives per-meal totals, create one item per meal named after the meal with the meal totals.
+- "portion": the printed serving (e.g. "6oz", "1.5 scoop", "1 cup"). Empty if absent.
+- "notes": supplement timing and key guidance from the document, 50 words max.
+- Never invent foods or numbers that are not in the document.`;
+
 function followupPrompt(client) {
   return `You are Ernest Joseph, an elite personal trainer and Personal Training Leader at Life Time.
 A prospective client just finished a consultation with you but did not sign up today (decision: ${client.decision || "undecided"}).
@@ -130,12 +156,17 @@ exports.handler = async function (event) {
     if (!client) return { statusCode: 400, body: JSON.stringify({ error: "Missing client summary" }) };
     messages = [{ role: "user", content: [{ type: "text", text: followupPrompt(client) }] }];
   } else {
-    if (!image || !mediaType) return { statusCode: 400, body: JSON.stringify({ error: "Missing image data" }) };
-    const promptText = formType === "inbody" ? INBODY_SCHEMA_PROMPT : INTAKE_SCHEMA_PROMPT;
+    if (!image || !mediaType) return { statusCode: 400, body: JSON.stringify({ error: "Missing file data" }) };
+    const promptText = formType === "importProgram" ? IMPORT_PROGRAM_PROMPT
+      : formType === "importNutrition" ? IMPORT_NUTRITION_PROMPT
+      : formType === "inbody" ? INBODY_SCHEMA_PROMPT : INTAKE_SCHEMA_PROMPT;
+    const mediaBlock = mediaType === "application/pdf"
+      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: image } }
+      : { type: "image", source: { type: "base64", media_type: mediaType, data: image } };
     messages = [{
       role: "user",
       content: [
-        { type: "image", source: { type: "base64", media_type: mediaType, data: image } },
+        mediaBlock,
         { type: "text", text: promptText },
       ],
     }];
@@ -145,7 +176,7 @@ exports.handler = async function (event) {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: formType === "workoutBC" ? "claude-haiku-4-5" : "claude-sonnet-5", max_tokens: formType === "workoutBC" ? 3000 : 1500, messages }),
+      body: JSON.stringify({ model: ["workoutBC","importProgram","importNutrition"].includes(formType) ? "claude-haiku-4-5" : "claude-sonnet-5", max_tokens: ["workoutBC","importProgram","importNutrition"].includes(formType) ? 3500 : 1500, messages }),
     });
     if (!response.ok) {
       const errText = await response.text();
