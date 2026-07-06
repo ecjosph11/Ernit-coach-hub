@@ -284,6 +284,11 @@
     .p-qr img{width:150px;height:150px;}
     .p-qr .pq-line{font-size:11px;font-weight:800;margin-top:6px;}
     .p-qr .pq-sub{font-size:10px;color:#333;margin-top:2px;}
+    html, body{height:auto !important;overflow:visible !important;position:static !important;}
+    #printArea{position:static !important;width:100%;}
+    .p-table tr{page-break-inside:avoid;}
+    .p-lth{page-break-inside:avoid;}
+    .p-qr{page-break-inside:avoid;}
     .p-foot{margin-top:20px;text-align:center;font-weight:900;font-size:11px;color:#CC0000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 
@@ -1609,6 +1614,7 @@ const FOOD_DB = {
   green_beans:{n:"Green Beans",g:"Veg",kcal:31,p:1.8,f:0.2,c:7.0},
   cauliflower_rice:{n:"Cauliflower Rice",g:"Veg",kcal:25,p:2.0,f:0.3,c:5.0},
   /* LTH (per serving) */
+  lth_build_whey:{n:"LTH Build Whey+ (1 scoop)",g:"LTH",kcal:134,p:25.0,f:2.0,c:4.0,per:"srv"},
   lth_fuel_vegan:{n:"LTH Fuel Vegan+ All-In-One (1 scoop)",g:"LTH",kcal:200,p:30.0,f:7.0,c:8.0,per:"srv"},
 };
 
@@ -3119,7 +3125,7 @@ const DIET_TEMPLATES = {
       {f:"egg_whole", q:100, fixed:true}, {f:"mixed_berries", q:80, fixed:true},
       {f:"egg_whites", role:"P"}, {f:"oats_dry", role:"C"}, {f:"almonds", role:"F"} ]},
     {label:"Snack 1", pct:0.11, items:[
-      {f:"greek_yogurt_nonfat", role:"P"}, {f:"apple", role:"C"}, {f:"walnuts", role:"F"} ]},
+      {f:"lth_build_whey", role:"P"}, {f:"apple", role:"C"} ]},
     {label:"Meal 2 \u2014 Lunch", pct:0.28, items:[
       {f:"broccoli", q:100, fixed:true},
       {f:"chicken_breast_cooked", role:"P"}, {f:"white_rice_cooked", role:"C"}, {f:"olive_oil", role:"F"} ]},
