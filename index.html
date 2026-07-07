@@ -1486,10 +1486,10 @@ function renderSummaryTab(c){
       html += `
         <div class="section-head" style="margin-top:16px;">Email</div>
         <div class="followup-box" id="fu_email"><b>Subject:</b> ${esc(c.followup.emailSubject)}\n\n${esc(c.followup.emailBody)}</div>
-        <button class="copy-btn" onclick="copyFollow('email')">Copy Email</button>
+        <button class="copy-btn" onclick="copyFollow('email')">Copy Email</button> ${sendEmailBtn(c)}
         <div class="section-head">Text</div>
         <div class="followup-box" id="fu_text">${esc(c.followup.textMessage)}</div>
-        <button class="copy-btn" onclick="copyFollow('text')">Copy Text</button>`;
+        <button class="copy-btn" onclick="copyFollow('text')">Copy Text</button> ${sendTextBtn(c)}`;
     }
   }
   return html;
@@ -3546,10 +3546,10 @@ function renderSummaryTab(c){
         html += `
           <div class="section-head" style="margin-top:16px;">Email</div>
           <div class="followup-box" id="fu_email"><b>Subject:</b> ${esc(c.followup.emailSubject)}\n\n${esc(c.followup.emailBody)}</div>
-          <button class="copy-btn" onclick="copyFollow('email')">Copy Email</button>
+          <button class="copy-btn" onclick="copyFollow('email')">Copy Email</button> ${sendEmailBtn(c)}
           <div class="section-head">Text</div>
           <div class="followup-box" id="fu_text">${esc(c.followup.textMessage)}</div>
-          <button class="copy-btn" onclick="copyFollow('text')">Copy Text</button>`;
+          <button class="copy-btn" onclick="copyFollow('text')">Copy Text</button> ${sendTextBtn(c)}`;
       }
     }
   }
@@ -4174,6 +4174,27 @@ function inbodyHistoryHtml(c){
     ${rows ? `<div style="margin-top:10px;">${rows}</div>` : `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:8px;">No scans logged yet \u2014 log today's numbers, then every re-scan. The trend chart appears at two entries.</div>`}
     ${chart}
   `;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v20 — one-tap send: Mail + Messages from the follow-up
+   ================================================================ */
+
+function sendEmailBtn(c){
+  if(!c.followup || !c.followup.emailBody) return "";
+  if(!c.email) return `<span style="font-size:10.5px;color:var(--grey-dim);margin-left:8px;">add an email on Overview to send directly</span>`;
+  const href = "mailto:" + encodeURIComponent(c.email)
+    + "?subject=" + encodeURIComponent(c.followup.emailSubject || "Following up \u2014 Ernest @ Life Time")
+    + "&body=" + encodeURIComponent(c.followup.emailBody || "");
+  return `<a class="copy-btn" style="background:var(--red);color:#fff;border-color:var(--red);text-decoration:none;display:inline-block;" href="${href}">Send via Mail</a>`;
+}
+
+function sendTextBtn(c){
+  if(!c.followup || !c.followup.textMessage) return "";
+  if(!c.phone) return `<span style="font-size:10.5px;color:var(--grey-dim);margin-left:8px;">add a phone number on Overview to send directly</span>`;
+  const num = String(c.phone).replace(/[^0-9+]/g, "");
+  const href = "sms:" + num + "&body=" + encodeURIComponent(c.followup.textMessage || "");
+  return `<a class="copy-btn" style="background:var(--red);color:#fff;border-color:var(--red);text-decoration:none;display:inline-block;" href="${href}">Send via Messages</a>`;
 }
 
 /* ============ INIT ============ */
