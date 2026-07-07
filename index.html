@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>ERN IT | Coach Hub</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -302,6 +305,29 @@
   .prog-pill.on .pp-name{color:#ffd6d6;}
 
 </style>
+<style id="v17css">
+  .tab-row{gap:7px;padding:12px 14px 10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tab-row::-webkit-scrollbar{display:none;}
+  .tab-btn{scroll-snap-align:start;border:1px solid var(--line);border-radius:20px;padding:8px 14px;letter-spacing:.6px;border-bottom:1px solid var(--line);transition:all .15s;}
+  .tab-btn.active{background:var(--red);color:#fff;border-color:var(--red);}
+  *{-webkit-tap-highlight-color:transparent;}
+  .scan-btn,.rate-btn,.client-card,.status-opt,.copy-btn,.tab-btn{transition:transform .12s ease, box-shadow .12s ease, background .15s, color .15s, border-color .15s;}
+  .scan-btn:active{transform:scale(.97);box-shadow:0 0 16px rgba(204,0,0,.5);}
+  .rate-btn:active,.client-card:active,.status-opt:active,.copy-btn:active,.tab-btn:active{transform:scale(.96);}
+  .field-input:focus,.field-textarea:focus,.field-select:focus{border-color:var(--red) !important;box-shadow:0 0 0 2px rgba(204,0,0,.22);outline:none;}
+  .sum-title{font-size:10px;letter-spacing:1.8px;}
+  .section-head{border-left:3px solid var(--red);padding-left:9px;}
+  .dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+  @media(min-width:700px){.dash-grid{grid-template-columns:repeat(4,1fr);}}
+  .dash-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 13px 11px;}
+  .dash-num{font-size:29px;font-weight:900;color:var(--white);line-height:1.05;}
+  .dash-num .unit{font-size:13px;font-weight:700;color:var(--grey);}
+  .dash-lbl{font-size:9.5px;font-weight:800;letter-spacing:1.6px;color:var(--grey-dim);margin-top:4px;text-transform:uppercase;}
+  .dash-red{color:var(--red);}
+  .step-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .step-chip{font-size:10px;font-weight:800;letter-spacing:.5px;padding:5px 10px;border-radius:16px;border:1px solid var(--line);color:var(--grey-dim);}
+  .step-chip.done{border-color:#1f6b38;color:#5fbf7f;background:rgba(31,107,56,.12);}
+</style>
 </head>
 <body>
 <div class="app">
@@ -339,7 +365,8 @@
 <div id="loginWall" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;align-items:center;justify-content:center;">
   <div style="width:min(360px,88vw);background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:28px 24px;">
     <div style="font-size:13px;font-weight:900;letter-spacing:2.5px;color:#CC0000;">ERN IT <span style="color:#888;font-weight:600;letter-spacing:2px;">COACHING</span></div>
-    <div style="font-size:24px;font-weight:900;color:#fff;margin:2px 0 18px;">Coach Hub</div>
+    <div style="font-size:24px;font-weight:900;color:#fff;margin:2px 0 4px;">Coach Hub</div>
+    <div style="font-size:11px;color:#777;font-weight:700;letter-spacing:.4px;margin-bottom:18px;">I build bodies. Not excuses.</div>
     <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" style="width:100%;box-sizing:border-box;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:9px;color:#fff;font-size:15px;padding:12px 13px;margin-bottom:10px;">
     <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:9px;color:#fff;font-size:15px;padding:12px 13px;margin-bottom:14px;">
     <button onclick="hubSignIn()" id="loginBtn" style="width:100%;background:#CC0000;border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:800;padding:13px;">Sign In</button>
@@ -442,7 +469,7 @@ function renderRoster(){
 
   roster.innerHTML = "";
   if(list.length === 0){
-    roster.innerHTML = `<div class="empty-state"><div class="big">No clients yet</div>Tap "+ New Client" to build your first intake &amp; program.</div>`;
+    roster.innerHTML = `<div class="empty-state"><div class="big">No clients yet</div>Tap "+ New Client" to build your first intake &amp; program.<br><span style="color:#555;font-size:11px;font-weight:800;letter-spacing:.5px;">I BUILD BODIES. NOT EXCUSES.</span></div>`;
     return;
   }
   list.forEach(c=>{
@@ -695,8 +722,6 @@ function renderProgramTab_OLD(c){
             <div style="flex:1"><input class="ex-mini-input" data-day="${dIdx}" data-ex="${eIdx}" data-field="rest" type="text" value="${esc(ex.rest)}" placeholder="60s"><div class="ex-mini-lbl">Rest</div></div>
           </div>
           <input class="ex-note-input" data-day="${dIdx}" data-ex="${eIdx}" data-field="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
-          <div class="video-badge">▶ How-to video</div>
-          <input class="ex-video-input" data-day="${dIdx}" data-ex="${eIdx}" data-field="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
         </div>
       `;
     });
@@ -1035,6 +1060,12 @@ function migrateClient(c){
   if(!c.nutrition.mode) c.nutrition.mode = "auto";
   if(!c.nutrition.deficitLevel) c.nutrition.deficitLevel = "500";
   if(!c.nutrition.dietStyle) c.nutrition.dietStyle = "normal";
+  if(c.followupDate === undefined) c.followupDate = "";
+  if(c.followupNote === undefined) c.followupNote = "";
+  if(!Array.isArray(c.inbodyHistory)) c.inbodyHistory = [];
+  if(!Array.isArray(c.nutrition.weekPlan)) c.nutrition.weekPlan = [];
+  if(c.nutrition.weekDay === undefined) c.nutrition.weekDay = 0;
+  if(!c.nutrition.planSpan) c.nutrition.planSpan = "1";
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
   c.followup = c.followup || null;
 }
@@ -1431,9 +1462,19 @@ function renderSummaryTab(c){
 
     <div class="section-head">Decision</div>
     <div class="rate-row" style="margin-bottom:16px;">
-      <div class="rate-btn ${r.decision==="signed"?"on":""}" onclick="setRecField('decision','signed')" style="font-size:11.5px;">Signed Up</div>
-      <div class="rate-btn ${r.decision==="thinking"?"on":""}" onclick="setRecField('decision','thinking')" style="font-size:11.5px;">Thinking</div>
-      <div class="rate-btn ${r.decision==="declined"?"on":""}" onclick="setRecField('decision','declined')" style="font-size:11.5px;">Declined</div>
+      <div class="rate-btn ${r.decision==="signed"?"on":""}" onclick="setDecision('signed')" style="font-size:11.5px;">Signed Up</div>
+      <div class="rate-btn ${r.decision==="thinking"?"on":""}" onclick="setDecision('thinking')" style="font-size:11.5px;">Thinking</div>
+      <div class="rate-btn ${r.decision==="declined"?"on":""}" onclick="setDecision('declined')" style="font-size:11.5px;">Declined</div>
+    </div>
+    <div class="sum-block" style="margin-top:2px;"><div class="sum-title">Next Follow-Up</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+        <input type="date" value="${esc(c.followupDate||"")}" onchange="setFollowupField('followupDate',this.value)" style="background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--white);font-size:13px;padding:8px 10px;">
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(2)">+2d</div>
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(7)">+1w</div>
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(14)">+2w</div>
+        ${c.followupDate ? `<div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="setFollowupField('followupDate','')">Clear</div>` : ""}
+      </div>
+      <input type="text" placeholder="Follow-up note (what to say)" value="${esc(c.followupNote||"")}" onchange="setFollowupField('followupNote',this.value)" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--white);font-size:13px;padding:9px 10px;margin-top:9px;">
     </div>
   `;
 
@@ -1556,8 +1597,6 @@ function renderProgramTab(c){
             <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="rest" type="text" value="${esc(ex.rest)}" placeholder="60s"><div class="ex-mini-lbl">Rest</div></div>
           </div>
           <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
-          <div class="video-badge">▶ How-to video</div>
-          <input class="ex-video-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
         </div>`;
     });
     html += `
@@ -1635,7 +1674,9 @@ const FOOD_DB = {
   green_beans:{n:"Green Beans",g:"Veg",kcal:31,p:1.8,f:0.2,c:7.0},
   cauliflower_rice:{n:"Cauliflower Rice",g:"Veg",kcal:25,p:2.0,f:0.3,c:5.0},
   /* LTH (per serving) */
-  lth_build_whey:{n:"LTH Build Whey+ (1 scoop)",g:"LTH",kcal:134,p:25.0,f:2.0,c:4.0,per:"srv"},
+  lth_build_whey:{n:"LTH Build Whey+ (1 serving \u00b7 2 scoops)",g:"LTH",kcal:200,p:30.0,f:6.0,c:10.0,per:"srv"},
+  lth_vital_vegan:{n:"LTH Vital Vegan Protein (1 serving \u00b7 2 scoops)",g:"LTH",kcal:140,p:20.0,f:4.5,c:4.0,per:"srv"},
+  lth_glow_omega:{n:"LTH Glow Omega-3 (4 softgels)",g:"LTH",kcal:45,p:0.0,f:5.0,c:0.0,per:"srv"},
   lth_fuel_vegan:{n:"LTH Fuel Vegan+ All-In-One (1 scoop)",g:"LTH",kcal:200,p:30.0,f:7.0,c:8.0,per:"srv"},
 };
 
@@ -2057,7 +2098,7 @@ function renderInbodyTab(c){
     </div>
     <div class="field-group"><label class="field-label">Timeline (weeks)</label>
       <input class="field-input" id="b_timelineWeeks" type="text" value="${esc(b.timelineWeeks)}"></div>
-  `;
+  ${inbodyHistoryHtml(c)}`;
 }
 
 /* ============ PROGRAM REC v4 — never Program Design Only ============ */
@@ -2246,8 +2287,6 @@ function renderProgramTab(c){
             <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="rest" type="text" value="${esc(ex.rest)}" placeholder="60s"><div class="ex-mini-lbl">Rest</div></div>
           </div>
           <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
-          <div class="video-badge">▶ How-to video</div>
-          <input class="ex-video-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
         </div>`;
     });
     html += `
@@ -2920,8 +2959,6 @@ function renderProgramTab(c){
             <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="load" type="text" inputmode="decimal" value="${esc(ex.load || "")}" placeholder="lbs"><div class="ex-mini-lbl">Load</div></div>
           </div>
           <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
-          <div class="video-badge">\u25b6 How-to video</div>
-          <input class="ex-video-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="videoUrl" value="${esc(ex.videoUrl)}" placeholder="YouTube link for client">
         </div>`;
     });
     html += `
@@ -3021,23 +3058,23 @@ function lthRecommendations(c){
   const recs = [];
   const add = (name, when, why) => { if(!recs.find(r => r.name === name)) recs.push({name, when, why}); };
 
-  add("LTH Armor D3+K2", "Breakfast", "Daily foundation — immune, bone & hormone support.");
+  add("LTH Armor D3+K2", "1 capsule \u00b7 breakfast", "Daily foundation — immune, bone & hormone support.");
   if(has(/Lose Weight/i) || mode === "cut"){
     add("LTH Build Whey+ (Fuel Vegan+ if plant-based)", "Post-workout / protein-short meals", "Protects lean mass in a deficit — hitting the protein number is the whole game.");
     add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
   }
   if(has(/Muscle|Strength/i) || mode === "bulk"){
     add("LTH Build Whey+ (Fuel Vegan+ if plant-based)", "Post-workout", "Muscle is built in recovery — this closes the protein gap on training days.");
-    add("LTH Power Creatine", "Any meal, every day", "The most-proven supplement in existence for strength & lean mass.");
+    add("LTH Power Creatine", "1 scoop (5g) \u00b7 any meal, daily", "The most-proven supplement in existence for strength & lean mass.");
   }
   if(has(/Energy|Endurance/i)){
     add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
-    add("LTH Power Creatine", "Any meal, every day", "Supports repeat high-effort output — not just a muscle supplement.");
+    add("LTH Power Creatine", "1 scoop (5g) \u00b7 any meal, daily", "Supports repeat high-effort output — not just a muscle supplement.");
   }
   if(has(/Anxiety|Stress/i) || (!isNaN(sleep) && sleep < 7) || (!isNaN(stress) && stress >= 4)){
-    add("LTH Dream Multi-Mag", "Before bed", "Magnesium for sleep quality & stress — results are built overnight.");
+    add("LTH Dream Multi-Mag", "1 scoop \u00b7 before bed", "Magnesium for sleep quality & stress — results are built overnight.");
   }
-  add("LTH Glow Omega-3", "Dinner", "Joint, heart & recovery support.");
+  add("LTH Glow Omega-3", "4 softgels \u00b7 dinner", "Joint, heart & recovery support.");
   return recs;
 }
 
@@ -3110,7 +3147,7 @@ function exportNutritionPdf(){
   saveClients(clients);
   let area = document.getElementById("printArea");
   if(!area){ area = document.createElement("div"); area.id = "printArea"; document.body.appendChild(area); }
-  area.innerHTML = buildNutritionPrintHtml(c);
+  area.innerHTML = (c.nutrition.weekPlan || []).length ? buildNutritionWeekPrintHtml(c) : buildNutritionPrintHtml(c);
   document.body.classList.add("printing");
   window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
   setTimeout(()=>{ window.print(); }, 80);
@@ -3281,23 +3318,23 @@ function lthRecommendations(c){
   const recs = [];
   const add = (name, when, why) => { if(!recs.find(r => r.name === name)) recs.push({name, when, why}); };
 
-  add("LTH Armor D3+K2", "Breakfast", "Daily foundation \u2014 immune, bone & hormone support.");
+  add("LTH Armor D3+K2", "1 capsule \u00b7 breakfast", "Daily foundation \u2014 immune, bone & hormone support.");
   if(has(/Lose Weight/i) || mode === "cut"){
-    add(proteinName, "Post-workout / protein-short meals", "Protects lean mass in a deficit \u2014 hitting the protein number is the whole game.");
+    add(proteinName, (plant ? "1 full serving" : "2 scoops (1 serving)") + " \u00b7 post-workout / protein-short meals", "Protects lean mass in a deficit \u2014 hitting the protein number is the whole game.");
     add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
   }
   if(has(/Muscle|Strength/i) || mode === "bulk"){
-    add(proteinName, "Post-workout", "Muscle is built in recovery \u2014 this closes the protein gap on training days.");
-    add("LTH Power Creatine", "Any meal, every day", "The most-proven supplement in existence for strength & lean mass.");
+    add(proteinName, (plant ? "1 full serving" : "2 scoops (1 serving)") + " \u00b7 post-workout", "Muscle is built in recovery \u2014 this closes the protein gap on training days.");
+    add("LTH Power Creatine", "1 scoop (5g) \u00b7 any meal, daily", "The most-proven supplement in existence for strength & lean mass.");
   }
   if(has(/Energy|Endurance/i)){
     add("LTH Hydrate", "Cardio days", "Electrolytes for Zone 2 sessions without the sugar.");
-    add("LTH Power Creatine", "Any meal, every day", "Supports repeat high-effort output \u2014 not just a muscle supplement.");
+    add("LTH Power Creatine", "1 scoop (5g) \u00b7 any meal, daily", "Supports repeat high-effort output \u2014 not just a muscle supplement.");
   }
   if(has(/Anxiety|Stress/i) || (!isNaN(sleep) && sleep < 7) || (!isNaN(stress) && stress >= 4)){
-    add("LTH Dream Multi-Mag", "Before bed", "Magnesium for sleep quality & stress \u2014 results are built overnight.");
+    add("LTH Dream Multi-Mag", "1 scoop \u00b7 before bed", "Magnesium for sleep quality & stress \u2014 results are built overnight.");
   }
-  add("LTH Glow Omega-3", "Dinner", "Joint, heart & recovery support.");
+  add("LTH Glow Omega-3", "4 softgels \u00b7 dinner", "Joint, heart & recovery support.");
   return recs;
 }
 
@@ -3486,9 +3523,19 @@ function renderSummaryTab(c){
 
     <div class="section-head">Decision</div>
     <div class="rate-row" style="margin-bottom:16px;">
-      <div class="rate-btn ${r.decision==="signed"?"on":""}" onclick="setRecField('decision','signed')" style="font-size:11.5px;">Signed Up</div>
-      <div class="rate-btn ${r.decision==="thinking"?"on":""}" onclick="setRecField('decision','thinking')" style="font-size:11.5px;">Thinking</div>
-      <div class="rate-btn ${r.decision==="declined"?"on":""}" onclick="setRecField('decision','declined')" style="font-size:11.5px;">Declined</div>
+      <div class="rate-btn ${r.decision==="signed"?"on":""}" onclick="setDecision('signed')" style="font-size:11.5px;">Signed Up</div>
+      <div class="rate-btn ${r.decision==="thinking"?"on":""}" onclick="setDecision('thinking')" style="font-size:11.5px;">Thinking</div>
+      <div class="rate-btn ${r.decision==="declined"?"on":""}" onclick="setDecision('declined')" style="font-size:11.5px;">Declined</div>
+    </div>
+    <div class="sum-block" style="margin-top:2px;"><div class="sum-title">Next Follow-Up</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+        <input type="date" value="${esc(c.followupDate||"")}" onchange="setFollowupField('followupDate',this.value)" style="background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--white);font-size:13px;padding:8px 10px;">
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(2)">+2d</div>
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(7)">+1w</div>
+        <div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="bumpFollowup(14)">+2w</div>
+        ${c.followupDate ? `<div class="rate-btn" style="font-size:11px;padding:7px 11px;" onclick="setFollowupField('followupDate','')">Clear</div>` : ""}
+      </div>
+      <input type="text" placeholder="Follow-up note (what to say)" value="${esc(c.followupNote||"")}" onchange="setFollowupField('followupNote',this.value)" style="width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--white);font-size:13px;padding:9px 10px;margin-top:9px;">
     </div>`;
 
     if(r.decision === "thinking" || r.decision === "declined"){
@@ -3585,6 +3632,548 @@ if(hubDb && typeof firebase !== "undefined" && firebase.auth){
     }
     setSyncStatus();
   });
+}
+
+/* ================================================================
+   ERN IT COACH HUB v15a — follow-up pipeline, progress history, backup
+   ================================================================ */
+
+function todayISO(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+
+function fuDiffDays(c){
+  if(!c.followupDate) return null;
+  const t = new Date(); t.setHours(0,0,0,0);
+  const d = new Date(c.followupDate + "T00:00:00");
+  return Math.round((d - t) / 86400000);
+}
+
+function fuBadge(c){
+  const diff = fuDiffDays(c);
+  if(diff === null) return "";
+  if(diff < 0) return `<span style="background:#CC0000;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.4px;">FOLLOW UP \u00b7 ${-diff}d LATE</span>`;
+  if(diff === 0) return `<span style="background:#b8700f;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.4px;">DUE TODAY</span>`;
+  if(diff <= 3) return `<span style="border:1px solid var(--line);color:var(--grey);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">Due in ${diff}d</span>`;
+  return "";
+}
+
+function setDecision(v){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  c.recommend.decision = v;
+  if(v === "signed"){ c.status = "active"; c.followupDate = ""; }
+  if(v === "thinking" && !c.followupDate){ const d = new Date(); d.setDate(d.getDate()+2); c.followupDate = d.toISOString().slice(0,10); }
+  if(v === "declined" && !c.followupDate){ const d = new Date(); d.setDate(d.getDate()+7); c.followupDate = d.toISOString().slice(0,10); }
+  saveClients(clients); pushClientToFirebase(c.id, c); renderModal();
+}
+
+function setFollowupField(k, v){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  c[k] = v;
+  saveClients(clients); pushClientToFirebase(c.id, c); renderModal();
+}
+
+function bumpFollowup(days){
+  const d = new Date(); d.setDate(d.getDate() + days);
+  setFollowupField("followupDate", d.toISOString().slice(0,10));
+}
+
+/* ---- roster with pipeline sort + badges + backup ---- */
+function renderRoster(){
+  const roster = document.getElementById("roster");
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  let list = Object.values(clients);
+  if(activeFilter !== "all") list = list.filter(c=>c.status===activeFilter);
+  if(q) list = list.filter(c=>(c.name||"").toLowerCase().includes(q));
+
+  const rank = c => {
+    const d = fuDiffDays(c);
+    if(d === null) return [3, 0];
+    if(d < 0) return [0, d];
+    if(d === 0) return [1, 0];
+    if(d <= 3) return [2, d];
+    return [3, 0];
+  };
+  list.sort((a,b)=>{
+    const ra = rank(a), rb = rank(b);
+    if(ra[0] !== rb[0]) return ra[0] - rb[0];
+    if(ra[1] !== rb[1]) return ra[1] - rb[1];
+    return (a.name||"").localeCompare(b.name||"");
+  });
+
+  roster.innerHTML = "";
+  if(list.length === 0){
+    roster.innerHTML = `<div class="empty-state"><div class="big">No clients yet</div>Tap "+ New Client" to build your first intake &amp; program.<br><span style="color:#555;font-size:11px;font-weight:800;letter-spacing:.5px;">I BUILD BODIES. NOT EXCUSES.</span></div>`;
+    return;
+  }
+  list.forEach(c=>{
+    const initials = (c.name || "?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+    const badge = fuBadge(c);
+    const card = document.createElement("div");
+    card.className = "client-card";
+    card.onclick = ()=> openClient(c.id);
+    card.innerHTML = `
+      <div class="client-avatar">${initials || "?"}</div>
+      <div class="client-info">
+        <div class="client-name">${c.name || "Unnamed client"}${badge ? " " + badge : ""}</div>
+        <div class="client-meta">
+          <span class="status-badge ${c.status}">${c.status}</span>
+          <span>${c.phone || c.email || "No contact info"}</span>
+          ${c.followupNote && fuDiffDays(c) !== null && fuDiffDays(c) <= 0 ? `<span style="color:var(--grey-dim);">\u00b7 ${c.followupNote}</span>` : ""}
+        </div>
+      </div>
+      <div class="client-chevron">\u203a</div>
+    `;
+    roster.appendChild(card);
+  });
+
+  const exp = document.createElement("div");
+  exp.innerHTML = `<button onclick="exportBackup()" style="background:none;border:1px solid var(--line);border-radius:8px;color:var(--grey-dim);font-size:11px;font-weight:700;padding:8px 14px;margin:14px 0 30px;">\u2b07 Export backup (.json)</button>`;
+  roster.appendChild(exp);
+}
+
+function exportBackup(){
+  const blob = new Blob([JSON.stringify({exportedAt: new Date().toISOString(), clients}, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ernit-hub-backup-" + todayISO() + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---- InBody progress history ---- */
+function inbodyHistoryHtml(c){
+  const hist = c.inbodyHistory || [];
+  let chart = "";
+  if(hist.length >= 2){
+    const W = 320, H = 110, P = 14;
+    const ws = hist.map(h=>parseFloat(h.weightLbs)).filter(v=>!isNaN(v));
+    const bs = hist.map(h=>parseFloat(h.bodyFatPct)).filter(v=>!isNaN(v));
+    const line = (vals, color, dash) => {
+      if(vals.length < 2) return "";
+      const mn = Math.min(...vals), mx = Math.max(...vals), rg = (mx - mn) || 1;
+      const pts = vals.map((v,i)=> (P + i*(W-2*P)/(vals.length-1)).toFixed(1) + "," + (H - P - (v - mn)/rg*(H-2*P)).toFixed(1)).join(" ");
+      return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5"${dash ? ' stroke-dasharray="5,4"' : ''}/>`;
+    };
+    chart = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:430px;background:var(--bg);border:1px solid var(--line);border-radius:9px;margin-top:10px;">
+      ${line(ws, "#CC0000", false)}${line(bs, "#8a8a8a", true)}
+    </svg>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:4px;"><span style="color:#CC0000;font-weight:800;">\u2014 Weight</span> ${ws.length ? ws[0] + " \u2192 " + ws[ws.length-1] + " lbs" : ""} &nbsp;&nbsp; <span style="color:#8a8a8a;font-weight:800;">- - BF%</span> ${bs.length ? bs[0] + " \u2192 " + bs[bs.length-1] + "%" : ""}</div>`;
+  }
+  const rows = hist.map((h,i)=>`<div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--white);padding:7px 0;border-bottom:1px solid var(--line);">
+    <span style="width:86px;color:var(--grey);">${esc(h.date)}</span>
+    <span style="flex:1;">${esc(h.weightLbs)||"—"} lbs \u00b7 ${esc(h.bodyFatPct)||"—"}% BF \u00b7 LBM ${esc(h.muscleMassLbs)||"—"}</span>
+    <span onclick="delHistEntry(${i})" style="color:var(--grey-dim);cursor:pointer;padding:0 6px;">\u2715</span>
+  </div>`).join("");
+  return `
+    <div class="section-head" style="margin-top:22px;">Progress History</div>
+    <button class="scan-btn" style="width:100%;" onclick="logInbodyScan()">Log current scan to history (${todayISO()})</button>
+    ${rows ? `<div style="margin-top:10px;">${rows}</div>` : `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:8px;">No scans logged yet — log today's numbers, then every re-scan. The trend chart appears at two entries.</div>`}
+    ${chart}
+  `;
+}
+
+function logInbodyScan(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const entry = {
+    date: todayISO(),
+    weightLbs: c.inbody.weightLbs || "",
+    bodyFatPct: c.inbody.bodyFatPct || "",
+    muscleMassLbs: c.inbody.muscleMassLbs || "",
+    inbodyScore: c.inbody.inbodyScore || ""
+  };
+  if(!entry.weightLbs && !entry.bodyFatPct){ alert("Nothing to log — fill the InBody numbers first."); return; }
+  const hist = c.inbodyHistory;
+  if(hist.length && hist[hist.length-1].date === entry.date) hist[hist.length-1] = entry;
+  else hist.push(entry);
+  saveClients(clients); pushClientToFirebase(c.id, c); renderModal();
+}
+
+function delHistEntry(i){
+  if(!confirm("Remove this history entry?")) return;
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  c.inbodyHistory.splice(i, 1);
+  saveClients(clients); pushClientToFirebase(c.id, c); renderModal();
+}
+
+/* ================================================================
+   ERN IT COACH HUB v15b — 7-day plan generator, grocery list, Sunday prep
+   ================================================================ */
+
+const WEEK_LABELS = ["Day 1 \u2014 Mon","Day 2 \u2014 Tue","Day 3 \u2014 Wed","Day 4 \u2014 Thu","Day 5 \u2014 Fri","Day 6 \u2014 Sat","Day 7 \u2014 Sun"];
+
+const WEEK_SWAPS = {
+  normal: [
+    {},
+    {chicken_breast_cooked:"ground_turkey_93", salmon_cooked:"shrimp_cooked", cottage_cheese_lowfat:"greek_yogurt_nonfat", white_rice_cooked:"quinoa_cooked", sweet_potato:"potato_baked", apple:"banana", broccoli:"green_beans", spinach:"asparagus"},
+    {chicken_breast_cooked:"lean_beef_93", salmon_cooked:"tilapia_cooked", cottage_cheese_lowfat:"tuna_canned_water", white_rice_cooked:"brown_rice_cooked", apple:"mixed_berries", broccoli:"zucchini", spinach:"mixed_greens"}
+  ],
+  vegetarian: [
+    {},
+    {firm_tofu:"edamame", tempeh:"lentils_cooked", quinoa_cooked:"brown_rice_cooked", brown_rice_cooked:"sweet_potato", tahini:"almonds", zucchini:"broccoli", banana:"apple"},
+    {firm_tofu:"cottage_cheese_lowfat", tempeh:"firm_tofu", quinoa_cooked:"potato_baked", brown_rice_cooked:"quinoa_cooked", tahini:"walnuts", zucchini:"green_beans"}
+  ],
+  vegan: [
+    {},
+    {tempeh:"lentils_cooked", firm_tofu:"tempeh", quinoa_cooked:"brown_rice_cooked", sweet_potato:"potato_baked", hummus:"tahini", edamame:"chickpeas_cooked", almonds:"walnuts"},
+    {tempeh:"firm_tofu", quinoa_cooked:"white_rice_cooked", sweet_potato:"quinoa_cooked", kale:"spinach", banana:"mixed_berries"}
+  ]
+};
+
+function applySwaps(tpl, map){
+  return tpl.map(slot => ({
+    label: slot.label, pct: slot.pct,
+    items: slot.items.map(it => Object.assign({}, it, {f: map[it.f] || it.f}))
+  }));
+}
+
+function solveDayPlanTpl(c, calc, tpl){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  let rem = {p: calc.protein, c: calc.carbs, f: calc.fat};
+  const meals = [];
+  tpl.forEach((slot, si) => {
+    const last = si === tpl.length - 1;
+    const tgt = last
+      ? {p: Math.max(rem.p, 0), c: Math.max(rem.c, 0), f: Math.max(rem.f, 0)}
+      : {p: Math.min(calc.protein * slot.pct, Math.max(rem.p, 0)),
+         c: Math.min(calc.carbs * slot.pct, Math.max(rem.c, 0)),
+         f: Math.min(calc.fat * slot.pct, Math.max(rem.f, 0))};
+    const acc = {p:0, c:0, f:0};
+    const items = [];
+    const addItem = (key, q) => {
+      const m = foodMacros(key, q, c);
+      if(!m) return;
+      acc.p += m.p; acc.c += m.c; acc.f += m.f;
+      items.push({f:key, q:String(q)});
+    };
+    slot.items.filter(it => it.fixed).forEach(it => addItem(it.f, it.q));
+    ["P","C","F"].forEach(role => {
+      slot.items.filter(it => it.role === role).forEach(it => {
+        const food = db[it.f];
+        if(!food) return;
+        let q;
+        if(food.per === "srv"){ q = 1; }
+        else {
+          const perg = {P: food.p/100, C: food.c/100, F: food.f/100}[role];
+          if(!perg || perg <= 0) return;
+          const need = {P: tgt.p - acc.p, C: tgt.c - acc.c, F: tgt.f - acc.f}[role];
+          q = Math.round(Math.max(need, 0) / perg / 5) * 5;
+          const cap = role === "P" ? 300 : role === "C" ? 350 : ((it.f === "olive_oil" || it.f === "tahini") ? 20 : 60);
+          q = Math.min(q, cap);
+        }
+        if(food.per === "srv" ? q >= 1 : q >= 10) addItem(it.f, q);
+      });
+    });
+    rem.p -= acc.p; rem.c -= acc.c; rem.f -= acc.f;
+    meals.push({name: slot.label, items});
+  });
+  return meals;
+}
+
+function solveDayPlan(c, calc, style){
+  return solveDayPlanTpl(c, calc, DIET_TEMPLATES[style] || DIET_TEMPLATES.normal);
+}
+
+function setPlanSpan(v){
+  collectFormIntoClient();
+  clients[activeClientId].nutrition.planSpan = v;
+  renderModal();
+}
+
+function generateMealPlan(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const calc = computeNutrition(c);
+  if(!calc){ alert("Targets first — need height, age, gender (Intake) + weight, BF% (InBody)."); return; }
+  const style = c.nutrition.dietStyle || "normal";
+
+  if(c.nutrition.planSpan === "7"){
+    if((c.nutrition.weekPlan || []).length && !confirm("Replace the current 7-day plan?")) return;
+    const rots = WEEK_SWAPS[style] || WEEK_SWAPS.normal;
+    const base = DIET_TEMPLATES[style] || DIET_TEMPLATES.normal;
+    c.nutrition.weekPlan = WEEK_LABELS.map((label, i) =>
+      ({label, meals: solveDayPlanTpl(c, calc, applySwaps(base, rots[i % rots.length]))}));
+    c.nutrition.weekDay = 0;
+    c.nutrition.meals = JSON.parse(JSON.stringify(c.nutrition.weekPlan[0].meals));
+  } else {
+    if((c.nutrition.meals || []).length && !confirm("Replace the current meals with a generated 1-day plan?")) return;
+    c.nutrition.weekPlan = [];
+    c.nutrition.meals = solveDayPlan(c, calc, style);
+  }
+  saveClients(clients);
+  pushClientToFirebase(c.id, c);
+  renderModal();
+}
+
+function setWeekDay(i){
+  collectFormIntoClient(); /* wrapper mirrors current edits into the active day */
+  const c = clients[activeClientId];
+  c.nutrition.weekDay = i;
+  c.nutrition.meals = JSON.parse(JSON.stringify((c.nutrition.weekPlan[i] || {meals:[]}).meals));
+  saveClients(clients);
+  renderModal();
+}
+
+function clearWeekPlan(){
+  if(!confirm("Drop the 7-day plan? The day currently in the editor stays.")) return;
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  c.nutrition.weekPlan = [];
+  c.nutrition.weekDay = 0;
+  saveClients(clients); pushClientToFirebase(c.id, c); renderModal();
+}
+
+function genPlanControls(c){
+  const style = c.nutrition.dietStyle || "normal";
+  const span = c.nutrition.planSpan || "1";
+  const wk = c.nutrition.weekPlan || [];
+  let dayPills = "";
+  if(wk.length){
+    dayPills = `<div style="margin-top:12px;">
+      <div style="font-size:11px;font-weight:800;color:var(--grey);letter-spacing:.5px;margin-bottom:6px;">EDITING ${esc((wk[c.nutrition.weekDay]||{}).label || "")} \u2014 tap a day to switch</div>
+      <div class="rate-row" style="flex-wrap:wrap;">
+        ${wk.map((d,i)=>`<div class="rate-btn ${i===c.nutrition.weekDay?"on":""}" style="font-size:11px;padding:7px 10px;" onclick="setWeekDay(${i})">${i+1}</div>`).join("")}
+        <div class="rate-btn" style="font-size:11px;padding:7px 10px;" onclick="clearWeekPlan()">Clear wk</div>
+      </div>
+    </div>`;
+  }
+  return `<div style="background:var(--card);border:1px solid var(--red);border-radius:11px;padding:13px;margin-bottom:14px;">
+    <div style="font-size:12px;font-weight:800;color:var(--white);margin-bottom:8px;">Generate Plan \u2014 3 meals + 2 snacks, solved to the targets</div>
+    <div class="rate-row" style="margin-bottom:8px;">
+      <div class="rate-btn ${style==="normal"?"on":""}" onclick="setDietStyle('normal')" style="font-size:12px;">Normal</div>
+      <div class="rate-btn ${style==="vegetarian"?"on":""}" onclick="setDietStyle('vegetarian')" style="font-size:12px;">Vegetarian</div>
+      <div class="rate-btn ${style==="vegan"?"on":""}" onclick="setDietStyle('vegan')" style="font-size:12px;">Vegan</div>
+    </div>
+    <div class="rate-row" style="margin-bottom:10px;">
+      <div class="rate-btn ${span==="1"?"on":""}" onclick="setPlanSpan('1')" style="font-size:12px;">1 Day</div>
+      <div class="rate-btn ${span==="7"?"on":""}" onclick="setPlanSpan('7')" style="font-size:12px;">7 Days + Grocery + Prep</div>
+    </div>
+    <button class="scan-btn" style="width:100%;" onclick="generateMealPlan()">Generate ${span==="7"?"7-Day Plan":"1-Day Plan"}</button>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">${span==="7" ? "Protein & carb sources rotate across the week \u2014 the PDF adds the grocery list (checkboxes) and Sunday batch-prep guide." : "Gram quantities solved food-by-food from USDA macros \u2014 dinner absorbs the day\u2019s remainder. Swap any food after."}</div>
+    ${dayPills}
+  </div>`;
+}
+
+/* mirror live meal edits into the active week day on every collect */
+(function(){
+  const orig = collectFormIntoClient;
+  collectFormIntoClient = function(){
+    orig();
+    const c = clients[activeClientId];
+    if(!c || !c.nutrition) return;
+    const n = c.nutrition;
+    if(Array.isArray(n.weekPlan) && n.weekPlan.length && n.weekPlan[n.weekDay || 0]){
+      n.weekPlan[n.weekDay || 0].meals = JSON.parse(JSON.stringify(n.meals || []));
+    }
+  };
+})();
+
+/* ---- grocery aggregation ---- */
+function groceryData(c){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  const wk = (c.nutrition.weekPlan || []).length ? c.nutrition.weekPlan : [{meals: c.nutrition.meals || []}];
+  const agg = {};
+  wk.forEach(d => (d.meals || []).forEach(m => (m.items || []).forEach(it => {
+    if(!it.f || !db[it.f]) return;
+    const q = parseFloat(it.q) || 0;
+    if(!agg[it.f]) agg[it.f] = {srv: 0, g: 0};
+    if(db[it.f].per === "srv") agg[it.f].srv += q; else agg[it.f].g += q;
+  })));
+  const groups = {};
+  Object.keys(agg).forEach(k => {
+    const grp = db[k].g || "Other";
+    if(!groups[grp]) groups[grp] = [];
+    const a = agg[k];
+    const qty = a.srv ? (Math.round(a.srv * 10) / 10) + (a.srv === 1 ? " scoop" : " scoops") : Math.ceil(a.g / 10) * 10 + " g";
+    groups[grp].push({name: (db[k].n || k).split(" (")[0], qty, key: k, grams: a.g, srv: a.srv});
+  });
+  return groups;
+}
+
+function sundayPrepLines(c, groups){
+  const lines = [];
+  const pick = (grp) => (groups[grp] || []);
+  const fmt = (arr) => arr.map(x => x.name + " (" + x.qty + ")").join(", ");
+  const proteins = pick("Protein").filter(x => x.grams > 0);
+  const carbs = pick("Carb").filter(x => x.grams > 0);
+  const veg = pick("Veg").filter(x => x.grams > 0);
+  if(proteins.length) lines.push("<b>Proteins:</b> season + batch-cook " + fmt(proteins) + ". Split Mon\u2013Wed portions in the fridge, freeze the rest \u2014 second thaw Wednesday night.");
+  if(carbs.length) lines.push("<b>Carbs:</b> cook " + fmt(carbs) + " in one session. Portion into containers by the gram amounts on each day\u2019s table.");
+  if(veg.length) lines.push("<b>Vegetables:</b> wash + chop " + fmt(veg) + ". Roast half Sunday, keep half raw for the back of the week.");
+  const lth = pick("LTH");
+  if(lth.length) lines.push("<b>LTH:</b> " + lth.map(x => x.name + " \u2014 " + x.qty + " this week").join("; ") + ". Auto-ship covers it (10% off).");
+  lines.push("<b>Rule:</b> gram-weigh cooked portions once on Sunday \u2014 zero decisions on weekdays. Decisions are where diets die.");
+  return lines;
+}
+
+/* ---- 7-day print ---- */
+function buildNutritionWeekPrintHtml(c){
+  const calc = computeNutrition(c);
+  let h = `<div class="p-head"><div>ERN IT \u00b7 7-DAY NUTRITION PROTOCOL</div><div>${esc(c.name)} \u00b7 ${new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</div></div>`;
+
+  if(calc){
+    const modeLine = calc.mode === "cut" ? "High-Protein Deficit \u2014 \u2212" + calc.deficit + " kcal/day"
+      : calc.mode === "bulk" ? "Lean Bulk \u2014 +250 kcal/day"
+      : "Recomposition \u2014 maintenance calories";
+    h += `<div class="p-phase-head">Daily Targets \u2014 every day this week</div>
+      <table class="p-table">
+        <tr><th style="text-align:left;">Approach</th><th>Calories</th><th>Protein</th><th>Fat</th><th>Carbs</th></tr>
+        <tr><td style="text-align:left;"><b>${modeLine}</b></td><td><b>${calc.calories} kcal</b></td><td>${calc.protein} g</td><td>${calc.fat} g</td><td>${calc.carbs} g</td></tr>
+      </table>
+      <div class="p-rule">Protein = 1g per lb of lean body mass (${calc.lbmUsed} lbs). Portions are gram-weighed \u2014 the food scale is not optional.</div>`;
+  }
+
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  (c.nutrition.weekPlan || []).forEach((d, di) => {
+    h += `<div class="p-phase-head" style="margin-top:14px;${di > 0 ? "page-break-before:always;" : ""}">${esc(d.label)}</div>
+      <table class="p-table"><tr><th style="text-align:left;">FOOD</th><th>AMOUNT</th><th>CAL</th><th>PRO</th><th>CARB</th><th>FAT</th></tr>`;
+    let day = {kcal:0, p:0, f:0, c:0};
+    (d.meals || []).forEach(meal => {
+      h += `<tr><td colspan="6" style="text-align:left;background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;"><b>${esc(meal.name)}</b></td></tr>`;
+      (meal.items || []).forEach(it => {
+        if(!it.f) return;
+        const m = foodMacros(it.f, it.q, c);
+        if(!m) return;
+        const unit = (db[it.f] || {}).per === "srv" ? " scoop" : " g";
+        day.kcal += m.kcal; day.p += m.p; day.f += m.f; day.c += m.c;
+        h += `<tr><td style="text-align:left;">${esc(m.name)}</td><td>${esc(it.q)}${unit}</td><td>${m.kcal}</td><td>${m.p}</td><td>${m.c}</td><td>${m.f}</td></tr>`;
+      });
+    });
+    h += `<tr class="p-band"><td style="text-align:left;"><b>DAY TOTAL</b></td><td></td><td><b>${Math.round(day.kcal)}</b></td><td><b>${Math.round(day.p)}</b></td><td><b>${Math.round(day.c)}</b></td><td><b>${Math.round(day.f)}</b></td></tr></table>`;
+  });
+
+  const groups = groceryData(c);
+  h += `<div class="p-phase-head" style="page-break-before:always;">Grocery List \u2014 the whole week, one trip</div>`;
+  Object.keys(groups).forEach(grp => {
+    h += `<div class="p-day">${esc(grp)}</div><table class="p-table">` +
+      groups[grp].map(x => `<tr><td style="width:26px;"><span style="display:inline-block;width:11px;height:11px;border:1.5px solid #333;"></span></td><td style="text-align:left;">${esc(x.name)}</td><td style="text-align:left;">${esc(x.qty)}</td></tr>`).join("") +
+      `</table>`;
+  });
+
+  h += `<div class="p-phase-head" style="margin-top:14px;">Sunday Prep \u2014 60 minutes, whole week handled</div>` +
+    sundayPrepLines(c, groups).map(l => `<div style="font-size:11px;line-height:1.55;margin:5px 0;">\u2022 ${l}</div>`).join("");
+
+  const recs = lthRecommendations(c);
+  h += `<div class="p-lth">LTH SUPPLEMENT PROTOCOL \u2014 BUILT FOR THIS CLIENT\u2019S GOALS</div>
+    <table class="p-table"><tr><th style="text-align:left;">SUPPLEMENT</th><th style="text-align:left;">WHEN</th><th style="text-align:left;">WHY</th></tr>` +
+    recs.map(r => `<tr><td style="text-align:left;"><b>${r.name}</b></td><td style="text-align:left;">${r.when}</td><td style="text-align:left;">${r.why}</td></tr>`).join("") +
+    `</table>
+    <div class="p-qr">
+      <img src="${LTH_QR}" alt="LTH order QR">
+      <div class="pq-line">SCAN TO ORDER \u00b7 AUTO-SHIP SAVES 10% ON EVERY ORDER</div>
+      <div class="pq-sub">LTH Rewards: every 100 points = $1 off \u2014 points stack on every auto-ship delivery.</div>
+    </div>`;
+
+  if(c.nutrition.notes && c.nutrition.notes.trim()){
+    h += `<div class="p-phase-head" style="margin-top:10px;">Coach Notes</div><div style="font-size:11px;line-height:1.5;">${esc(c.nutrition.notes)}</div>`;
+  }
+  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v17 — visual pass: dashboard overview, chart dots
+   ================================================================ */
+
+function renderOverviewTab(c){
+  const fu = fuDiffDays(c);
+  const hist = c.inbodyHistory || [];
+  let spark = "";
+  const ws = hist.map(h=>parseFloat(h.weightLbs)).filter(v=>!isNaN(v));
+  if(ws.length >= 2){
+    const W=120, H=30, P=3, mn=Math.min(...ws), mx=Math.max(...ws), rg=(mx-mn)||1;
+    const pts = ws.map((v,i)=>(P+i*(W-2*P)/(ws.length-1)).toFixed(1)+","+(H-P-(v-mn)/rg*(H-2*P)).toFixed(1)).join(" ");
+    spark = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:26px;margin-top:6px;"><polyline points="${pts}" fill="none" stroke="#CC0000" stroke-width="2"/></svg>`;
+  }
+  const fuTxt = fu === null ? "\u2014"
+    : fu < 0 ? `<span class="dash-red">${-fu}d late</span>`
+    : fu === 0 ? `<span class="dash-red">Today</span>`
+    : "In " + fu + "d";
+
+  const steps = [
+    ["Intake", !!(c.intake.age || c.intake.heightIn)],
+    ["InBody", !!c.inbody.weightLbs],
+    ["Assess", /"(good|fair|poor)"/.test(JSON.stringify(c.assess || {}))],
+    ["Summary", !!c.recommend.decision],
+    ["Program Rec", !!(c.recommend.daysPerWeek && c.recommend.style)],
+    ["Builder", JSON.stringify(c.program || {}).includes('"exercises":[{')],
+    ["Nutrition", !!(((c.nutrition||{}).meals||[]).length || ((c.nutrition||{}).weekPlan||[]).length)]
+  ];
+  const stepStrip = steps.map(st=>`<span class="step-chip ${st[1]?"done":""}">${st[1]?"\u2713 ":""}${st[0]}</span>`).join("");
+
+  let notesHtml = "";
+  (c.notes || []).slice().reverse().forEach(n=>{
+    notesHtml += `<div class="note-item"><div class="note-date">${n.date}</div><div class="note-text">${n.text}</div></div>`;
+  });
+
+  return `
+    <div class="dash-grid">
+      <div class="dash-card"><div class="dash-num">${esc(c.inbody.weightLbs)||"\u2014"}<span class="unit"> lbs</span></div><div class="dash-lbl">Weight</div>${spark}</div>
+      <div class="dash-card"><div class="dash-num">${esc(c.inbody.bodyFatPct)||"\u2014"}<span class="unit">%</span></div><div class="dash-lbl">Body Fat</div></div>
+      <div class="dash-card"><div class="dash-num">${esc(c.inbody.inbodyScore)||"\u2014"}</div><div class="dash-lbl">InBody Score</div></div>
+      <div class="dash-card"><div class="dash-num" style="font-size:${fu===null?"29":"21"}px;padding-top:${fu===null?"0":"5px"};">${fuTxt}</div><div class="dash-lbl">Next Follow-Up</div></div>
+    </div>
+    <div class="step-strip">${stepStrip}</div>
+
+    <div class="status-select-row" id="statusRow">
+      ${["prospect","active","lapsed"].map(st=>`<div class="status-opt ${c.status===st?"active "+st:""}" data-status="${st}" onclick="setStatus('${st}')">${st}</div>`).join("")}
+    </div>
+
+    <div class="field-group"><label class="field-label">Full Name</label>
+      <input class="field-input" id="f_name" value="${esc(c.name)}"></div>
+    <div class="field-row2">
+      <div class="field-group"><label class="field-label">Phone</label>
+        <input class="field-input" id="f_phone" type="tel" inputmode="tel" value="${esc(c.phone)}"></div>
+      <div class="field-group"><label class="field-label">Email</label>
+        <input class="field-input" id="f_email" type="email" inputmode="email" value="${esc(c.email)}"></div>
+    </div>
+    <div class="field-group"><label class="field-label">Instagram Handle</label>
+      <input class="field-input" id="f_instagram" value="${esc(c.instagram)}" placeholder="@handle"></div>
+
+    <div class="section-head">Coach Notes</div>
+    <div class="field-group">
+      <textarea class="field-textarea" id="f_newNote" placeholder="Add a dated note \u2014 session feedback, follow-up reminder, life context..."></textarea>
+    </div>
+    ${notesHtml}
+  `;
+}
+
+/* progress chart with point dots + date range */
+function inbodyHistoryHtml(c){
+  const hist = c.inbodyHistory || [];
+  let chart = "";
+  if(hist.length >= 2){
+    const W = 320, H = 110, P = 14;
+    const ws = hist.map(h=>parseFloat(h.weightLbs)).filter(v=>!isNaN(v));
+    const bs = hist.map(h=>parseFloat(h.bodyFatPct)).filter(v=>!isNaN(v));
+    const series = (vals, color, dash) => {
+      if(vals.length < 2) return "";
+      const mn = Math.min(...vals), mx = Math.max(...vals), rg = (mx - mn) || 1;
+      const xy = vals.map((v,i)=>[(P + i*(W-2*P)/(vals.length-1)), (H - P - (v - mn)/rg*(H-2*P))]);
+      return `<polyline points="${xy.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" fill="none" stroke="${color}" stroke-width="2.5"${dash ? ' stroke-dasharray="5,4"' : ''}/>`
+        + xy.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.4" fill="${color}"/>`).join("");
+    };
+    chart = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:430px;background:var(--bg);border:1px solid var(--line);border-radius:9px;margin-top:10px;">
+      ${series(ws, "#CC0000", false)}${series(bs, "#8a8a8a", true)}
+    </svg>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:4px;">
+      <span style="color:#CC0000;font-weight:800;">\u25cf Weight</span> ${ws.length ? ws[0] + " \u2192 " + ws[ws.length-1] + " lbs" : ""}
+      &nbsp;&nbsp;<span style="color:#8a8a8a;font-weight:800;">\u25cf BF%</span> ${bs.length ? bs[0] + " \u2192 " + bs[bs.length-1] + "%" : ""}
+      &nbsp;&nbsp;<span>${esc(hist[0].date)} \u2192 ${esc(hist[hist.length-1].date)}</span>
+    </div>`;
+  }
+  const rows = hist.map((h,i)=>`<div style="display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--white);padding:7px 0;border-bottom:1px solid var(--line);">
+    <span style="width:86px;color:var(--grey);">${esc(h.date)}</span>
+    <span style="flex:1;">${esc(h.weightLbs)||"\u2014"} lbs \u00b7 ${esc(h.bodyFatPct)||"\u2014"}% BF \u00b7 LBM ${esc(h.muscleMassLbs)||"\u2014"}</span>
+    <span onclick="delHistEntry(${i})" style="color:var(--grey-dim);cursor:pointer;padding:0 6px;">\u2715</span>
+  </div>`).join("");
+  return `
+    <div class="section-head" style="margin-top:22px;">Progress History</div>
+    <button class="scan-btn" style="width:100%;" onclick="logInbodyScan()">Log current scan to history (${todayISO()})</button>
+    ${rows ? `<div style="margin-top:10px;">${rows}</div>` : `<div style="font-size:11.5px;color:var(--grey-dim);margin-top:8px;">No scans logged yet \u2014 log today's numbers, then every re-scan. The trend chart appears at two entries.</div>`}
+    ${chart}
+  `;
 }
 
 /* ============ INIT ============ */
