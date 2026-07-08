@@ -143,6 +143,14 @@
   .ex-mini-input{flex:1;background:var(--black);border:1px solid var(--line);border-radius:6px;
     color:var(--white);padding:7px 6px;font-size:12px;text-align:center;}
   .ex-mini-lbl{font-size:8.5px;color:var(--grey-dim);text-align:center;text-transform:uppercase;margin-top:2px;}
+  .slog-wrap{margin-top:8px;border-top:1px solid var(--line);padding-top:8px;}
+  .slog-toggle{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--red);cursor:pointer;user-select:none;}
+  .slog-row{display:flex;gap:6px;align-items:center;margin-top:6px;}
+  .slog-num{width:20px;font-size:11px;color:var(--grey-dim);font-weight:700;text-align:center;}
+  .slog-in{flex:1;background:var(--black);border:1px solid var(--line);border-radius:6px;color:var(--white);font-size:13px;padding:7px 8px;text-align:center;min-width:0;}
+  .slog-done{width:26px;height:26px;flex:0 0 26px;accent-color:var(--red);}
+  .slog-in.d{opacity:.5;text-decoration:line-through;}
+  .slog-add{font-size:11px;color:var(--grey);border:1px dashed var(--line);border-radius:6px;padding:5px;text-align:center;cursor:pointer;margin-top:6px;}
   .ex-note-input{width:100%;background:var(--black);border:1px solid var(--line);border-radius:6px;
     color:var(--white);padding:7px 9px;font-size:12px;margin-bottom:6px;}
   .ex-video-input{width:100%;background:var(--black);border:1px solid var(--red-dim);border-radius:6px;
@@ -1403,7 +1411,9 @@ function computeRecommendation(c){
 
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", price:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
   else if(parseInt(c.intake.nutritionRating) <= 2 && c.intake.nutritionRating !== "") addons.push({name:"Nutrition Consultation", price:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
-  if(r.energy === "yes") addons.push({name:"Active Metabolic Assessment", price:"$189 single / $300 test + re-test", detail:"Measures calories burned during activity — dials in training zones."});
+  const mob = assessmentFixes(c).length;
+  if(mob >= 2) addons.push({name:"Dynamic Partner Stretch", price:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mob + " mobility faults. Hands-on stretch accelerates the corrective work."});
+  else if(r.energy === "yes") addons.push({name:"Dynamic Partner Stretch", price:"$80 (30 min) / $150 (60 min)", detail:"Improves range of motion & recovery between sessions."});
 
   return {primary, alternates, addons};
 }
@@ -1880,6 +1890,15 @@ function collectFormIntoClient(){
       const idx = inp.getAttribute('data-cardio'), field = inp.getAttribute('data-cfield');
       if(c.program.cardio[idx]) c.program.cardio[idx][field] = inp.value;
     });
+    document.querySelectorAll('#modalScroll [data-slog]').forEach(inp=>{
+      const dIdx = inp.getAttribute('data-sday'), eIdx = inp.getAttribute('data-sex'), sIdx = +inp.getAttribute('data-sset'), fld = inp.getAttribute('data-sfield');
+      const ex = ph.days[dIdx] && ph.days[dIdx].exercises[eIdx];
+      if(!ex) return;
+      if(!Array.isArray(ex.setLogs)) ex.setLogs = [];
+      while(ex.setLogs.length <= sIdx) ex.setLogs.push({w:"",r:"",done:false});
+      if(fld === "done") ex.setLogs[sIdx].done = inp.checked;
+      else ex.setLogs[sIdx][fld] = inp.value;
+    });
     const waEl = document.getElementById('g_workoutA');
     if(waEl) c.program.workoutAText = waEl.value;
   } else if(activeTab === "nutrition"){
@@ -2146,7 +2165,9 @@ function computeRecommendation(c){
 
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
   else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
-  if(r.energy === "yes") addons.push({name:"Active Metabolic Assessment", low:189, priceLabel:"$189 single / $300 test + re-test", detail:"Measures calories burned during activity — dials in training zones."});
+  const mobN = assessmentFixes(c).length;
+  if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
+  else if(r.energy === "yes") addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Improves range of motion & recovery between sessions."});
 
   const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
   const styleNote = r.style === "programming"
@@ -2452,7 +2473,9 @@ function computeRecommendation(c){
   const addons = [];
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
   else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
-  if(r.energy === "yes") addons.push({name:"Active Metabolic Assessment", low:189, priceLabel:"$189 single / $300 test + re-test", detail:"Measures calories burned during activity — dials in training zones."});
+  const mobN = assessmentFixes(c).length;
+  if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
+  else if(r.energy === "yes") addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Improves range of motion & recovery between sessions."});
 
   const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
   const styleNote = r.style === "programming"
@@ -2594,6 +2617,11 @@ async function generateBC(){
     return ASSESS[t].label.split(" ")[0] + ": " + g.chip + (g.scored ? " (" + g.total + "/" + g.max + ")" : "");
   }).join("; ");
   const faults = assessmentFixes(c).map(f => f.fault + " [" + f.severity + "] \u2192 " + f.fix).join("; ");
+  const screenNotes = Object.keys(ASSESS).map(t=>{
+    const nt = (c.assessment[t].notes || "").trim();
+    return nt ? ASSESS[t].label.split(" ")[0] + ": " + nt : "";
+  }).filter(Boolean).join(" | ");
+  const injuryNote = [(c.intake.medical||"").trim(), (c.intake.medications||"").trim()].filter(Boolean).join(" \u00b7 ");
   try{
     const res = await fetch("/.netlify/functions/read-form", {
       method:"POST", headers:{"Content-Type":"application/json"},
@@ -2602,7 +2630,9 @@ async function generateBC(){
         goals: (c.intake.goals || []).join(" + "),
         phase: c.program.phases[progPhase].name,
         screenGrades: screenGrades,
-        faults: faults
+        faults: faults,
+        screenNotes: screenNotes,
+        injuryNote: injuryNote
       }})
     });
     const data = await res.json();
@@ -2724,8 +2754,8 @@ function selectedExtras(c){
   const items = [];
   if(r.nutriSel === "30") items.push({label:"Nutrition Consult 30 min", price:70});
   if(r.nutriSel === "60") items.push({label:"Nutrition Consult 60 min", price:130});
-  if(r.amaSel === "single") items.push({label:"AMA single test", price:189});
-  if(r.amaSel === "bundle") items.push({label:"AMA test + re-test", price:300});
+  if(r.stretchSel === "30") items.push({label:"Dynamic Partner Stretch 30 min", price:80});
+  if(r.stretchSel === "60") items.push({label:"Dynamic Partner Stretch 60 min", price:150});
   return items;
 }
 
@@ -2773,11 +2803,11 @@ function renderSelectionSection(c){
           <div class="rate-btn ${r.nutriSel==="30"?"on":""}" onclick="setRecField('nutriSel','30')" style="font-size:11.5px;">30m $70</div>
           <div class="rate-btn ${r.nutriSel==="60"?"on":""}" onclick="setRecField('nutriSel','60')" style="font-size:11.5px;">60m $130</div>
         </div></div>
-      <div class="field-group"><label class="field-label">Metabolic Assessment</label>
+      <div class="field-group"><label class="field-label">Dynamic Partner Stretch</label>
         <div class="rate-row">
-          <div class="rate-btn ${(r.amaSel||"none")==="none"?"on":""}" onclick="setRecField('amaSel','none')" style="font-size:11.5px;">None</div>
-          <div class="rate-btn ${r.amaSel==="single"?"on":""}" onclick="setRecField('amaSel','single')" style="font-size:11.5px;">$189</div>
-          <div class="rate-btn ${r.amaSel==="bundle"?"on":""}" onclick="setRecField('amaSel','bundle')" style="font-size:11.5px;">$300</div>
+          <div class="rate-btn ${(r.stretchSel||"none")==="none"?"on":""}" onclick="setRecField('stretchSel','none')" style="font-size:11.5px;">None</div>
+          <div class="rate-btn ${r.stretchSel==="30"?"on":""}" onclick="setRecField('stretchSel','30')" style="font-size:11.5px;">30m $80</div>
+          <div class="rate-btn ${r.stretchSel==="60"?"on":""}" onclick="setRecField('stretchSel','60')" style="font-size:11.5px;">60m $150</div>
         </div></div>
     </div>
 
@@ -2825,6 +2855,11 @@ async function generateBC(){
     return ASSESS[t].label.split(" ")[0] + ": " + g.chip + (g.scored ? " (" + g.total + "/" + g.max + ")" : "");
   }).join("; ");
   const faults = assessmentFixes(c).map(f => f.fault + " [" + f.severity + "] \u2192 " + f.fix).join("; ");
+  const screenNotes = Object.keys(ASSESS).map(t=>{
+    const nt = (c.assessment[t].notes || "").trim();
+    return nt ? ASSESS[t].label.split(" ")[0] + ": " + nt : "";
+  }).filter(Boolean).join(" | ");
+  const injuryNote = [(c.intake.medical||"").trim(), (c.intake.medications||"").trim()].filter(Boolean).join(" \u00b7 ");
   try{
     const res = await fetch("/.netlify/functions/read-form", {
       method:"POST", headers:{"Content-Type":"application/json"},
@@ -2833,7 +2868,9 @@ async function generateBC(){
         goals: (c.intake.goals || []).join(" + "),
         phase: c.program.phases[progPhase].name,
         screenGrades: screenGrades,
-        faults: faults
+        faults: faults,
+        screenNotes: screenNotes,
+        injuryNote: injuryNote
       }})
     });
     let data;
@@ -2959,6 +2996,7 @@ function renderProgramTab(c){
             <div style="flex:1"><input class="ex-mini-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="load" type="text" inputmode="decimal" value="${esc(ex.load || "")}" placeholder="lbs"><div class="ex-mini-lbl">Load</div></div>
           </div>
           <input class="ex-note-input" data-pday="${dIdx}" data-pex="${eIdx}" data-pfield="note" value="${esc(ex.note)}" placeholder="Coaching cue...">
+          ${setLogHtml(ex, dIdx, eIdx)}
         </div>`;
     });
     html += `
@@ -4195,6 +4233,59 @@ function sendTextBtn(c){
   const num = String(c.phone).replace(/[^0-9+]/g, "");
   const href = "sms:" + num + "&body=" + encodeURIComponent(c.followup.textMessage || "");
   return `<a class="copy-btn" style="background:var(--red);color:#fff;border-color:var(--red);text-decoration:none;display:inline-block;" href="${href}">Send via Messages</a>`;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v22 — per-set logging (weight + reps + done)
+   ================================================================ */
+
+let openSetLogs = {}; /* "dIdx-eIdx" -> true when expanded */
+
+function toggleSetLog(dIdx, eIdx){
+  collectFormIntoClient();
+  const k = dIdx + "-" + eIdx;
+  openSetLogs[k] = !openSetLogs[k];
+  renderModal();
+}
+
+function addSetRow(dIdx, eIdx){
+  collectFormIntoClient();
+  const ph = clients[activeClientId].program.phases[progPhase];
+  const ex = ph.days[dIdx] && ph.days[dIdx].exercises[eIdx];
+  if(!ex) return;
+  if(!Array.isArray(ex.setLogs)) ex.setLogs = [];
+  ex.setLogs.push({w:"", r:"", done:false});
+  saveClients(clients);
+  renderModal();
+}
+
+function setLogHtml(ex, dIdx, eIdx){
+  const k = dIdx + "-" + eIdx;
+  const open = !!openSetLogs[k];
+  const logs = Array.isArray(ex.setLogs) ? ex.setLogs : [];
+  const targetSets = parseInt(ex.sets) || 0;
+  const doneCount = logs.filter(l => l.done).length;
+  const rows = logs.length ? logs : [];
+  const summary = logs.length ? `${doneCount}/${logs.length} done` : (targetSets ? `${targetSets} sets` : "log");
+
+  if(!open){
+    return `<div class="slog-wrap"><span class="slog-toggle" onclick="toggleSetLog(${dIdx},${eIdx})">▸ LOG SETS · ${summary}</span></div>`;
+  }
+
+  let body = rows.map((l, sIdx)=>`
+    <div class="slog-row">
+      <span class="slog-num">${sIdx+1}</span>
+      <input class="slog-in ${l.done?"d":""}" data-slog data-sday="${dIdx}" data-sex="${eIdx}" data-sset="${sIdx}" data-sfield="w" inputmode="decimal" value="${esc(l.w||"")}" placeholder="lbs">
+      <input class="slog-in ${l.done?"d":""}" data-slog data-sday="${dIdx}" data-sex="${eIdx}" data-sset="${sIdx}" data-sfield="r" inputmode="numeric" value="${esc(l.r||"")}" placeholder="reps">
+      <input type="checkbox" class="slog-done" data-slog data-sday="${dIdx}" data-sex="${eIdx}" data-sset="${sIdx}" data-sfield="done" ${l.done?"checked":""} onchange="collectFormIntoClient();saveClients(clients);renderModal();">
+    </div>`).join("");
+
+  return `<div class="slog-wrap">
+    <span class="slog-toggle" onclick="toggleSetLog(${dIdx},${eIdx})">▾ LOG SETS · ${summary}</span>
+    <div class="slog-row" style="margin-top:8px;"><span class="slog-num"></span><span class="slog-in" style="border:none;background:none;color:var(--grey-dim);font-size:10px;font-weight:800;letter-spacing:.5px;">WEIGHT</span><span class="slog-in" style="border:none;background:none;color:var(--grey-dim);font-size:10px;font-weight:800;letter-spacing:.5px;">REPS</span><span style="width:26px;flex:0 0 26px;"></span></div>
+    ${body || '<div style="font-size:11px;color:var(--grey-dim);padding:4px 0;">No sets logged. Add rows to match the prescription.</div>'}
+    <div class="slog-add" onclick="addSetRow(${dIdx},${eIdx})">+ Add set${targetSets && !logs.length ? ` (target ${targetSets})` : ""}</div>
+  </div>`;
 }
 
 /* ============ INIT ============ */
