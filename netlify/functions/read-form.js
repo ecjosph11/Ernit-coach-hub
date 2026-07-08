@@ -119,6 +119,7 @@ Rules:
 - Movement screen results are below. If the phase is Phase 1 (Neuromuscular Development & Corrective), build the listed corrective drills directly into Workouts B and C as warm-up or accessory work, and bias main-lift variations around the flagged faults. In later phases keep the corrective bias in exercise selection but prioritize the phase goal.
 - Keep rep ranges consistent with the phase goal.
 - tempo: 4 digits like "2011". rest: like "60s". sets/reps as strings.
+- The coach's assessment notes and injury flags are ABSOLUTE. If a note says avoid an movement, joint, or range (e.g. "no overhead", "left knee pain", "shoulder surgery"), do NOT program any exercise that violates it in A, B, or C — substitute a safe alternative that trains the same pattern and briefly say why in the note field.
 - MAXIMUM 7 exercises per workout, including any corrective warm-up drills.
 - Coaching notes: 12 words or fewer, direct, no-BS voice.
 - Output compact JSON on a single line — no pretty-printing, no extra whitespace.
@@ -127,6 +128,8 @@ Phase: ${c.phase || "Phase 1"}
 Client goals: ${c.goals || "not stated"}
 Movement screen grades: ${c.screenGrades || "not assessed"}
 Flagged faults + prescribed correctives: ${c.faults || "none"}
+Coach's hands-on assessment notes (HARD CONSTRAINTS — obey these over any default): ${c.screenNotes || "none"}
+Injuries / medical flags from intake (HARD CONSTRAINTS — never program around these carelessly): ${c.injuryNote || "none"}
 
 WORKOUT A (verbatim):
 ${c.workoutA}
