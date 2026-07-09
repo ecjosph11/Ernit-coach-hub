@@ -5583,7 +5583,7 @@ const AG_XY = {
   cell:{x:356,y:115.0,w:102}, home:{x:464,y:115.0,w:68},
   city:{x:356,y:145.2,w:68}, state:{x:428,y:145.2,w:68}, zip:{x:500,y:145.2,w:34},
   email:{x:68,y:174.3,w:282}, memberNo:{x:356,y:174.3,w:176},
-  service:{x:187,y:228.0,w:237},
+  service:{x:215,y:228.0,w:206}, service2:{x:68,y:245.5,w:356},
   startDate:{x:114,y:263.0,w:92}, redemption:{x:353,y:263.0,w:71}, fees:{x:470,y:263.0,w:62},
   totalAmt:{x:410,y:305.1,w:86}, associate:{x:166,y:445.5,w:368},
   todayPay:{x:328,y:509.8,w:60}, recurAmt:{x:480,y:556.3,w:38}, beginMonth:{x:497,y:567.7,w:36},
@@ -5720,11 +5720,30 @@ async function buildOfficialPdf(c){
   const a = agOf(c), kind = agKind(c);
   const data = agFormData(c);
   Object.keys(data).forEach(k => {
+    if(k === "service") return;                 /* handled below \u2014 it can wrap */
     const box = AG_XY[k];
     const t = agAscii(data[k]);
     if(!t || !box) return;
     p1.drawText(t, {x:box.x, y:TY(box.y), size:fit(font, t, 9.5, box.w), font, color:ink});
   });
+
+  const svc = agAscii(data.service);
+  if(svc){
+    const b1 = AG_XY.service, b2 = AG_XY.service2;
+    if(font.widthOfTextAtSize(svc, 9.5) <= b1.w){
+      p1.drawText(svc, {x:b1.x, y:TY(b1.y), size:9.5, font, color:ink});
+    } else {
+      let cut = svc.length;
+      while(cut > 0 && font.widthOfTextAtSize(svc.slice(0, cut), 9.5) > b1.w) cut = svc.lastIndexOf(" ", cut - 1);
+      if(cut <= 0){
+        p1.drawText(svc, {x:b1.x, y:TY(b1.y), size:fit(font, svc, 9.5, b1.w), font, color:ink});
+      } else {
+        const head = svc.slice(0, cut).trim(), tail = svc.slice(cut).trim();
+        p1.drawText(head, {x:b1.x, y:TY(b1.y), size:9.5, font, color:ink});
+        p1.drawText(tail, {x:b2.x, y:TY(b2.y), size:fit(font, tail, 9.5, b2.w), font, color:ink});
+      }
+    }
+  }
 
   const dot = (o) => p1.drawEllipse({x:o.x, y:TY(o.y + 3.0), xScale:3.1, yScale:2.0, color:ink});
   if(a.payMethod === "dues") dot(AG_OVAL.dues);
