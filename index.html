@@ -384,20 +384,29 @@
   .sig-pad{width:100%;height:150px;background:#fff;border-radius:10px;border:2px dashed #6a6a6a;display:block;touch-action:none;}
   .sig-meta{flex:1;font-size:10.5px;color:var(--grey-dim);display:flex;align-items:center;line-height:1.4;}
 </style>
-<style id="v25print">
+<style id="v28print">
 @media print{
-  .a-head{background:#CC0000 !important;color:#fff !important;padding:12px 14px;font-weight:900;font-size:13px;display:flex;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .a-sec{font-size:12px;font-weight:900;border-bottom:2px solid #CC0000;margin:14px 0 5px;padding-bottom:2px;}
-  .a-grid{width:100%;border-collapse:collapse;font-size:10px;}
-  .a-grid td{border:1px solid #999;padding:4px 6px;text-align:left;}
-  .a-grid td.k{background:#f2f2f2 !important;font-weight:800;width:34%;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .a-terms{padding-left:16px;margin:4px 0;}
-  .a-terms li{font-size:9.6px;line-height:1.45;margin-bottom:4px;}
-  .a-sigbox{margin-top:10px;border:1px solid #999;padding:8px 10px;page-break-inside:avoid;}
-  .a-sigimg{height:54px;display:block;}
-  .a-line{border-bottom:1px solid #000;height:24px;margin-top:16px;}
-  .a-cap{font-size:8.5px;color:#555;margin-top:2px;}
-  .a-note{margin-top:12px;font-size:9px;border:1px solid #CC0000;padding:7px 9px;page-break-inside:avoid;}
+  #printArea .a-doc{font-family:"Times New Roman",Times,serif;color:#000;padding:0 2px;}
+  .a-title{text-align:center;font-size:18px;font-weight:700;letter-spacing:.4px;margin:0 0 3px;}
+  .a-org{text-align:center;font-size:9px;letter-spacing:2.4px;text-transform:uppercase;color:#333;}
+  .a-rule{border-bottom:2px solid #000;margin:7px 0 4px;}
+  .a-sec{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #000;margin:15px 0 7px;padding-bottom:2px;}
+  .a-fields{display:flex;flex-wrap:wrap;gap:0 20px;}
+  .a-f{flex:1 1 42%;margin-bottom:10px;}
+  .a-f.wide{flex:1 1 100%;}
+  .a-f .v{border-bottom:1px solid #000;min-height:15px;font-size:10.5px;font-weight:700;padding:0 2px 2px;}
+  .a-f .l{font-size:7.6px;text-transform:uppercase;letter-spacing:.7px;color:#333;margin-top:2px;}
+  .a-boxrow{font-size:10px;margin:7px 0 3px;}
+  .a-boxrow b{font-weight:700;}
+  .a-boxrow span{margin-right:16px;white-space:nowrap;}
+  .a-terms{padding-left:16px;margin:5px 0 0;}
+  .a-terms li{font-size:9.3px;line-height:1.45;margin-bottom:5px;text-align:justify;}
+  .a-sigbox{margin-top:16px;page-break-inside:avoid;}
+  .a-ack{font-size:9.3px;margin-bottom:8px;}
+  .a-sigimg{height:50px;display:block;margin-bottom:-2px;}
+  .a-line{border-bottom:1px solid #000;height:34px;}
+  .a-cap{font-size:8.2px;color:#333;margin-top:2px;}
+  .a-note{margin-top:16px;font-size:8.6px;border-top:1px solid #999;padding-top:6px;color:#333;page-break-inside:avoid;}
 }
 </style>
 </head>
@@ -490,7 +499,7 @@ function saveClients(obj){ localStorage.setItem(STORE_KEY, JSON.stringify(obj));
 const AG_KEY = "ernit_agreements_v1";
 const AG_DEF = {first:"", last:"", city:"", state:"MD", zip:"", memberNo:"", phoneHome:"",
   serviceType:"", trainerLevel:"", startDate:"", payMethod:"", kind:"",
-  sigData:"", sigDate:"", sigAt:"", pdfAt:"", assoc:"Ernest Joseph Jr."};
+  draftDay:"", sigData:"", sigDate:"", sigAt:"", pdfAt:"", assoc:"Ernest Joseph Jr."};
 
 function loadAgreements(){ try{ return JSON.parse(localStorage.getItem(AG_KEY)) || {}; }catch(e){ return {}; } }
 let agreements = loadAgreements();
@@ -5194,11 +5203,19 @@ function agMoney(c){
   return {o, extras, extraSum, base, today: base + extraSum, monthly: (o && agKind(c) === "recurring") ? base : 0};
 }
 
-function agBillDay(c){
+/* the calendar day they signed */
+function agSignDay(c){
   const a = agOf(c);
   const d = a.sigDate || a.startDate || todayISO();
   const day = parseInt(String(d).split("-")[2], 10);
   return isNaN(day) ? null : day;
+}
+
+/* the day the card actually gets hit \u2014 one of Life Time's five */
+function agBillDay(c){
+  const a = agOf(c);
+  if(a.draftDay) return parseInt(a.draftDay, 10);
+  return agPaperBox(agSignDay(c));
 }
 
 function agLevelNum(c){
@@ -5247,7 +5264,7 @@ function agTerms(c){
   const t = [];
 
   if(kind === "recurring"){
-    t.push(`Your program bills <b>$${m.monthly.toLocaleString()} per month</b>, drafted from the payment method on file on the <b>${day ? ordinal(day) : "same"}</b> of every month \u2014 the same calendar day you sign \u2014 and continues month to month until you cancel. In a month with no ${day ? ordinal(day) : "such"} day, it drafts on the last day of that month.`);
+    t.push(`Your program bills <b>$${m.monthly.toLocaleString()} per month</b>, drafted from the payment method on file on or about the <b>${day ? ordinal(day) : "same"}</b> of every month, continuing month to month until you cancel.`);
     t.push(`Cancel any time with <b>30 days\u2019 written notice</b> to the club. Cancellation is effective 30 days after Life Time receives it.`);
   } else if(kind === "pack"){
     t.push(`This is a one-time session package. You pay <b>$${m.today.toLocaleString()}</b> today. Nothing recurs.`);
@@ -5290,8 +5307,7 @@ function initSigPad(){
   cv.height = Math.max(1, Math.round(rect.height * dpr));
   const ctx = cv.getContext("2d");
   ctx.scale(dpr, dpr);
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.clearRect(0, 0, rect.width, rect.height);   /* transparent \u2014 see fillOfficialPdf */
   ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
 
   if(a.sigData){
@@ -5355,13 +5371,16 @@ function agRecordHtml(c){
 }
 
 function agSchedHtml(c){
-  const m = agMoney(c), kind = agKind(c), day = agBillDay(c);
+  const m = agMoney(c), kind = agKind(c);
   if(kind !== "recurring"){
     return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">One-time payment. Nothing recurs. Sessions redeem inside 90 days.</div>`;
   }
-  const box = agPaperBox(day);
-  return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">Then <b style="color:var(--white);">$${m.monthly.toLocaleString()}/mo</b> on the <b style="color:var(--white);">${day ? ordinal(day) : "signing"}</b> of every month \u2014 same calendar day as signing \u2014 until cancelled with 30 days\u2019 notice.</div>
-    ${box ? `<div style="font-size:10.5px;color:var(--grey-dim);margin-top:5px;">On the paper form, tick <b style="color:var(--grey);">${ordinal(box)} of Month</b> \u2014 the closest box Life Time\u2019s system offers.</div>` : ""}`;
+  const day = agBillDay(c), sign = agSignDay(c), auto = agPaperBox(sign);
+  const picks = AG_PAPER_DAYS.map(d =>
+    `<div class="rate-btn ${d === day ? "on" : ""}" style="font-size:11.5px;padding:8px 6px;" onclick="setAgField('draftDay','${d}')">${ordinal(d)}</div>`).join("");
+  return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">Then <b style="color:var(--white);">$${m.monthly.toLocaleString()}/mo</b> on the <b style="color:var(--white);">${day ? ordinal(day) : "\u2014"}</b> of every month, until cancelled with 30 days\u2019 notice.</div>
+    <div class="rate-row" style="margin-top:9px;">${picks}</div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">Signed the ${sign ? ordinal(sign) : "\u2014"} \u2192 auto-picks the <b style="color:var(--grey);">${auto ? ordinal(auto) : "\u2014"}</b>, the next date Life Time\u2019s system bills. Tick the same box on the paper form.</div>`;
 }
 
 /* ---------- email ---------- */
@@ -5399,58 +5418,64 @@ function agMailHref(c){
 /* ---------- printable agreement ---------- */
 function buildAgreementPrintHtml(c){
   const a = agOf(c), m = agMoney(c), kind = agKind(c), day = agBillDay(c);
-  const cx = 'style="-webkit-print-color-adjust:exact;print-color-adjust:exact;"';
-  const row = (k, v) => `<tr><td class="k" ${cx}>${k}</td><td>${esc(v) || "\u2014"}</td></tr>`;
   const box = (on) => on ? "\u2612" : "\u2610";
+  const f = (label, val, wide) => `<div class="a-f${wide ? " wide" : ""}"><div class="v">${esc(val) || "&nbsp;"}</div><div class="l">${label}</div></div>`;
 
-  let h = `<div class="a-head" ${cx}><div>FITNESS SERVICES AGREEMENT</div><div>LIFE TIME \u00b7 GAITHERSBURG</div></div>`;
+  let h = `<div class="a-doc">`;
+  h += `<div class="a-title">FITNESS SERVICES AGREEMENT</div>
+        <div class="a-org">Life Time \u00b7 Gaithersburg, Maryland</div>
+        <div class="a-rule"></div>`;
 
-  h += `<div class="a-sec">Information</div><table class="a-grid">`;
-  h += row("Name", ((a.first || "") + " " + (a.last || "")).trim() || c.name);
-  h += row("City / State / Zip", [a.city, a.state, a.zip].filter(Boolean).join(", "));
-  h += row("Phone (cell)", c.phone) + row("Phone (home)", a.phoneHome);
-  h += row("Email", c.email) + row("Member Number", a.memberNo);
-  h += row("Date", fmtLongDate(a.sigDate || a.startDate));
-  h += `</table>`;
+  h += `<div class="a-sec">Information</div><div class="a-fields">`;
+  h += f("Last Name", a.last || "") + f("First Name", a.first || "");
+  h += f("Phone (cell)", c.phone) + f("Phone (home)", a.phoneHome);
+  h += f("City", a.city) + f("State &nbsp;/&nbsp; Zip", [a.state, a.zip].filter(Boolean).join("  "));
+  h += f("Email Address", c.email) + f("Member Number", a.memberNo);
+  h += `</div>`;
 
-  h += `<div class="a-sec">Fitness Service Details</div><table class="a-grid">`;
-  h += row("Service Type / Trainer Level", (a.serviceType || "") + (a.trainerLevel ? " \u00b7 " + a.trainerLevel : ""));
-  h += row("Agreement Type", kind === "recurring" ? "Recurring Program \u2014 month to month" : kind === "pack" ? "Session Package \u2014 one-time" : "\u2014");
-  h += row("Start Date", fmtLongDate(a.startDate));
-  h += row("Redemption Period", kind === "pack" ? "90 days" : "N/A \u2014 recurring");
-  if(m.extras.length) h += row("Add-Ons", m.extras.map(e => e.label + " ($" + e.price + ")").join("; "));
-  h += row("Fees", "$" + m.today.toLocaleString());
-  h += `</table>`;
+  h += `<div class="a-sec">Fitness Service Details</div><div class="a-fields">`;
+  h += f("Fitness Service Type / Trainer Level", (a.serviceType || "") + (a.trainerLevel ? " \u00b7 " + a.trainerLevel : ""), true);
+  h += f("Start Date", fmtLongDate(a.startDate));
+  h += f("Redemption Period", kind === "pack" ? "90 days" : "N/A \u2014 recurring");
+  h += f("Agreement Type", kind === "recurring" ? "Recurring Program \u2014 month to month" : kind === "pack" ? "Session Package \u2014 one-time" : "");
+  h += f("Fees", "$" + m.today.toLocaleString());
+  if(m.extras.length) h += f("Add-Ons", m.extras.map(e => e.label + " ($" + e.price + ")").join("; "), true);
+  h += `</div>`;
 
   h += `<div class="a-sec">Payment Terms</div>`;
-  h += `<div style="font-size:10px;margin:5px 0 7px;">
-    <b>Payment Method:</b> &nbsp; ${box(a.payMethod === "dues")} Membership Dues Card on File &nbsp;&nbsp;&nbsp; ${box(a.payMethod === "tab")} Club Tab Card on File</div>`;
-  h += `<table class="a-grid">`;
-  h += row("Today\u2019s Payment", "$" + m.today.toLocaleString() + ", plus applicable taxes, surcharge fees and public improvement fees");
+  h += `<div class="a-boxrow"><b>Payment Method:</b> &nbsp; <span>${box(a.payMethod === "dues")} Membership Dues Card on File</span><span>${box(a.payMethod === "tab")} Club Tab Card on File</span></div>`;
   if(kind === "recurring"){
-    h += row("Recurring Payment", "$" + m.monthly.toLocaleString() + " per month");
-    h += row("Payment Schedule", "The " + (day ? ordinal(day) : "same") + " of each month \u2014 the same calendar day as signing \u2014 continuing month to month until cancelled. Where that day does not exist in a given month, the draft falls on the last day of that month.");
-  } else {
-    h += row("Recurring Payment", "None \u2014 paid in full today");
+    h += `<div class="a-boxrow"><b>Recurring Payments (on or about the):</b><br>` +
+      AG_PAPER_DAYS.map(d => `<span>${box(d === day)} ${ordinal(d)} of Month</span>`).join("") + `</div>`;
   }
-  h += row("Life Time Associate", a.assoc);
-  h += `</table>`;
+  h += `<div class="a-fields" style="margin-top:6px;">`;
+  h += f("Today\u2019s Payment", "$" + m.today.toLocaleString() + " (plus applicable taxes, surcharge fees and public improvement fees)", true);
+  h += f("Recurring Payment", kind === "recurring" ? "$" + m.monthly.toLocaleString() + " per month" : "None \u2014 paid in full today");
+  h += f("Life Time Associate", a.assoc);
+  h += `</div>`;
 
   h += `<div class="a-sec">Terms</div><ol class="a-terms">`;
   agTerms(c).forEach(t => { h += `<li>${t}</li>`; });
   h += `</ol>`;
 
   h += `<div class="a-sigbox">
-    <div style="font-size:9.5px;font-weight:800;margin-bottom:6px;">SIGNATURE \u2014 I have read, understand, and received a copy of this Agreement, and have knowingly and voluntarily signed it.</div>
-    ${a.sigData ? `<img class="a-sigimg" src="${a.sigData}" alt="signature">` : `<div class="a-line"></div>`}
-    <div style="border-top:1px solid #000;font-size:9px;padding-top:3px;">Member signature &nbsp;\u00b7&nbsp; Date: ${fmtLongDate(a.sigDate) || "________________"}</div>
-    <div style="margin-top:16px;font-size:9.5px;font-weight:800;">SIGNED BY LIFE TIME</div>
-    <div class="a-line"></div>
-    <div class="a-cap">Per: ${esc(a.assoc)} \u00b7 Authorized Signing Person</div>
+    <div class="a-sec" style="margin-top:0;">Signature</div>
+    <div class="a-ack">I have read, understand and received a copy of this Agreement, and have knowingly and voluntarily signed it.</div>
+    <div class="a-fields">
+      <div class="a-f">
+        ${a.sigData ? `<img class="a-sigimg" src="${a.sigData}" alt="signature"><div style="border-bottom:1px solid #000;"></div>` : `<div class="a-line"></div>`}
+        <div class="l">Member Signature</div>
+      </div>
+      <div class="a-f"><div class="v">${fmtLongDate(a.sigDate) || "&nbsp;"}</div><div class="l">Date</div></div>
+    </div>
+    <div class="a-fields" style="margin-top:6px;">
+      <div class="a-f"><div class="a-line"></div><div class="l">Signed by Life Time</div></div>
+      <div class="a-f"><div class="v">${esc(a.assoc)}</div><div class="l">Per: Authorized Signing Person</div></div>
+    </div>
   </div>`;
 
-  h += `<div class="a-note" ${cx}><b>Member\u2019s copy.</b> This restates the Life Time Fitness Services Agreement in plain language. The signed original held at the club is the controlling document.</div>`;
-  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  h += `<div class="a-note"><b>Member\u2019s copy.</b> This restates the Life Time Fitness Services Agreement in plain language for your records. The signed original held at the club is the controlling document and prevails in any conflict. Prepared by ERN IT Coaching.</div>`;
+  h += `</div>`;
   return h;
 }
 
@@ -5531,13 +5556,269 @@ function renderAgreementTab(c){
       <div class="sig-meta" id="sigMeta">${sigMetaHtml(c)}</div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button class="scan-btn" style="flex:1;" onclick="exportAgreementPdf()">Print / Save PDF</button>
+    ${agOfficialSection(c)}
+
+    <div class="section-head" style="margin-top:22px;">Member\u2019s Plain-English Copy</div>
+    <div style="display:flex;gap:10px;">
+      <button class="scan-btn" style="flex:1;" onclick="exportAgreementPdf()">Print Summary</button>
       ${emailBtn}
     </div>
-    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.45;">Mail links can\u2019t attach files \u2014 the email carries the terms as text. Print / Save PDF gives you the signed copy for their file.</div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.45;">Optional. The summary restates the terms in plain language \u2014 hand it over alongside the official form, not instead of it.</div>
     ${agRecordHtml(c)}
   `;
+}
+
+/* ================================================================
+   OFFICIAL LIFE TIME FORM \u2014 coordinate fill (v30)
+   The blank PDF lives in this iPad's storage, never on the server.
+   Coordinates measured off the Gaithersburg 2/18/26 revision.
+   ================================================================ */
+const AG_BLANK_KEY = "ernit_ag_blank_v1";
+const PDFLIB_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js";
+const PG_H = 792;
+const TY = (yTop) => PG_H - yTop;
+
+const AG_XY = {
+  date:{x:445,y:98.0,w:88}, last:{x:68,y:115.0,w:138}, first:{x:212,y:115.0,w:138},
+  cell:{x:356,y:115.0,w:102}, home:{x:464,y:115.0,w:68},
+  city:{x:356,y:145.2,w:68}, state:{x:428,y:145.2,w:68}, zip:{x:500,y:145.2,w:34},
+  email:{x:68,y:174.3,w:282}, memberNo:{x:356,y:174.3,w:176},
+  service:{x:187,y:228.0,w:237},
+  startDate:{x:114,y:263.0,w:92}, redemption:{x:353,y:263.0,w:71}, fees:{x:470,y:263.0,w:62},
+  totalAmt:{x:410,y:305.1,w:86}, associate:{x:166,y:445.5,w:368},
+  todayPay:{x:328,y:509.8,w:60}, recurAmt:{x:480,y:556.3,w:38}, beginMonth:{x:497,y:567.7,w:36},
+};
+const AG_OVAL = {dues:{x:71.1,y:359.2}, tab:{x:272.9,y:360.9}, recurring:{x:71.1,y:394.8}};
+const AG_DAYBOX = {3:159.05, 10:250.5, 17:339.2, 24:431.75, 28:523.0};
+const AG_DAYBOX_Y = 415.9;
+const AG_SIG = {x:115, y:132.8, maxW:250, maxH:36};
+const AG_SIGDATE = {x:420, y:132.5};
+
+function loadPdfLib(){
+  if(window.PDFLib) return Promise.resolve(window.PDFLib);
+  return new Promise((res, rej)=>{
+    const el = document.createElement("script");
+    el.src = PDFLIB_SRC;
+    el.onload = ()=> res(window.PDFLib);
+    el.onerror = ()=> rej(new Error("Couldn\u2019t reach the PDF library \u2014 check your connection."));
+    document.head.appendChild(el);
+  });
+}
+
+function agBlank(){ try{ return localStorage.getItem(AG_BLANK_KEY); }catch(e){ return null; } }
+
+function agBlankLoad(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      localStorage.setItem(AG_BLANK_KEY, r.result);
+      renderModal();
+    }catch(e){ alert("Not enough room on this device to store the blank form."); }
+  };
+  r.readAsDataURL(file);
+}
+
+function agBlankClear(){
+  if(!confirm("Remove the blank agreement form from this device?")) return;
+  localStorage.removeItem(AG_BLANK_KEY);
+  renderModal();
+}
+
+function b64ToBytes(dataUrl){
+  const b64 = String(dataUrl).split(",")[1] || "";
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/* older signatures were saved on a white background \u2014 knock it out */
+function sigTransparent(dataUrl){
+  return new Promise((res)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const cv = document.createElement("canvas");
+      cv.width = img.width; cv.height = img.height;
+      const cx = cv.getContext("2d");
+      cx.drawImage(img, 0, 0);
+      try{
+        const d = cx.getImageData(0, 0, cv.width, cv.height);
+        const px = d.data;
+        for(let i = 0; i < px.length; i += 4){
+          if(px[i] > 235 && px[i+1] > 235 && px[i+2] > 235) px[i+3] = 0;
+        }
+        cx.putImageData(d, 0, 0);
+      }catch(e){}
+      res(cv.toDataURL("image/png"));
+    };
+    img.onerror = ()=> res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/* which month the recurring draft first lands in */
+function agBeginMonth(c){
+  if(agKind(c) !== "recurring") return "";
+  const a = agOf(c);
+  const iso = a.sigDate || a.startDate || todayISO();
+  const p = String(iso).split("-").map(Number);
+  if(p.length !== 3) return "";
+  let [yy, mm, dd] = p;
+  const draft = agBillDay(c);
+  if(draft && dd > draft){ mm++; if(mm > 12){ mm = 1; yy++; } }
+  return new Date(yy, mm - 1, 1).toLocaleDateString(undefined, {month:"short"}) + " " + yy;
+}
+
+/* StandardFonts are WinAnsi \u2014 anything exotic throws on draw */
+function agAscii(t){
+  return String(t == null ? "" : t)
+    .replace(/[\u00d7\u2715\u2716]/g, "x")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/[^\x20-\xff]/g, "");
+}
+
+function agFormData(c){
+  const a = agOf(c), m = agMoney(c), kind = agKind(c);
+  const num = (n) => n ? n.toLocaleString() : "";
+  return {
+    date: fmtLongDate(a.sigDate || a.startDate),
+    last: a.last, first: a.first,
+    cell: c.phone, home: a.phoneHome,
+    city: a.city, state: a.state, zip: a.zip,
+    email: c.email, memberNo: a.memberNo,
+    service: [a.serviceType, a.trainerLevel].filter(Boolean).join("  \u00b7  "),
+    startDate: fmtLongDate(a.startDate),
+    redemption: kind === "pack" ? "90 days" : "N/A",
+    fees: num(m.today),
+    totalAmt: kind === "pack" ? num(m.today) : "",
+    associate: a.assoc,
+    todayPay: num(m.today),
+    recurAmt: kind === "recurring" ? num(m.monthly) : "",
+    beginMonth: agBeginMonth(c),
+  };
+}
+
+async function buildOfficialPdf(c){
+  const blank = agBlank();
+  if(!blank) throw new Error("Load the blank agreement form first.");
+  const PDFLib = await loadPdfLib();
+  const {PDFDocument, StandardFonts, rgb} = PDFLib;
+
+  const pdf = await PDFDocument.load(b64ToBytes(blank));
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const pages = pdf.getPages();
+  const p1 = pages[0], pLast = pages[pages.length - 1];
+  const ink = rgb(0.05, 0.05, 0.15);
+
+  const fit = (f, t, size, maxW) => { let s = size; while(s > 5.5 && f.widthOfTextAtSize(t, s) > maxW) s -= 0.25; return s; };
+
+  const a = agOf(c), kind = agKind(c);
+  const data = agFormData(c);
+  Object.keys(data).forEach(k => {
+    const box = AG_XY[k];
+    const t = agAscii(data[k]);
+    if(!t || !box) return;
+    p1.drawText(t, {x:box.x, y:TY(box.y), size:fit(font, t, 9.5, box.w), font, color:ink});
+  });
+
+  const dot = (o) => p1.drawEllipse({x:o.x, y:TY(o.y + 3.0), xScale:3.1, yScale:2.0, color:ink});
+  if(a.payMethod === "dues") dot(AG_OVAL.dues);
+  if(a.payMethod === "tab")  dot(AG_OVAL.tab);
+
+  if(kind === "recurring"){
+    dot(AG_OVAL.recurring);
+    const day = agBillDay(c);
+    if(AG_DAYBOX[day]){
+      const w = bold.widthOfTextAtSize("X", 10);
+      p1.drawText("X", {x:AG_DAYBOX[day] - w/2, y:TY(AG_DAYBOX_Y), size:10, font:bold, color:ink});
+    }
+  }
+
+  if(a.sigData){
+    const png = await pdf.embedPng(await sigTransparent(a.sigData));
+    const sc = Math.min(AG_SIG.maxW / png.width, AG_SIG.maxH / png.height);
+    pLast.drawImage(png, {x:AG_SIG.x, y:TY(AG_SIG.y), width:png.width * sc, height:png.height * sc});
+    pLast.drawText(agAscii(fmtLongDate(a.sigDate)), {x:AG_SIGDATE.x, y:TY(AG_SIGDATE.y), size:9.5, font, color:ink});
+  }
+
+  return pdf.save();
+}
+
+function agFileName(c){
+  const a = agOf(c);
+  const who = ((a.first || "") + "-" + (a.last || "")).replace(/^-|-$/g, "") || "member";
+  return "Fitness-Services-Agreement-" + who.replace(/\s+/g, "-") + "-" + (a.sigDate || todayISO()) + ".pdf";
+}
+
+function agMarkExported(c){
+  const a = agOf(c);
+  if(a.sigData){ a.pdfAt = new Date().toISOString(); agSave(); }
+}
+
+async function saveOfficialPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const btn = document.getElementById("agOfficialBtn");
+  if(btn) btn.textContent = "Filling\u2026";
+  try{
+    const bytes = await buildOfficialPdf(c);
+    const blob = new Blob([bytes], {type:"application/pdf"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = agFileName(c);
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 4000);
+    agMarkExported(c);
+  }catch(e){ alert(e.message); }
+  renderModal();
+}
+
+async function shareOfficialPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const btn = document.getElementById("agShareBtn");
+  if(btn) btn.textContent = "Preparing\u2026";
+  try{
+    const bytes = await buildOfficialPdf(c);
+    const file = new File([bytes], agFileName(c), {type:"application/pdf"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:"Fitness Services Agreement"});
+      agMarkExported(c);
+    } else {
+      alert("This browser can\u2019t attach files to a share sheet. Use Fill Official PDF, then attach it from Files.");
+    }
+  }catch(e){ if(e && e.name !== "AbortError") alert(e.message || "Share cancelled."); }
+  renderModal();
+}
+
+function agOfficialSection(c){
+  const blank = agBlank();
+  const a = agOf(c);
+  if(!blank){
+    return `<div class="section-head" style="margin-top:22px;">Official Life Time Form</div>
+      <div style="font-size:11.5px;color:var(--grey);line-height:1.55;margin-bottom:10px;">Load the blank <b style="color:var(--white);">Fitness Services Agreement</b> PDF once. It stays on this iPad \u2014 it is never uploaded to the site or the cloud.</div>
+      <label class="scan-btn" style="display:block;text-align:center;cursor:pointer;">Load Blank Agreement PDF
+        <input type="file" accept="application/pdf" style="display:none;" onchange="agBlankLoad(this)"></label>`;
+  }
+  const kb = Math.round(blank.length * 0.75 / 1024);
+  const ready = !!a.sigData;
+  return `<div class="section-head" style="margin-top:22px;">Official Life Time Form</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#5fbf7f;margin-bottom:11px;">
+      <span>\u2713 Blank form loaded on this device \u00b7 ${kb} KB</span>
+      <span style="color:var(--grey-dim);text-decoration:underline;cursor:pointer;" onclick="agBlankClear()">Remove</span>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="scan-btn" id="agOfficialBtn" style="flex:1;${ready?"":"opacity:.5;"}" onclick="saveOfficialPdf()">Fill Official PDF</button>
+      <button class="scan-btn" id="agShareBtn" style="flex:1;${ready?"":"opacity:.5;"}" onclick="shareOfficialPdf()">Share / Email PDF</button>
+    </div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.45;">${ready
+      ? "Fills page 1 and stamps the signature on the last page. <b>Share</b> opens the iOS sheet \u2014 pick Mail and the PDF rides along as an attachment."
+      : "Sign above first. The fill needs a signature to stamp."}</div>`;
 }
 
 /* ============ INIT ============ */
