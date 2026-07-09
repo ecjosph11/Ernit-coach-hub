@@ -335,6 +335,70 @@
   .step-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
   .step-chip{font-size:10px;font-weight:800;letter-spacing:.5px;padding:5px 10px;border-radius:16px;border:1px solid var(--line);color:var(--grey-dim);}
   .step-chip.done{border-color:#1f6b38;color:#5fbf7f;background:rgba(31,107,56,.12);}
+
+  /* ===== v25 Program Design — ERN IT dark ===== */
+  .dz-hero{position:relative;background:linear-gradient(158deg,#1f1f1f 0%,#131313 60%,#0d0d0d 100%);border:1px solid var(--line);border-radius:16px;padding:19px 16px 15px;margin-bottom:14px;overflow:hidden;}
+  .dz-hero:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red) 0%,#ff5147 48%,transparent 100%);}
+  .dz-hero-k{font-size:9.5px;font-weight:900;letter-spacing:2.2px;color:var(--red);}
+  .dz-hero-t{font-size:25px;font-weight:900;color:var(--white);line-height:1.08;margin:5px 0 14px;letter-spacing:-.3px;}
+  .dz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .dz-stat{background:#0c0c0c;border:1px solid #282828;border-radius:11px;padding:11px 8px;text-align:center;}
+  .dz-stat b{display:block;font-size:25px;font-weight:900;color:var(--red);line-height:1;}
+  .dz-stat span{font-size:8.5px;font-weight:800;letter-spacing:1.1px;color:var(--grey-dim);}
+  .dz-legend{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 14px;}
+  .dz-chip{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:5px 11px 5px 7px;font-size:11px;font-weight:700;color:var(--white);}
+  .dz-dot{width:12px;height:12px;border-radius:3px;flex:0 0 12px;}
+  .dz-wrap{background:var(--dark);border:1px solid var(--line);border-radius:14px;padding:9px 9px 5px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .dz-table{border-collapse:separate;border-spacing:2px;width:100%;min-width:520px;}
+  .dz-table th{background:transparent;color:var(--grey-dim);font-size:9px;letter-spacing:1.4px;padding:4px 3px 7px;font-weight:900;}
+  .dz-bar td{padding:8px 11px;font-size:10.5px;font-weight:900;letter-spacing:.7px;color:#fff;border-radius:8px;}
+  .dz-wk{background:#101010;color:#4d4d4d;font-weight:900;font-size:11px;text-align:center;width:30px;border-radius:6px;}
+  .dz-cell{height:33px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#343434;background:#141414;border:1px solid #242424;border-radius:6px;transition:transform .1s ease,border-color .15s,color .15s;}
+  .dz-cell:active{transform:scale(.9);}
+  .dz-cell:hover{border-color:#3a3a3a;color:#5a5a5a;}
+  .dz-cell.on{color:#fff;}
+  .dz-plat td{background:transparent;text-align:right;padding:3px 2px 5px;}
+  .dz-plateau{display:inline-block;background:rgba(204,0,0,.13);color:#ff5f57;border:1px solid rgba(204,0,0,.4);font-size:8px;font-weight:900;letter-spacing:.7px;padding:3px 9px;border-radius:20px;}
+  .dz-exp{border-left:4px solid;border-radius:11px;background:var(--card);padding:12px 14px;margin-bottom:9px;}
+  .dz-exp h4{font-size:12.5px;font-weight:900;color:var(--white);margin:0 0 5px;}
+  .dz-exp li{font-size:11.5px;color:var(--grey);line-height:1.6;}
+  .dz-picker{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9998;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
+  .dz-sheet{background:#141414;border:1px solid var(--line);border-bottom:none;border-top-left-radius:20px;border-top-right-radius:20px;width:min(520px,100%);padding:18px 15px 28px;}
+  .dz-opt{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:11px;margin-bottom:8px;font-weight:900;font-size:14.5px;cursor:pointer;}
+  .dz-opt:active{transform:scale(.98);}
+  .dz-band{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:12px;padding:13px 15px;margin-bottom:14px;}
+  /* ===== v25 multi-activity cells + agreement ===== */
+  .dz-cell.multi{padding:0;background:transparent !important;border:none !important;}
+  .dz-stack{display:flex;flex-direction:column;gap:2px;height:33px;}
+  .dz-seg{flex:1 1 0;display:flex;align-items:center;justify-content:center;font-size:7.5px;font-weight:900;letter-spacing:.2px;line-height:1;border-radius:5px;}
+  .dz-stack.solo .dz-seg{font-size:8px;}
+  .ag-warn{background:#2a1010;border:1px solid #8a2b2b;border-radius:11px;padding:11px 13px;margin-bottom:14px;}
+  .ag-warn .aw-t{font-size:11px;font-weight:900;letter-spacing:1.2px;color:#ff6b6b;margin-bottom:4px;}
+  .ag-warn .aw-b{font-size:11.5px;color:var(--grey);line-height:1.55;}
+  .ag-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:7px 0;border-bottom:1px solid var(--line);}
+  .ag-row .ag-k{color:var(--grey-dim);}
+  .ag-row .ag-v{color:var(--white);font-weight:800;text-align:right;}
+  .ag-sum{margin:0;padding-left:18px;}
+  .ag-sum li{font-size:11.5px;color:var(--grey);line-height:1.6;margin-bottom:6px;}
+  .ag-sum li b{color:var(--white);}
+  .sig-pad{width:100%;height:150px;background:#fff;border-radius:10px;border:2px dashed #6a6a6a;display:block;touch-action:none;}
+  .sig-meta{flex:1;font-size:10.5px;color:var(--grey-dim);display:flex;align-items:center;line-height:1.4;}
+</style>
+<style id="v25print">
+@media print{
+  .a-head{background:#CC0000 !important;color:#fff !important;padding:12px 14px;font-weight:900;font-size:13px;display:flex;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .a-sec{font-size:12px;font-weight:900;border-bottom:2px solid #CC0000;margin:14px 0 5px;padding-bottom:2px;}
+  .a-grid{width:100%;border-collapse:collapse;font-size:10px;}
+  .a-grid td{border:1px solid #999;padding:4px 6px;text-align:left;}
+  .a-grid td.k{background:#f2f2f2 !important;font-weight:800;width:34%;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .a-terms{padding-left:16px;margin:4px 0;}
+  .a-terms li{font-size:9.6px;line-height:1.45;margin-bottom:4px;}
+  .a-sigbox{margin-top:10px;border:1px solid #999;padding:8px 10px;page-break-inside:avoid;}
+  .a-sigimg{height:54px;display:block;}
+  .a-line{border-bottom:1px solid #000;height:24px;margin-top:16px;}
+  .a-cap{font-size:8.5px;color:#555;margin-top:2px;}
+  .a-note{margin-top:12px;font-size:9px;border:1px solid #CC0000;padding:7px 9px;page-break-inside:avoid;}
+}
 </style>
 </head>
 <body>
@@ -418,9 +482,45 @@ const STORE_KEY = "ernit_hub_clients_v1";
 function loadClients(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }catch(e){ return {}; } }
 function saveClients(obj){ localStorage.setItem(STORE_KEY, JSON.stringify(obj)); }
 
+/* ============ AGREEMENTS \u2014 THIS DEVICE ONLY ============
+   Signatures and member numbers never touch Firebase. They live in
+   localStorage under their own key and are stripped from anything
+   that goes up to the cloud. Paper stays paper; this stays on the iPad.
+   ========================================================== */
+const AG_KEY = "ernit_agreements_v1";
+const AG_DEF = {first:"", last:"", city:"", state:"MD", zip:"", memberNo:"", phoneHome:"",
+  serviceType:"", trainerLevel:"", startDate:"", payMethod:"", kind:"",
+  sigData:"", sigDate:"", sigAt:"", pdfAt:"", assoc:"Ernest Joseph Jr."};
+
+function loadAgreements(){ try{ return JSON.parse(localStorage.getItem(AG_KEY)) || {}; }catch(e){ return {}; } }
+let agreements = loadAgreements();
+
+function agSave(){
+  try{ localStorage.setItem(AG_KEY, JSON.stringify(agreements)); return true; }
+  catch(e){ alert("This device is out of storage \u2014 the agreement did not save. Clear an old client and try again."); return false; }
+}
+
+function agOf(c){
+  let a = agreements[c.id];
+  if(!a) a = agreements[c.id] = Object.assign({}, AG_DEF);
+  Object.keys(AG_DEF).forEach(k=>{ if(a[k] === undefined) a[k] = AG_DEF[k]; });
+  return a;
+}
+
+/* pull any agreement that rode in on a client object, then scrub it */
+function agAdopt(c){
+  if(c && c.agreement){
+    agreements[c.id] = Object.assign({}, AG_DEF, agreements[c.id] || {}, c.agreement);
+    delete c.agreement;
+    agSave();
+  }
+}
+
 function pushClientToFirebase(id, client){
   if(!hubDb || !hubAuthed) return;
-  hubDb.ref("clients/" + id).set(client).catch(e=>console.warn("write failed", e.message));
+  const wire = Object.assign({}, client);
+  delete wire.agreement;              /* belt */
+  hubDb.ref("clients/" + id).set(wire).catch(e=>console.warn("write failed", e.message));
 }
 
 function newClientId(){ return "c_" + Date.now() + "_" + Math.random().toString(36).slice(2,7); }
@@ -532,7 +632,8 @@ function closeModal(){
 function deleteClient(){
   if(!confirm("Delete this client permanently? This can't be undone.")) return;
   delete clients[activeClientId];
-  saveClients(clients);
+  delete agreements[activeClientId];
+  saveClients(clients); agSave();
   if(hubDb && hubAuthed) hubDb.ref("clients/" + activeClientId).remove();
   closeModal();
 }
@@ -544,7 +645,9 @@ const TABS = [
   {id:"inbody", label:"InBody"},
   {id:"assess", label:"Assess"},
   {id:"summary", label:"Summary"},
+  {id:"design", label:"Program Design"},
   {id:"recommend", label:"Program Rec"},
+  {id:"agreement", label:"Agreement"},
   {id:"program", label:"Builder"},
   {id:"nutrition", label:"Nutrition"},
 ];
@@ -568,10 +671,14 @@ function renderModal(){
   else if(activeTab === "intake") scroll.innerHTML = renderIntakeTab(c);
   else if(activeTab === "assess") scroll.innerHTML = renderAssessTab(c);
   else if(activeTab === "inbody") scroll.innerHTML = renderInbodyTab(c);
-  else if(activeTab === "recommend") scroll.innerHTML = renderRecommendTab(c);
+  else if(activeTab === "recommend") scroll.innerHTML = designBanner(c) + renderRecommendTab(c);
+  else if(activeTab === "agreement") scroll.innerHTML = renderAgreementTab(c);
   else if(activeTab === "summary") scroll.innerHTML = renderSummaryTab(c);
+  else if(activeTab === "design") scroll.innerHTML = renderDesignTab(c);
   else if(activeTab === "program") scroll.innerHTML = renderProgramTab(c);
   else if(activeTab === "nutrition") scroll.innerHTML = renderNutritionTab(c);
+
+  if(activeTab === "agreement") initSigPad();
 
   document.getElementById("saveStatus").textContent = c.lastSavedAt ? "Last saved " + c.lastSavedAt : "Not saved yet";
 }
@@ -1074,8 +1181,18 @@ function migrateClient(c){
   if(!Array.isArray(c.nutrition.weekPlan)) c.nutrition.weekPlan = [];
   if(c.nutrition.weekDay === undefined) c.nutrition.weekDay = 0;
   if(!c.nutrition.planSpan) c.nutrition.planSpan = "1";
+  if(!c.design || !Array.isArray(c.design.phases) || c.design.phases.length !== 4){
+    c.design = {phases:[0,1,2,3].map(()=>({days:["","","","","","",""]}))};
+  }
+  c.design.phases.forEach(p=>{
+    if(!Array.isArray(p.days)) p.days = [];
+    while(p.days.length < 7) p.days.push("");
+    p.days = p.days.slice(0,7).map(x => x || "");
+  });
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
   c.followup = c.followup || null;
+
+  agAdopt(c);
 }
 
 /* ============ DIRECT-WRITE HELPERS ============ */
@@ -1901,6 +2018,13 @@ function collectFormIntoClient(){
     });
     const waEl = document.getElementById('g_workoutA');
     if(waEl) c.program.workoutAText = waEl.value;
+  } else if(activeTab === "agreement"){
+    const a = agOf(c);
+    ["first","last","city","state","zip","memberNo","phoneHome","serviceType","trainerLevel","startDate","assoc"].forEach(k=>{
+      const el = document.getElementById("ag_" + k);
+      if(el) a[k] = el.value;
+    });
+    agSave();
   } else if(activeTab === "nutrition"){
     const n = c.nutrition;
     const notesEl = document.getElementById("n_notes");
@@ -2000,7 +2124,7 @@ function computeNutrition(c){
   if(mode === "bulk") cal += 250;
   else if(mode === "cut") cal -= deficit;
   cal = Math.round(cal);
-  const protein = Math.round(lbm);              /* 1g per lb LBM — held high in every mode */
+  const protein = Math.round(lbm * 1.25);      /* 1.25g per lb LBM — held high in every mode */
   const fat = Math.round(cal * 0.275 / 9);
   const carbs = Math.round((cal - protein*4 - fat*9) / 4);
   return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:Math.round(lbm*10)/10};
@@ -2166,7 +2290,9 @@ function computeRecommendation(c){
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
   else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
   const mobN = assessmentFixes(c).length;
-  if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
+  const dsA = (typeof designSummary === "function") ? designSummary(c) : null;
+  if(dsA && dsA.stretchPerWeek[0] > 0) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"In the plan \u2014 " + dsA.stretchPerWeek[0] + "\u00d7/week in Phase 1, " + dsA.totals.stretch + " sessions across the 24 weeks."});
+  else if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
   else if(r.energy === "yes") addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Improves range of motion & recovery between sessions."});
 
   const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
@@ -2443,6 +2569,18 @@ function neededFrequency(c){
   }
 
   if(freq === 2 && !muscle) why.push("2\u00d7/week coached sessions cover the goal — independent cardio days carry the rest.");
+  const _ds = (typeof designSummary === "function") ? designSummary(c) : null;
+  if(_ds && _ds.hasPlan && _ds.trainerPerWeek[0] > 0){
+    const p1 = _ds.perWeek[0];
+    const bits = [];
+    if(p1.ghost) bits.push(p1.ghost + " ghost workout" + (p1.ghost === 1 ? "" : "s"));
+    if(p1.cardio) bits.push(p1.cardio + " steady-state cardio day" + (p1.cardio === 1 ? "" : "s"));
+    if(p1.classes) bits.push(p1.classes + " class" + (p1.classes === 1 ? "" : "es"));
+    if(p1.stretch) bits.push(p1.stretch + " stretch session" + (p1.stretch === 1 ? "" : "s"));
+    why.unshift("Built together on the 24-week plan \u2014 Phase 1 runs " + p1.trainer + " coached session" + (p1.trainer === 1 ? "" : "s") + "/week" + (bits.length ? ", plus " + bits.join(", ") : "") + ".");
+    if(_ds.trainerPerWeek[0] > 3) why.push("The plan has " + _ds.trainerPerWeek[0] + " coached days \u2014 monthly pricing tops out at 3\u00d7; the extra day programs as a ghost workout.");
+    return {freq: Math.min(Math.max(_ds.trainerPerWeek[0], 1), 3), why, rate, pct, design:_ds};
+  }
   return {freq: Math.min(freq, 3), why, rate, pct};
 }
 
@@ -2474,7 +2612,9 @@ function computeRecommendation(c){
   if(r.nutrition === "yes") addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 (30 min) / $130 (60 min)", detail:"One-on-one review, macro targets & strategy."});
   else if(c.intake.nutritionRating !== "" && parseInt(c.intake.nutritionRating) <= 2) addons.push({name:"Nutrition Consultation", low:70, priceLabel:"$70 / $130", detail:"Suggested — self-rated nutrition " + c.intake.nutritionRating + "/5."});
   const mobN = assessmentFixes(c).length;
-  if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
+  const dsA = (typeof designSummary === "function") ? designSummary(c) : null;
+  if(dsA && dsA.stretchPerWeek[0] > 0) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"In the plan \u2014 " + dsA.stretchPerWeek[0] + "\u00d7/week in Phase 1, " + dsA.totals.stretch + " sessions across the 24 weeks."});
+  else if(mobN >= 2) addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Suggested — the movement screen flagged " + mobN + " mobility faults. Hands-on stretch accelerates the corrective work."});
   else if(r.energy === "yes") addons.push({name:"Dynamic Partner Stretch", low:80, priceLabel:"$80 (30 min) / $150 (60 min)", detail:"Improves range of motion & recovery between sessions."});
 
   const firstMonth = primary.priceNum + addons.reduce((s,a)=>s+a.low, 0);
@@ -2574,7 +2714,7 @@ function computeNutrition(c){
   if(mode === "bulk") cal += 250;
   else if(mode === "cut") cal -= deficit;
   cal = Math.round(cal);
-  const protein = Math.round(lbmUsed);          /* 1g per lb LBM from the InBody tab */
+  const protein = Math.round(lbmUsed * 1.25);   /* 1.25g per lb LBM from the InBody tab */
   const fat = Math.round(cal * 0.275 / 9);
   const carbs = Math.round((cal - protein*4 - fat*9) / 4);
   return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:Math.round(derivedLbm*10)/10, lbmUsed};
@@ -2695,7 +2835,7 @@ function computeNutrition(c){
   if(mode === "bulk") cal += 250;
   else if(mode === "cut") cal -= deficit;
   cal = Math.round(cal);
-  const protein = Math.round(lbmUsed);
+  const protein = Math.round(lbmUsed * 1.25);   /* 1.25g per lb LBM */
   const fat = Math.round(cal * 0.275 / 9);
   const carbs = Math.round((cal - protein*4 - fat*9) / 4);
   return {calories:cal, protein, fat, carbs, mode, recommended:rec, deficit, lbm:derivedLbm, lbmUsed, heightIn:h};
@@ -2752,8 +2892,8 @@ function selectedProgram(c){
 function selectedExtras(c){
   const r = c.recommend;
   const items = [];
-  if(r.nutriSel === "30") items.push({label:"Nutrition Consult 30 min", price:70});
-  if(r.nutriSel === "60") items.push({label:"Nutrition Consult 60 min", price:130});
+  if(r.nutriSel === "30") items.push({label:"Nutrition Consult 30 min", price:90});
+  if(r.nutriSel === "60") items.push({label:"Nutrition Consult 60 min", price:175});
   if(r.stretchSel === "30") items.push({label:"Dynamic Partner Stretch 30 min", price:80});
   if(r.stretchSel === "60") items.push({label:"Dynamic Partner Stretch 60 min", price:150});
   return items;
@@ -2800,8 +2940,8 @@ function renderSelectionSection(c){
       <div class="field-group"><label class="field-label">Nutrition Consultation</label>
         <div class="rate-row">
           <div class="rate-btn ${(r.nutriSel||"none")==="none"?"on":""}" onclick="setRecField('nutriSel','none')" style="font-size:11.5px;">None</div>
-          <div class="rate-btn ${r.nutriSel==="30"?"on":""}" onclick="setRecField('nutriSel','30')" style="font-size:11.5px;">30m $70</div>
-          <div class="rate-btn ${r.nutriSel==="60"?"on":""}" onclick="setRecField('nutriSel','60')" style="font-size:11.5px;">60m $130</div>
+          <div class="rate-btn ${r.nutriSel==="30"?"on":""}" onclick="setRecField('nutriSel','30')" style="font-size:11.5px;">30m $90</div>
+          <div class="rate-btn ${r.nutriSel==="60"?"on":""}" onclick="setRecField('nutriSel','60')" style="font-size:11.5px;">60m $175</div>
         </div></div>
       <div class="field-group"><label class="field-label">Dynamic Partner Stretch</label>
         <div class="rate-row">
@@ -3130,7 +3270,7 @@ function buildNutritionPrintHtml(c){
         <tr><th style="text-align:left;">Approach</th><th>Calories</th><th>Protein</th><th>Fat</th><th>Carbs</th></tr>
         <tr><td style="text-align:left;"><b>${modeLine}</b></td><td><b>${calc.calories} kcal</b></td><td>${calc.protein} g</td><td>${calc.fat} g</td><td>${calc.carbs} g</td></tr>
       </table>
-      <div class="p-rule">Protein = 1g per lb of lean body mass (${calc.lbmUsed} lbs). Every calorie is computed from macros \u2014 P\u00d74 + C\u00d74 + F\u00d79. Portions are gram-weighed.</div>`;
+      <div class="p-rule">Protein = 1.25g per lb of lean body mass (${calc.lbmUsed} lbs). Every calorie is computed from macros \u2014 P\u00d74 + C\u00d74 + F\u00d79. Portions are gram-weighed.</div>`;
   } else {
     h += `<div class="p-phase-head">Daily Targets</div><div class="p-rule">Targets pending \u2014 complete Intake (height, age, gender) and InBody (weight, BF%).</div>`;
   }
@@ -3148,7 +3288,7 @@ function buildNutritionPrintHtml(c){
         const m = foodMacros(it.f, it.q, c);
         if(!m) return;
         const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
-        const unit = (db[it.f] || {}).per === "srv" ? " scoop" : " g";
+        const q1 = parseFloat(it.q) || 0; const unit = (db[it.f] || {}).per === "srv" ? (q1 === 1 ? " serving" : " servings") : " g";
         mt.kcal += m.kcal; mt.p += m.p; mt.f += m.f; mt.c += m.c;
         h += `<tr><td style="text-align:left;">${esc(m.name)}</td><td>${esc(it.q)}${unit}</td><td>${m.kcal}</td><td>${m.p}</td><td>${m.c}</td><td>${m.f}</td></tr>`;
       });
@@ -3207,6 +3347,7 @@ function startHubSync(){
     Object.keys(remote).forEach(id => {
       if(id === activeClientId) return; /* don't stomp the client being edited */
       clients[id] = remote[id];
+      if(clients[id] && clients[id].agreement) delete clients[id].agreement;
     });
     saveClients(clients);
     renderRoster();
@@ -3771,7 +3912,7 @@ function renderRoster(){
 }
 
 function exportBackup(){
-  const blob = new Blob([JSON.stringify({exportedAt: new Date().toISOString(), clients}, null, 2)], {type:"application/json"});
+  const blob = new Blob([JSON.stringify({exportedAt: new Date().toISOString(), clients, agreements}, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "ernit-hub-backup-" + todayISO() + ".json";
@@ -4059,7 +4200,7 @@ function buildNutritionWeekPrintHtml(c){
         <tr><th style="text-align:left;">Approach</th><th>Calories</th><th>Protein</th><th>Fat</th><th>Carbs</th></tr>
         <tr><td style="text-align:left;"><b>${modeLine}</b></td><td><b>${calc.calories} kcal</b></td><td>${calc.protein} g</td><td>${calc.fat} g</td><td>${calc.carbs} g</td></tr>
       </table>
-      <div class="p-rule">Protein = 1g per lb of lean body mass (${calc.lbmUsed} lbs). Portions are gram-weighed \u2014 the food scale is not optional.</div>`;
+      <div class="p-rule">Protein = 1.25g per lb of lean body mass (${calc.lbmUsed} lbs). Portions are gram-weighed \u2014 the food scale is not optional.</div>`;
   }
 
   const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
@@ -4073,7 +4214,7 @@ function buildNutritionWeekPrintHtml(c){
         if(!it.f) return;
         const m = foodMacros(it.f, it.q, c);
         if(!m) return;
-        const unit = (db[it.f] || {}).per === "srv" ? " scoop" : " g";
+        const q1 = parseFloat(it.q) || 0; const unit = (db[it.f] || {}).per === "srv" ? (q1 === 1 ? " serving" : " servings") : " g";
         day.kcal += m.kcal; day.p += m.p; day.f += m.f; day.c += m.c;
         h += `<tr><td style="text-align:left;">${esc(m.name)}</td><td>${esc(it.q)}${unit}</td><td>${m.kcal}</td><td>${m.p}</td><td>${m.c}</td><td>${m.f}</td></tr>`;
       });
@@ -4286,6 +4427,1117 @@ function setLogHtml(ex, dIdx, eIdx){
     ${body || '<div style="font-size:11px;color:var(--grey-dim);padding:4px 0;">No sets logged. Add rows to match the prescription.</div>'}
     <div class="slog-add" onclick="addSetRow(${dIdx},${eIdx})">+ Add set${targetSets && !logs.length ? ` (target ${targetSets})` : ""}</div>
   </div>`;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v23 — solver reconciliation, honest grocery units,
+   real Sunday prep (cook vs portion)
+   ================================================================ */
+
+/* foods that never see heat */
+const NO_COOK = new Set(["tuna_canned_water","greek_yogurt_nonfat","cottage_cheese_lowfat",
+  "whole_wheat_bread","banana","mixed_berries","apple","rice_cake",
+  "chickpeas_cooked","black_beans_cooked",
+  "spinach","kale","mixed_greens","bell_pepper","cucumber","tomato"]);
+/* cooked the morning of — never batch-cooked */
+const COOK_FRESH = new Set(["egg_whole","egg_whites"]);
+
+function prepClass(key, food){
+  if(food.g === "LTH") return "lth";
+  if(key === "oats_dry") return "dry";
+  if(COOK_FRESH.has(key)) return "fresh";
+  if(food.g === "Fat") return "portion";
+  if(NO_COOK.has(key)) return "portion";
+  return "cook";
+}
+
+/* "7 servings (14 scoops)" — kills the scoop/serving contradiction */
+function srvQtyLabel(food, n){
+  const rounded = Math.round(n * 10) / 10;
+  const base = rounded + (rounded === 1 ? " serving" : " servings");
+  const m = /(\d+)\s*(scoops?|softgels?|capsules?)/i.exec(food.n || "");
+  if(!m) return base;
+  const per = parseInt(m[1]), unit = m[2].toLowerCase().replace(/s$/, "");
+  const total = Math.round(rounded * per);
+  return base + " (" + total + " " + unit + (total === 1 ? "" : "s") + ")";
+}
+
+/* ---------- solver: reserve fixed servings, then reconcile to target ---------- */
+function dayMacroTotals(meals, c){
+  const t = {p:0, c:0, f:0, kcal:0};
+  (meals || []).forEach(m => (m.items || []).forEach(it => {
+    const x = foodMacros(it.f, it.q, c);
+    if(x){ t.p += x.p; t.c += x.c; t.f += x.f; t.kcal += x.kcal; }
+  }));
+  return t;
+}
+
+function capFor(role, key){
+  if(role === "P") return 300;
+  if(role === "C") return 350;
+  return (key === "olive_oil" || key === "tahini") ? 20 : 60;
+}
+
+function reconcileDay(meals, tpl, calc, c){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  const lastMeal = meals[meals.length - 1];
+  const lastSlot = tpl[tpl.length - 1];
+  if(!lastMeal || !lastSlot) return;
+  const roleFood = role => {
+    const it = (lastSlot.items || []).find(x => x.role === role);
+    return it ? it.f : null;
+  };
+  const plan = [["P","p"], ["C","c"], ["F","f"]];
+  for(let pass = 0; pass < 5; pass++){
+    plan.forEach(([role, m]) => {
+      const key = roleFood(role);
+      if(!key) return;
+      const food = db[key];
+      if(!food || food.per === "srv") return;
+      const perg = food[m] / 100;
+      if(!perg || perg <= 0) return;
+      const target = m === "p" ? calc.protein : m === "c" ? calc.carbs : calc.fat;
+      const delta = target - dayMacroTotals(meals, c)[m];
+      if(Math.abs(delta) < 0.4) return;
+      let item = lastMeal.items.find(x => x.f === key);
+      if(!item){
+        if(delta <= 0) return;
+        item = {f: key, q: "0"};
+        lastMeal.items.push(item);
+      }
+      let q = (parseFloat(item.q) || 0) + delta / perg;
+      q = Math.min(Math.max(0, Math.round(q / 5) * 5), capFor(role, key));
+      item.q = String(q);
+    });
+  }
+  lastMeal.items = lastMeal.items.filter(x => (parseFloat(x.q) || 0) > 0);
+}
+
+function solveDayPlanTpl(c, calc, tpl){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+
+  /* fixed-serving items (shakes) are non-negotiable — reserve them off the budget first */
+  const resBy = tpl.map(slot => {
+    const r = {p:0, c:0, f:0};
+    (slot.items || []).forEach(it => {
+      const f = db[it.f];
+      if(f && f.per === "srv"){ r.p += f.p; r.c += f.c; r.f += f.f; }
+    });
+    return r;
+  });
+  const res = resBy.reduce((a,b)=>({p:a.p+b.p, c:a.c+b.c, f:a.f+b.f}), {p:0,c:0,f:0});
+  const budget = {
+    p: Math.max(calc.protein - res.p, 0),
+    c: Math.max(calc.carbs - res.c, 0),
+    f: Math.max(calc.fat - res.f, 0)
+  };
+
+  let rem = {p: calc.protein, c: calc.carbs, f: calc.fat};
+  const meals = [];
+  tpl.forEach((slot, si) => {
+    const last = si === tpl.length - 1;
+    const r = resBy[si];
+    const tgt = last
+      ? {p: Math.max(rem.p, 0), c: Math.max(rem.c, 0), f: Math.max(rem.f, 0)}
+      : {p: Math.min(budget.p * slot.pct + r.p, Math.max(rem.p, 0)),
+         c: Math.min(budget.c * slot.pct + r.c, Math.max(rem.c, 0)),
+         f: Math.min(budget.f * slot.pct + r.f, Math.max(rem.f, 0))};
+    const acc = {p:0, c:0, f:0};
+    const items = [];
+    const addItem = (key, q) => {
+      const m = foodMacros(key, q, c);
+      if(!m) return;
+      acc.p += m.p; acc.c += m.c; acc.f += m.f;
+      items.push({f:key, q:String(q)});
+    };
+    slot.items.filter(it => it.fixed).forEach(it => addItem(it.f, it.q));
+    ["P","C","F"].forEach(role => {
+      slot.items.filter(it => it.role === role).forEach(it => {
+        const food = db[it.f];
+        if(!food) return;
+        let q;
+        if(food.per === "srv"){ q = 1; }
+        else {
+          const perg = {P: food.p/100, C: food.c/100, F: food.f/100}[role];
+          if(!perg || perg <= 0) return;
+          const need = {P: tgt.p - acc.p, C: tgt.c - acc.c, F: tgt.f - acc.f}[role];
+          q = Math.round(Math.max(need, 0) / perg / 5) * 5;
+          q = Math.min(q, capFor(role, it.f));
+        }
+        if(food.per === "srv" ? q >= 1 : q >= 10) addItem(it.f, q);
+      });
+    });
+    rem.p -= acc.p; rem.c -= acc.c; rem.f -= acc.f;
+    meals.push({name: slot.label, items});
+  });
+
+  reconcileDay(meals, tpl, calc, c);
+  return meals;
+}
+
+/* ---------- grocery: exact grams, servings not scoops ---------- */
+function groceryData(c){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  const wk = (c.nutrition.weekPlan || []).length ? c.nutrition.weekPlan : [{meals: c.nutrition.meals || []}];
+  const agg = {};
+  wk.forEach(d => (d.meals || []).forEach(m => (m.items || []).forEach(it => {
+    if(!it.f || !db[it.f]) return;
+    const q = parseFloat(it.q) || 0;
+    if(!agg[it.f]) agg[it.f] = {srv:0, g:0};
+    if(db[it.f].per === "srv") agg[it.f].srv += q; else agg[it.f].g += q;
+  })));
+  const groups = {};
+  Object.keys(agg).forEach(k => {
+    const food = db[k];
+    const grp = food.g || "Other";
+    if(!groups[grp]) groups[grp] = [];
+    const a = agg[k];
+    const qty = a.srv ? srvQtyLabel(food, a.srv) : (Math.round(a.g / 5) * 5) + " g";
+    groups[grp].push({
+      name: (food.n || k).split(" (")[0],
+      qty, key: k, grams: a.g, srv: a.srv,
+      cls: prepClass(k, food)
+    });
+  });
+  return groups;
+}
+
+/* ---------- Sunday prep: built from the actual foods, not a template ---------- */
+function sundayPrepLines(c, groups){
+  const isWeek = (c.nutrition.weekPlan || []).length >= 5;
+  const all = Object.keys(groups).reduce((a, g) => a.concat(groups[g].map(x => Object.assign({grp:g}, x))), []);
+  const pick = (grp, cls) => all.filter(x => x.grp === grp && x.cls === cls);
+  const names = arr => arr.map(x => x.name).join(", ");
+  const withQty = arr => arr.map(x => x.name + " (" + x.qty + ")").join(", ");
+  const lines = [];
+
+  const cookP = pick("Protein","cook");
+  if(cookP.length){
+    lines.push("<b>Batch-cook the proteins:</b> season and cook " + withQty(cookP) + " in one session. Weigh cooked portions \u2014 the gram amounts in the day tables are cooked weight.");
+    if(isWeek) lines.push("<b>Split the week:</b> Days 1\u20134 straight to the fridge, Days 5\u20137 into the freezer. Move the frozen portions down to the fridge Thursday night.");
+  }
+  const freshP = pick("Protein","fresh");
+  if(freshP.length) lines.push("<b>Cook fresh, morning-of:</b> " + names(freshP) + ". Do not batch these \u2014 four-day-old scrambled eggs are how people quit.");
+  const portP = pick("Protein","portion");
+  if(portP.length) lines.push("<b>No cooking \u2014 portion only:</b> " + withQty(portP) + ". Split into containers Sunday, or buy single-serve cups and skip the step.");
+
+  const cookC = pick("Carb","cook");
+  if(cookC.length) lines.push("<b>Cook the carbs once:</b> " + withQty(cookC) + ". Portion by the gram amounts on each day\u2019s table \u2014 not by eye.");
+  const dryC = pick("Carb","dry");
+  if(dryC.length) lines.push("<b>Measure dry:</b> " + withQty(dryC) + " \u2014 weigh into jars now, cook each morning.");
+  const portC = pick("Carb","portion");
+  if(portC.length) lines.push("<b>Grab-and-go:</b> " + names(portC) + ". Buy them, don\u2019t prep them.");
+
+  const cookV = pick("Veg","cook");
+  const rawV = pick("Veg","portion");
+  if(cookV.length) lines.push("<b>Roast the vegetables:</b> " + withQty(cookV) + ". Sheet pan, 400\u00b0F, done while the protein rests.");
+  if(rawV.length) lines.push("<b>Wash + store raw:</b> " + names(rawV) + ".");
+
+  const fats = pick("Fat","portion");
+  if(fats.length) lines.push("<b>Fats \u2014 weigh, never pour:</b> " + withQty(fats) + ". This is the number most people miss by 200 calories a day.");
+
+  const lth = all.filter(x => x.cls === "lth");
+  if(lth.length) lines.push("<b>LTH:</b> " + lth.map(x => x.name + " \u2014 " + x.qty).join("; ") + " this week. Auto-ship saves 10%.");
+
+  lines.push("<b>The rule:</b> gram-weigh everything once, on Sunday. Zero decisions on weekdays \u2014 decisions are where diets die.");
+  return lines;
+}
+
+/* ================================================================
+   v23b — density-aware caps + multi-anchor reconciliation
+   ================================================================ */
+
+function capFor(role, key){
+  if(role === "P") return 300;
+  if(role === "C") return 350;
+  const food = FOOD_DB[key] || {};
+  const dens = (food.f || 20) / 100;   /* g fat per g food */
+  if(dens >= 0.50) return 30;          /* oils, tahini, walnuts, peanut butter */
+  if(dens >= 0.40) return 60;          /* almonds, flax */
+  return 200;                          /* avocado, hummus, chia — low density */
+}
+
+/* every adjustable anchor for a macro role, last meal first */
+function macroAnchors(tpl, role){
+  const out = [];
+  for(let i = tpl.length - 1; i >= 0; i--){
+    const it = (tpl[i].items || []).find(x => x.role === role);
+    if(it) out.push({mealIdx: i, key: it.f});
+  }
+  return out;
+}
+
+/* push `delta` grams of `mk` through the anchors, respecting caps and floors */
+function applyMacroDelta(meals, c, anchors, role, mk, delta){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  for(const a of anchors){
+    if(Math.abs(delta) < 0.3) break;
+    const food = db[a.key];
+    if(!food || food.per === "srv") continue;
+    const perg = (food[mk] || 0) / 100;
+    if(perg <= 0) continue;
+    const meal = meals[a.mealIdx];
+    if(!meal) continue;
+    let item = meal.items.find(x => x.f === a.key);
+    if(!item){
+      if(delta <= 0) continue;
+      item = {f: a.key, q: "0"};
+      meal.items.push(item);
+    }
+    const q0 = parseFloat(item.q) || 0;
+    const want = q0 + delta / perg;
+    const q1 = Math.min(Math.max(0, Math.round(want / 5) * 5), capFor(role, a.key));
+    delta -= (q1 - q0) * perg;
+    item.q = String(q1);
+  }
+}
+
+function reconcileDay(meals, tpl, calc, c){
+  /* fat first (least cross-talk), protein next, carbs absorb the remainder */
+  const order = [["F","f","fat"], ["P","p","protein"], ["C","c","carbs"]];
+  const anchors = {F: macroAnchors(tpl,"F"), P: macroAnchors(tpl,"P"), C: macroAnchors(tpl,"C")};
+  for(let pass = 0; pass < 10; pass++){
+    order.forEach(([role, mk, tk]) => {
+      const target = tk === "protein" ? calc.protein : tk === "carbs" ? calc.carbs : calc.fat;
+      const delta = target - dayMacroTotals(meals, c)[mk];
+      if(Math.abs(delta) < 0.3) return;
+      applyMacroDelta(meals, c, anchors[role], role, mk, delta);
+    });
+  }
+  meals.forEach(m => { m.items = m.items.filter(x => (parseFloat(x.q) || 0) > 0); });
+}
+
+/* ================================================================
+   v23c — protein weighted to main meals; dinner protected from the reconciler
+   ================================================================ */
+
+/* protein leans on meals, not snacks. index 1 = the reserved shake slot. */
+const PROTEIN_PCT = [0.22, 0.00, 0.32, 0.06, 0.40];
+
+/* a main meal keeps a real protein portion unless the math truly forbids it */
+const P_FLOOR = {
+  egg_whites:60, greek_yogurt_nonfat:120, cottage_cheese_lowfat:80,
+  tuna_canned_water:60, firm_tofu:120, tempeh:100, edamame:80, lentils_cooked:100
+};
+function floorFor(role, key, isMain){
+  if(role !== "P" || !isMain) return 0;
+  return P_FLOOR[key] || 100;   /* ~4oz cooked animal protein */
+}
+
+function macroAnchors(tpl, role){
+  const out = [];
+  tpl.forEach((slot, i) => {
+    const it = (slot.items || []).find(x => x.role === role);
+    if(it) out.push({mealIdx: i, key: it.f, isMain: /^Meal/.test(slot.label || "")});
+  });
+  if(role === "P"){
+    /* give protein back from snacks first, then breakfast, then lunch — dinner last */
+    const reduce = out.slice().sort((a,b)=> (a.isMain - b.isMain) || (a.mealIdx - b.mealIdx));
+    return {reduce, increase: reduce.slice().reverse()};
+  }
+  const lastFirst = out.slice().reverse();
+  return {reduce: lastFirst, increase: lastFirst};
+}
+
+function applyMacroDelta(meals, c, list, role, mk, delta, useFloors){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  for(const a of list){
+    if(Math.abs(delta) < 0.3) break;
+    const food = db[a.key];
+    if(!food || food.per === "srv") continue;
+    const perg = (food[mk] || 0) / 100;
+    if(perg <= 0) continue;
+    const meal = meals[a.mealIdx];
+    if(!meal) continue;
+    let item = meal.items.find(x => x.f === a.key);
+    if(!item){
+      if(delta <= 0) continue;
+      item = {f: a.key, q: "0"};
+      meal.items.push(item);
+    }
+    const q0 = parseFloat(item.q) || 0;
+    const want = q0 + delta / perg;
+    const floor = useFloors ? floorFor(role, a.key, a.isMain) : 0;
+    /* never raise a portion just to satisfy a floor while cutting */
+    const lo = (want >= q0) ? 0 : Math.min(floor, q0);
+    const q1 = Math.min(Math.max(lo, Math.round(want / 5) * 5), capFor(role, a.key));
+    delta -= (q1 - q0) * perg;
+    item.q = String(q1);
+  }
+  return delta;
+}
+
+function reconcileDay(meals, tpl, calc, c){
+  const order = [["F","f"], ["P","p"], ["C","c"]];
+  const anchors = {F: macroAnchors(tpl,"F"), P: macroAnchors(tpl,"P"), C: macroAnchors(tpl,"C")};
+  const targetOf = mk => mk === "p" ? calc.protein : mk === "c" ? calc.carbs : calc.fat;
+
+  for(let pass = 0; pass < 10; pass++){
+    order.forEach(([role, mk]) => {
+      let delta = targetOf(mk) - dayMacroTotals(meals, c)[mk];
+      if(Math.abs(delta) < 0.3) return;
+      const list = delta > 0 ? anchors[role].increase : anchors[role].reduce;
+      /* pass 1: respect protein floors. pass 2: relax them only if the day can't balance. */
+      delta = applyMacroDelta(meals, c, list, role, mk, delta, true);
+      if(Math.abs(delta) >= 0.3) applyMacroDelta(meals, c, list, role, mk, delta, false);
+    });
+  }
+  meals.forEach(m => { m.items = m.items.filter(x => (parseFloat(x.q) || 0) > 0); });
+}
+
+function solveDayPlanTpl(c, calc, tpl){
+  const db = Object.assign({}, FOOD_DB, c.nutrition.customFoods || {});
+  const resBy = tpl.map(slot => {
+    const r = {p:0, c:0, f:0};
+    (slot.items || []).forEach(it => {
+      const f = db[it.f];
+      if(f && f.per === "srv"){ r.p += f.p; r.c += f.c; r.f += f.f; }
+    });
+    return r;
+  });
+  const res = resBy.reduce((a,b)=>({p:a.p+b.p, c:a.c+b.c, f:a.f+b.f}), {p:0,c:0,f:0});
+  const budget = {
+    p: Math.max(calc.protein - res.p, 0),
+    c: Math.max(calc.carbs - res.c, 0),
+    f: Math.max(calc.fat - res.f, 0)
+  };
+
+  let rem = {p: calc.protein, c: calc.carbs, f: calc.fat};
+  const meals = [];
+  tpl.forEach((slot, si) => {
+    const last = si === tpl.length - 1;
+    const r = resBy[si];
+    const ppct = PROTEIN_PCT[si] !== undefined ? PROTEIN_PCT[si] : slot.pct;
+    const tgt = last
+      ? {p: Math.max(rem.p, 0), c: Math.max(rem.c, 0), f: Math.max(rem.f, 0)}
+      : {p: Math.min(budget.p * ppct + r.p, Math.max(rem.p, 0)),
+         c: Math.min(budget.c * slot.pct + r.c, Math.max(rem.c, 0)),
+         f: Math.min(budget.f * slot.pct + r.f, Math.max(rem.f, 0))};
+    const acc = {p:0, c:0, f:0};
+    const items = [];
+    const addItem = (key, q) => {
+      const m = foodMacros(key, q, c);
+      if(!m) return;
+      acc.p += m.p; acc.c += m.c; acc.f += m.f;
+      items.push({f:key, q:String(q)});
+    };
+    slot.items.filter(it => it.fixed).forEach(it => addItem(it.f, it.q));
+    /* carbs & fats first so the protein anchor absorbs what they already carry */
+    ["C","F","P"].forEach(role => {
+      slot.items.filter(it => it.role === role).forEach(it => {
+        const food = db[it.f];
+        if(!food) return;
+        let q;
+        if(food.per === "srv"){ q = 1; }
+        else {
+          const perg = {P: food.p/100, C: food.c/100, F: food.f/100}[role];
+          if(!perg || perg <= 0) return;
+          const need = {P: tgt.p - acc.p, C: tgt.c - acc.c, F: tgt.f - acc.f}[role];
+          q = Math.round(Math.max(need, 0) / perg / 5) * 5;
+          if(role === "P" && /^Meal/.test(slot.label || "")) q = Math.max(q, floorFor("P", it.f, true));
+          q = Math.min(q, capFor(role, it.f));
+        }
+        if(food.per === "srv" ? q >= 1 : q >= 10) addItem(it.f, q);
+      });
+    });
+    rem.p -= acc.p; rem.c -= acc.c; rem.f -= acc.f;
+    meals.push({name: slot.label, items});
+  });
+
+  reconcileDay(meals, tpl, calc, c);
+  return meals;
+}
+
+/* ================================================================
+   ERN IT COACH HUB v24 — Custom Program Design: the 24-week grid
+   that the client helps build, and that drives the recommendation
+   ================================================================ */
+
+const DAY_LABELS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+const DAY_NAMES  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+const DESIGN_TYPES = {
+  trainer: {label:"Trainer",                 short:"TRAINER", color:"#CC0000", text:"#ffffff", desc:"Paid session with me"},
+  ghost:   {label:"Ghost Workout",           short:"GHOST",   color:"#4A63E7", text:"#ffffff", desc:"Independent \u00b7 I write it"},
+  cardio:  {label:"Steady-State Cardio",     short:"CARDIO",  color:"#0FB5A6", text:"#04201D", desc:"Zone 2 conditioning"},
+  classes: {label:"Class",                   short:"CLASS",   color:"#2DBE60", text:"#05210F", desc:"Free Life Time class"},
+  stretch: {label:"Dynamic Partner Stretch", short:"STRETCH", color:"#E8A33D", text:"#231808", desc:"Paid \u00b7 with a stretch coach"},
+};
+
+const DESIGN_PHASES = [
+  {n:"Phase 1", title:"Neuromuscular Development & Corrective", wks:[1,4],   color:"#7A0A0A",
+   bullets:["Form & technique foundation","Mobility & flexibility work","Stability & balance training"]},
+  {n:"Phase 2", title:"Muscle Building & Results \u00b7 Pt. 1",  wks:[5,12],  color:"#A50D0D",
+   bullets:["Noticeable body composition changes","Daily tasks become easier","Clothes fit better","More energy & endurance"]},
+  {n:"Phase 3", title:"Muscle Building & Results \u00b7 Pt. 2",  wks:[13,20], color:"#CC0000",
+   bullets:["Significant body composition changes","Large strength improvements","Increased muscle definition","Increased self-confidence"]},
+  {n:"Phase 4", title:"Peak Performance",                        wks:[21,24], color:"#F2571C",
+   bullets:["Stubborn fat loss","Improved cardiac output","Improved lung capacity","Faster recovery between sets"]},
+];
+
+/* ---------- v25: a day can hold more than one activity ---------- */
+const DESIGN_ORDER = ["trainer","ghost","cardio","classes","stretch"];
+const DESIGN_TINY  = {trainer:"TRN", ghost:"GHT", cardio:"CAR", classes:"CLS", stretch:"STR"};
+const DZ_MAX = 3;
+
+/* cells are stored as a comma string ("trainer,cardio") so Firebase keeps
+   the 7-slot array intact \u2014 empty arrays get dropped by RTDB. */
+function dzTypes(cell){
+  if(!cell) return [];
+  const raw = Array.isArray(cell) ? cell.map(String) : String(cell).split(",");
+  return DESIGN_ORDER.filter(k => raw.indexOf(k) !== -1);
+}
+function dzJoin(list){ return DESIGN_ORDER.filter(k => list.indexOf(k) !== -1).join(","); }
+
+function designSummary(c){
+  const phases = ((c.design || {}).phases) || [];
+  const blank = () => ({trainer:0, ghost:0, cardio:0, classes:0, stretch:0, total:0, days:0});
+  const perWeek = [0,1,2,3].map(i => {
+    const o = blank();
+    (((phases[i] || {}).days) || []).forEach(cell => {
+      const list = dzTypes(cell);
+      if(list.length) o.days++;
+      list.forEach(t => { if(o[t] !== undefined){ o[t]++; o.total++; } });
+    });
+    return o;
+  });
+  const totals = blank();
+  PHASE_WEEKS.forEach((wks, i) => {
+    Object.keys(totals).forEach(k => { totals[k] += perWeek[i][k] * wks; });
+  });
+  return {
+    perWeek, totals,
+    trainerPerWeek: perWeek.map(p => p.trainer),
+    stretchPerWeek: perWeek.map(p => p.stretch),
+    hasPlan: totals.total > 0
+  };
+}
+
+/* ---------- the tap sheet ---------- */
+let dzTarget = null;
+
+function dzSheetHtml(p, d){
+  const cur = dzTypes(clients[activeClientId].design.phases[p].days[d]);
+  const ph = DESIGN_PHASES[p];
+  return `<div class="dz-sheet" onclick="event.stopPropagation();">
+    <div style="font-size:10px;letter-spacing:1.6px;font-weight:900;color:${ph.color};">${ph.n.toUpperCase()} \u00b7 WEEKS ${ph.wks[0]}\u2013${ph.wks[1]}</div>
+    <div style="font-size:18px;font-weight:900;color:#fff;margin:3px 0 3px;">Every ${DAY_NAMES[d]} in this phase</div>
+    <div style="font-size:11.5px;color:#777;margin-bottom:14px;">Tap to add or remove \u2014 stack up to ${DZ_MAX} on one day. Sets all ${PHASE_WEEKS[p]} weeks at once.</div>
+    ${DESIGN_ORDER.map(k => {
+      const t = DESIGN_TYPES[k];
+      const on = cur.indexOf(k) !== -1;
+      return `<div class="dz-opt" style="background:${on ? t.color : "#1f1f1f"};color:${on ? t.text : "#8f8f8f"};border:1px solid ${on ? t.color : "#333"};" onclick="dzSet('${k}')">
+        <span style="width:17px;font-size:15px;text-align:center;">${on ? "\u2713" : "+"}</span>
+        <span style="flex:1;">${t.label}</span>
+        <span style="font-weight:600;font-size:10.5px;opacity:.85;text-align:right;">${t.desc}</span></div>`;
+    }).join("")}
+    <div style="display:flex;gap:9px;margin-top:4px;">
+      <div class="dz-opt" style="flex:1;margin:0;background:#1f1f1f;color:#999;justify-content:center;border:1px solid #333;font-size:13.5px;" onclick="dzSet('')">${cur.length ? "Clear day" : "Cancel"}</div>
+      <div class="dz-opt" style="flex:1;margin:0;background:#CC0000;color:#fff;justify-content:center;font-size:13.5px;" onclick="dzDone()">Done</div>
+    </div>
+  </div>`;
+}
+
+function dzPick(p, d){
+  collectFormIntoClient();
+  dzTarget = {p, d};
+  let el = document.getElementById("dzPicker");
+  if(!el){ el = document.createElement("div"); el.id = "dzPicker"; document.body.appendChild(el); }
+  el.className = "dz-picker";
+  el.style.display = "flex";
+  el.innerHTML = dzSheetHtml(p, d);
+  el.onclick = dzDone;
+}
+
+function dzSet(type){
+  if(!dzTarget) return;
+  const {p, d} = dzTarget;
+  const c = clients[activeClientId];
+  if(!type){
+    c.design.phases[p].days[d] = "";
+    saveClients(clients); pushClientToFirebase(c.id, c);
+    dzDone();
+    return;
+  }
+  const list = dzTypes(c.design.phases[p].days[d]);
+  const at = list.indexOf(type);
+  if(at !== -1) list.splice(at, 1);
+  else if(list.length >= DZ_MAX) return;
+  else list.push(type);
+  c.design.phases[p].days[d] = dzJoin(list);
+  saveClients(clients);
+  pushClientToFirebase(c.id, c);
+  const el = document.getElementById("dzPicker");
+  if(el) el.innerHTML = dzSheetHtml(p, d);
+}
+
+function dzDone(){
+  const had = !!dzTarget;
+  dzClose();
+  if(had) renderModal();
+}
+
+function dzClose(){
+  const el = document.getElementById("dzPicker");
+  if(el) el.style.display = "none";
+  dzTarget = null;
+}
+
+function dzCopyPhase(from, to){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  c.design.phases[to].days = c.design.phases[from].days.slice();
+  saveClients(clients);
+  pushClientToFirebase(c.id, c);
+  renderModal();
+}
+
+/* ---------- the grid ---------- */
+function dzCellHtml(c, pi, di){
+  const list = dzTypes(c.design.phases[pi].days[di]);
+  if(!list.length) return `<td class="dz-cell" onclick="dzPick(${pi},${di})">+</td>`;
+  const segs = list.map(k => {
+    const T = DESIGN_TYPES[k];
+    return `<div class="dz-seg" style="background:${T.color};color:${T.text};">${list.length > 1 ? DESIGN_TINY[k] : T.short}</div>`;
+  }).join("");
+  return `<td class="dz-cell on multi" onclick="dzPick(${pi},${di})"><div class="dz-stack ${list.length === 1 ? "solo" : ""}">${segs}</div></td>`;
+}
+
+function designGridHtml(c){
+  let rows = `<tr><th></th>${DAY_LABELS.map(d=>`<th>${d}</th>`).join("")}</tr>`;
+  DESIGN_PHASES.forEach((ph, pi) => {
+    rows += `<tr class="dz-bar"><td colspan="8" style="background:${ph.color};">${ph.n.toUpperCase()} \u00b7 ${ph.title.toUpperCase()}
+      <span style="opacity:.72;font-weight:700;letter-spacing:.3px;">&nbsp;&nbsp;Weeks ${ph.wks[0]}\u2013${ph.wks[1]} (${PHASE_WEEKS[pi]} weeks)</span></td></tr>`;
+    for(let w = ph.wks[0]; w <= ph.wks[1]; w++){
+      rows += `<tr><td class="dz-wk">${w}</td>` + DAY_LABELS.map((dl, di) => dzCellHtml(c, pi, di)).join("") + `</tr>`;
+    }
+    rows += `<tr class="dz-plat"><td class="dz-wk"></td><td colspan="7"><span class="dz-plateau">EXPECTED PLATEAU</span></td></tr>`;
+  });
+  return `<div class="dz-wrap"><table class="dz-table">${rows}</table></div>`;
+}
+
+function renderDesignTab(c){
+  const ds = designSummary(c);
+  const legend = DESIGN_ORDER.map(k => {
+    const t = DESIGN_TYPES[k];
+    return `<div class="dz-chip"><span class="dz-dot" style="background:${t.color};"></span>${t.label}</div>`;
+  }).join("");
+
+  const line = (p) => {
+    const bits = [];
+    if(p.trainer) bits.push(p.trainer + "\u00d7 with me");
+    if(p.stretch) bits.push(p.stretch + "\u00d7 stretch");
+    if(p.ghost)   bits.push(p.ghost + " ghost");
+    if(p.cardio)  bits.push(p.cardio + " cardio");
+    if(p.classes) bits.push(p.classes + " class");
+    return bits.join(" \u00b7 ") || "\u2014";
+  };
+
+  const weeksLine = ds.perWeek.map((p, i) =>
+    `<div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--grey);padding:5px 0;border-bottom:1px solid var(--line);">
+      <span style="color:var(--white);font-weight:800;white-space:nowrap;">${DESIGN_PHASES[i].n} \u00b7 wks ${DESIGN_PHASES[i].wks[0]}\u2013${DESIGN_PHASES[i].wks[1]}</span>
+      <span style="text-align:right;">${line(p)}${p.days ? ` <span style="color:var(--grey-dim);">(${p.days} day${p.days===1?"":"s"})</span>` : ""}</span>
+    </div>`).join("");
+
+  const copyRow = [1,2,3].map(i =>
+    `<div class="rate-btn" style="font-size:10.5px;padding:7px 10px;" onclick="dzCopyPhase(${i-1},${i})">Copy P${i} \u2192 P${i+1}</div>`).join("");
+
+  const expectations = DESIGN_PHASES.map(ph =>
+    `<div class="dz-exp" style="border-left-color:${ph.color};">
+      <h4>${ph.n} \u00b7 ${ph.title}</h4>
+      <ul style="margin:0;padding-left:17px;">${ph.bullets.map(b=>`<li>${b}</li>`).join("")}</ul>
+    </div>`).join("");
+
+  return `
+    <div class="dz-hero">
+      <div class="dz-hero-k">CUSTOM PROGRAM DESIGN \u00b7 24-WEEK PERIODIZED PLAN</div>
+      <div class="dz-hero-t">${esc(c.name) || "Your"}\u2019s next 6 months\u2014<br>mapped week by week.</div>
+      <div class="dz-stats">
+        <div class="dz-stat"><b>${ds.totals.trainer}</b><span>SESSIONS WITH ME</span></div>
+        <div class="dz-stat"><b>${ds.totals.total}</b><span>TOTAL SESSIONS</span></div>
+        <div class="dz-stat"><b>${ds.totals.days}</b><span>TRAINING DAYS</span></div>
+      </div>
+      ${ds.hasPlan ? `<div style="font-size:11.5px;color:var(--grey);margin-top:12px;line-height:1.55;">That\u2019s <b style="color:var(--white);">${ds.totals.total} sessions</b> across <b style="color:var(--white);">${ds.totals.days} training days</b> and 4 phases \u2014 ${ds.totals.trainer} coached, ${ds.totals.ghost} ghost workouts, ${ds.totals.cardio} cardio, ${ds.totals.classes} classes, ${ds.totals.stretch} stretch. Every plateau is planned for, not stumbled into.</div>` : ""}
+    </div>
+
+    <div class="dz-legend">${legend}</div>
+    <div style="font-size:11px;color:var(--grey-dim);margin:-6px 0 10px;line-height:1.5;">Tap any box \u2014 stack up to ${DZ_MAX} on one day (trainer session + cardio, trainer session + stretch). It sets that day for every week in the phase.</div>
+
+    ${designGridHtml(c)}
+
+    ${ds.hasPlan ? `<div class="section-head" style="margin-top:20px;">Your Week, By Phase</div>${weeksLine}` : `<div class="empty-state" style="margin-top:18px;"><div class="big">Nothing scheduled yet</div>Tap a box in Phase 1 to place their first day.</div>`}
+
+    <div class="rate-row" style="margin-top:14px;flex-wrap:wrap;">${copyRow}</div>
+
+    <div class="section-head" style="margin-top:20px;">What Each Phase Delivers</div>
+    ${expectations}
+
+    <button class="scan-btn" style="width:100%;margin-top:8px;" onclick="exportDesignPdf()">Export Program Design PDF</button>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:7px;line-height:1.45;">No prices on this page \u2014 hand them the iPad. The investment conversation lives on the next tab.</div>
+  `;
+}
+
+/* ---------- the bright band that opens Program Rec ---------- */
+function designBanner(c){
+  const ds = designSummary(c);
+  if(!ds.hasPlan){
+    return `<div class="dz-band" style="border-left-color:var(--amber);background:var(--amber-dim);">
+      <div style="font-size:11.5px;color:#e8b25f;line-height:1.5;"><b>No plan built yet.</b> Open <b>Program Design</b> and map their 24 weeks with them \u2014 the recommendation below will be built from it.</div></div>`;
+  }
+  const p1 = ds.perWeek[0];
+  const chip = (k, n) => n ? `<div class="dz-chip" style="background:${DESIGN_TYPES[k].color};color:${DESIGN_TYPES[k].text};border:none;"><b>${n}\u00d7</b> ${DESIGN_TYPES[k].label}</div>` : "";
+  return `<div class="dz-band">
+    <div class="dz-hero-k">THE PLAN YOU BUILT TOGETHER</div>
+    <div style="font-size:19px;font-weight:900;color:var(--white);margin:3px 0 10px;line-height:1.15;">${ds.totals.trainer} coached sessions over 24 weeks.</div>
+    <div class="dz-legend" style="margin:0 0 9px;">${chip("trainer",p1.trainer)}${chip("stretch",p1.stretch)}${chip("ghost",p1.ghost)}${chip("cardio",p1.cardio)}${chip("classes",p1.classes)}</div>
+    <div style="font-size:11px;color:var(--grey-dim);line-height:1.5;">Phase 1 pattern, repeating weeks 1\u2013${DESIGN_PHASES[0].wks[1]}. The recommendation below follows this plan \u2014 not a guess.</div>
+  </div>`;
+}
+
+/* ---------- client-facing PDF ---------- */
+function buildDesignPrintHtml(c){
+  const ds = designSummary(c);
+  const cx = 'style="-webkit-print-color-adjust:exact;print-color-adjust:exact;"';
+  let h = `<div class="p-head"><div>ERN IT \u00b7 CUSTOM PROGRAM DESIGN</div><div>${esc(c.name)} \u00b7 24-Week Periodized Plan</div></div>`;
+
+  h += `<table class="p-table" style="margin-bottom:10px;"><tr>
+    <th style="text-align:left;">SESSIONS WITH ERNEST</th><th>TOTAL SESSIONS</th><th>TRAINING DAYS</th><th>GHOST</th><th>CARDIO</th><th>CLASSES</th><th>STRETCH</th></tr>
+    <tr><td style="text-align:left;"><b>${ds.totals.trainer}</b></td><td><b>${ds.totals.total}</b></td><td><b>${ds.totals.days}</b></td><td>${ds.totals.ghost}</td><td>${ds.totals.cardio}</td><td>${ds.totals.classes}</td><td>${ds.totals.stretch}</td></tr></table>`;
+
+  h += `<div style="margin:8px 0 6px;font-size:10px;">` + DESIGN_ORDER.map(k => {
+    const t = DESIGN_TYPES[k];
+    return `<span ${cx} style="display:inline-block;background:${t.color};color:${t.text};font-weight:900;padding:3px 8px;border-radius:3px;margin-right:5px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${t.label}</span>`;
+  }).join("") + `</div>`;
+
+  let rows = `<tr><th ${cx} style="background:#2B2B38 !important;color:#fff;"></th>` +
+    DAY_LABELS.map(d=>`<th ${cx} style="background:#2B2B38 !important;color:#fff;font-size:8px;">${d}</th>`).join("") + `</tr>`;
+  DESIGN_PHASES.forEach((ph, pi) => {
+    rows += `<tr><td colspan="8" ${cx} style="background:${ph.color} !important;color:#fff;font-weight:900;font-size:9px;text-align:left;padding:5px 7px;">${ph.n.toUpperCase()} \u00b7 ${ph.title.toUpperCase()} \u2014 WEEKS ${ph.wks[0]}\u2013${ph.wks[1]}</td></tr>`;
+    for(let w = ph.wks[0]; w <= ph.wks[1]; w++){
+      rows += `<tr><td ${cx} style="background:#F1F1F1 !important;color:#666;font-weight:900;font-size:9px;">${w}</td>` +
+        DAY_LABELS.map((dl, di) => {
+          const list = dzTypes(c.design.phases[pi].days[di]);
+          if(!list.length) return `<td style="font-size:7px;color:#bbb;">\u2014</td>`;
+          return `<td ${cx} style="padding:0;">` + list.map(k => {
+            const T = DESIGN_TYPES[k];
+            return `<div ${cx} style="background:${T.color} !important;color:${T.text};font-size:5.9px;font-weight:900;padding:2px 0;line-height:1.15;">${list.length > 1 ? DESIGN_TINY[k] : T.short}</div>`;
+          }).join("") + `</td>`;
+        }).join("") + `</tr>`;
+    }
+    rows += `<tr><td></td><td colspan="7" ${cx} style="background:#F1F1F1 !important;text-align:right;font-size:7px;font-weight:900;color:#CC0000;">EXPECTED PLATEAU</td></tr>`;
+  });
+  h += `<table class="p-table">${rows}</table>`;
+
+  h += `<div class="p-phase-head" style="margin-top:12px;">What Each Phase Delivers</div>`;
+  DESIGN_PHASES.forEach(ph => {
+    h += `<div style="font-size:10px;margin:5px 0;"><b ${cx} style="color:${ph.color};">${ph.n} \u00b7 ${ph.title}</b> \u2014 ${ph.bullets.join(" \u00b7 ")}</div>`;
+  });
+  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+function exportDesignPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  let area = document.getElementById("printArea");
+  if(!area){ area = document.createElement("div"); area.id = "printArea"; document.body.appendChild(area); }
+  area.innerHTML = buildDesignPrintHtml(c);
+  document.body.classList.add("printing");
+  window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
+  setTimeout(()=>{ window.print(); }, 80);
+}
+
+/* ================================================================
+   ERN IT COACH HUB v25 — Fitness Services Agreement
+   Prep + summary copy. Life Time's executed agreement governs.
+   Only amended term: recurring draft lands on the same calendar
+   day of the month as the signature date.
+   ================================================================ */
+
+const AG_PAY = [
+  {k:"dues", label:"Membership Dues Card on File"},
+  {k:"tab",  label:"Club Tab Card on File"},
+];
+const AG_CLUB = "Life Time, 10121 Washingtonian Blvd, Gaithersburg, MD 20878";
+const AG_PAPER_DAYS = [3, 10, 17, 24, 28];
+
+function ordinal(n){
+  n = parseInt(n, 10);
+  if(isNaN(n)) return "";
+  const v = n % 100;
+  if(v >= 11 && v <= 13) return n + "th";
+  return n + (["th","st","nd","rd"][n % 10] || "th");
+}
+
+function fmtLongDate(iso){
+  if(!iso) return "";
+  const p = String(iso).split("-");
+  if(p.length !== 3) return iso;
+  const d = new Date(+p[0], +p[1] - 1, +p[2]);
+  if(isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, {month:"long", day:"numeric", year:"numeric"});
+}
+
+function agKind(c){
+  const a = agOf(c);
+  if(a.kind) return a.kind;
+  const o = selectedProgram(c);
+  if(!o) return "";
+  return o.recur ? "recurring" : "pack";
+}
+
+function agMoney(c){
+  const o = selectedProgram(c);
+  const extras = selectedExtras(c);
+  const extraSum = extras.reduce((s, e) => s + e.price, 0);
+  const base = o ? o.price : 0;
+  return {o, extras, extraSum, base, today: base + extraSum, monthly: (o && agKind(c) === "recurring") ? base : 0};
+}
+
+function agBillDay(c){
+  const a = agOf(c);
+  const d = a.sigDate || a.startDate || todayISO();
+  const day = parseInt(String(d).split("-")[2], 10);
+  return isNaN(day) ? null : day;
+}
+
+function agLevelNum(c){
+  const m = String(agOf(c).trainerLevel || "").match(/[1-5]/);
+  return m ? m[0] : null;
+}
+function agIsPdo(c){
+  const o = selectedProgram(c);
+  return !!(o && o.key === "pdo");
+}
+
+/* the paper form only has five boxes \u2014 tell him which one to tick */
+function agPaperBox(day){
+  if(!day) return null;
+  return AG_PAPER_DAYS.find(d => d >= day) || AG_PAPER_DAYS[0];
+}
+
+function agAuto(c){
+  const a = agOf(c);
+  if(!a.first && !a.last && c.name){
+    const parts = String(c.name).trim().split(/\s+/);
+    if(parts.length > 1){ a.last = parts.pop(); a.first = parts.join(" "); }
+    else { a.first = parts[0] || ""; }
+  }
+  if(!a.startDate) a.startDate = todayISO();
+  if(!a.trainerLevel) a.trainerLevel = "Level 4";
+  if(!a.assoc) a.assoc = "Ernest Joseph Jr.";
+  const o = selectedProgram(c);
+  if(!a.serviceType && o) a.serviceType = o.label;
+  return a;
+}
+
+function setAgField(k, v){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  agOf(c)[k] = v;
+  agSave();
+  renderModal();
+}
+
+/* ---------- the terms, in plain English ---------- */
+function agTerms(c){
+  const m = agMoney(c);
+  const kind = agKind(c);
+  const day = agBillDay(c);
+  const t = [];
+
+  if(kind === "recurring"){
+    t.push(`Your program bills <b>$${m.monthly.toLocaleString()} per month</b>, drafted from the payment method on file on the <b>${day ? ordinal(day) : "same"}</b> of every month \u2014 the same calendar day you sign \u2014 and continues month to month until you cancel. In a month with no ${day ? ordinal(day) : "such"} day, it drafts on the last day of that month.`);
+    t.push(`Cancel any time with <b>30 days\u2019 written notice</b> to the club. Cancellation is effective 30 days after Life Time receives it.`);
+  } else if(kind === "pack"){
+    t.push(`This is a one-time session package. You pay <b>$${m.today.toLocaleString()}</b> today. Nothing recurs.`);
+    t.push(`Sessions are redeemed within the <b>90-day redemption period</b>. A package paid in full can only be cancelled for the causes Maryland law provides \u2014 death, disability, or relocation \u2014 and any refund is pro-rated.`);
+  }
+
+  t.push(`You can cancel for any reason within <b>3 business days</b> of your first session and get a full refund. Notice must be in writing, in person or by certified mail to ${AG_CLUB}.`);
+  if(!agIsPdo(c)){
+    const lv = agLevelNum(c);
+    t.push(`Give <b>24 hours\u2019 notice</b> to move a session. Miss it without notice and it counts as used. If Life Time cancels, the session goes back on your account. One-on-one sessions do not expire.`);
+    t.push(`You are buying sessions at <b>${lv ? "Level " + lv : "the level above"}</b>. They redeem with a ${lv ? "Level " + lv : "same-level"} trainer or any lower level \u2014 never a higher one. Sessions can\u2019t be exchanged for other services, transferred to another person, or redeemed for cash.`);
+  }
+  t.push(`Fees, taxes, surcharges, and public improvement fees may be added or raised on whatever notice the law requires \u2014 an increase of 10% or less needs no written notice. Credit cards may carry a surcharge; debit cards do not.`);
+  t.push(`Training is not medical care. See a physician before you start. Hands-on cueing may be used to correct your position \u2014 say the word if you\u2019d rather not be touched.`);
+  t.push(`Disputes go to <b>binding individual arbitration</b> instead of court, and class actions are waived. Personal injury claims and small-claims court are the exceptions.`);
+  t.push(`Life Time may photograph or record you during services and use those images without further consent or payment.`);
+  t.push(`Your membership must be current and in good standing to redeem sessions. Life Time may substitute trainers as needed.`);
+  t.push(`Maryland: Life Time\u2019s health club registration number is <b>B3265</b>, and it holds a <b>$200,000 bond</b> for the Gaithersburg location.`);
+
+  if(agIsPdo(c)){
+    t.push(`<b>Program Design Only.</b> This is a monthly service that requires an active Life Time membership. You receive a custom exercise program written for you, plus one check-in each month. Programs and communication are delivered through a mobile app and require data and phone access. Program length and frequency vary with your needs. <b>This is not in-person personal training \u2014 no 1-on-1 sessions in the club are included.</b>`);
+  }
+  return t;
+}
+
+function agPlainTerms(c){
+  return agTerms(c).map((x, i) => (i + 1) + ". " + x.replace(/<[^>]+>/g, ""));
+}
+
+/* ---------- signature pad ---------- */
+let sigDrawing = false;
+
+function initSigPad(){
+  const cv = document.getElementById("sigPad");
+  if(!cv) return;
+  const a = agOf(clients[activeClientId]);
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = Math.max(1, Math.round(rect.width  * dpr));
+  cv.height = Math.max(1, Math.round(rect.height * dpr));
+  const ctx = cv.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+
+  if(a.sigData){
+    const img = new Image();
+    img.onload = ()=>{ ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+    img.src = a.sigData;
+  }
+
+  const pos = (e)=>{ const r = cv.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  cv.onpointerdown = (e)=>{
+    e.preventDefault();
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    sigDrawing = true;
+    const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 0.1, p.y); ctx.stroke();
+  };
+  cv.onpointermove = (e)=>{ if(!sigDrawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  cv.onpointerup = ()=>{ if(!sigDrawing) return; sigDrawing = false; sigCommit(); };
+  cv.onpointercancel = ()=>{ sigDrawing = false; };
+}
+
+function sigCommit(){
+  const cv = document.getElementById("sigPad");
+  if(!cv) return;
+  const c = clients[activeClientId];
+  const a = agOf(c);
+  a.sigData = cv.toDataURL("image/png");
+  if(!a.sigDate) a.sigDate = todayISO();
+  a.sigAt = new Date().toISOString();
+  agSave();
+  const meta = document.getElementById("sigMeta");
+  if(meta) meta.innerHTML = sigMetaHtml(c);
+  const sched = document.getElementById("agSched");
+  if(sched) sched.innerHTML = agSchedHtml(c);
+}
+
+function sigClear(){
+  const a = agOf(clients[activeClientId]);
+  a.sigData = ""; a.sigDate = ""; a.sigAt = ""; a.pdfAt = "";
+  agSave();
+  renderModal();
+}
+
+function sigMetaHtml(c){
+  const a = agOf(c);
+  if(!a.sigData) return `Sign above with a finger or Apple Pencil.`;
+  return `Signed <b style="color:var(--white);">${fmtLongDate(a.sigDate)}</b>`;
+}
+
+/* the PDF is the record. localStorage is a scratchpad. */
+function agRecordHtml(c){
+  const a = agOf(c);
+  if(!a.sigData) return "";
+  const stale = !a.pdfAt || (a.sigAt && a.pdfAt < a.sigAt);
+  if(stale){
+    return `<div class="flag-banner" style="margin-top:14px;">
+      <div class="fb-title">This signature exists in one place</div>
+      <div class="fb-body">It lives in this iPad\u2019s browser storage and nowhere else. Save the PDF to Files before you close the app \u2014 that\u2019s the copy that survives.</div></div>`;
+  }
+  const when = new Date(a.pdfAt);
+  return `<div style="font-size:10.5px;color:#5fbf7f;margin-top:12px;">\u2713 PDF saved ${when.toLocaleDateString(undefined,{month:"short",day:"numeric"})} at ${when.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</div>`;
+}
+
+function agSchedHtml(c){
+  const m = agMoney(c), kind = agKind(c), day = agBillDay(c);
+  if(kind !== "recurring"){
+    return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">One-time payment. Nothing recurs. Sessions redeem inside 90 days.</div>`;
+  }
+  const box = agPaperBox(day);
+  return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">Then <b style="color:var(--white);">$${m.monthly.toLocaleString()}/mo</b> on the <b style="color:var(--white);">${day ? ordinal(day) : "signing"}</b> of every month \u2014 same calendar day as signing \u2014 until cancelled with 30 days\u2019 notice.</div>
+    ${box ? `<div style="font-size:10.5px;color:var(--grey-dim);margin-top:5px;">On the paper form, tick <b style="color:var(--grey);">${ordinal(box)} of Month</b> \u2014 the closest box Life Time\u2019s system offers.</div>` : ""}`;
+}
+
+/* ---------- email ---------- */
+function agMailHref(c){
+  const a = agOf(c), m = agMoney(c), kind = agKind(c), day = agBillDay(c);
+  const lines = [];
+  lines.push("Hey " + (a.first || c.name || "there") + " \u2014 this is Ernest, your trainer from Life Time.");
+  lines.push("");
+  lines.push("Your Fitness Services Agreement, in plain language, for your records.");
+  lines.push("");
+  lines.push("WHAT YOU BOUGHT");
+  lines.push("Service: " + (a.serviceType || "\u2014") + " (" + (a.trainerLevel || "Personal Training") + ")");
+  lines.push("Start date: " + (fmtLongDate(a.startDate) || "\u2014"));
+  if(kind === "recurring"){
+    lines.push("Today: $" + m.today.toLocaleString() + (m.extraSum ? " (includes add-ons)" : ""));
+    lines.push("Then: $" + m.monthly.toLocaleString() + "/month on the " + (day ? ordinal(day) : "same day") + ", month to month until cancelled");
+  } else {
+    lines.push("Total today: $" + m.today.toLocaleString());
+    lines.push("Redemption period: 90 days");
+  }
+  if(m.extras.length) lines.push("Add-ons: " + m.extras.map(e => e.label + " ($" + e.price + ")").join(", "));
+  lines.push("Payment method: " + ((AG_PAY.find(p => p.k === a.payMethod) || {}).label || "\u2014"));
+  lines.push("");
+  lines.push("THE TERMS");
+  agPlainTerms(c).forEach(t => { lines.push(t); lines.push(""); });
+  lines.push("The complete Fitness Services Agreement you signed at the club is the controlling document. This restates it for your records.");
+  lines.push("");
+  lines.push("\u2014 Ernest");
+
+  return "mailto:" + encodeURIComponent(c.email || "")
+    + "?subject=" + encodeURIComponent("Your Fitness Services Agreement \u2014 Life Time")
+    + "&body=" + encodeURIComponent(lines.join("\n"));
+}
+
+/* ---------- printable agreement ---------- */
+function buildAgreementPrintHtml(c){
+  const a = agOf(c), m = agMoney(c), kind = agKind(c), day = agBillDay(c);
+  const cx = 'style="-webkit-print-color-adjust:exact;print-color-adjust:exact;"';
+  const row = (k, v) => `<tr><td class="k" ${cx}>${k}</td><td>${esc(v) || "\u2014"}</td></tr>`;
+  const box = (on) => on ? "\u2612" : "\u2610";
+
+  let h = `<div class="a-head" ${cx}><div>FITNESS SERVICES AGREEMENT</div><div>LIFE TIME \u00b7 GAITHERSBURG</div></div>`;
+
+  h += `<div class="a-sec">Information</div><table class="a-grid">`;
+  h += row("Name", ((a.first || "") + " " + (a.last || "")).trim() || c.name);
+  h += row("City / State / Zip", [a.city, a.state, a.zip].filter(Boolean).join(", "));
+  h += row("Phone (cell)", c.phone) + row("Phone (home)", a.phoneHome);
+  h += row("Email", c.email) + row("Member Number", a.memberNo);
+  h += row("Date", fmtLongDate(a.sigDate || a.startDate));
+  h += `</table>`;
+
+  h += `<div class="a-sec">Fitness Service Details</div><table class="a-grid">`;
+  h += row("Service Type / Trainer Level", (a.serviceType || "") + (a.trainerLevel ? " \u00b7 " + a.trainerLevel : ""));
+  h += row("Agreement Type", kind === "recurring" ? "Recurring Program \u2014 month to month" : kind === "pack" ? "Session Package \u2014 one-time" : "\u2014");
+  h += row("Start Date", fmtLongDate(a.startDate));
+  h += row("Redemption Period", kind === "pack" ? "90 days" : "N/A \u2014 recurring");
+  if(m.extras.length) h += row("Add-Ons", m.extras.map(e => e.label + " ($" + e.price + ")").join("; "));
+  h += row("Fees", "$" + m.today.toLocaleString());
+  h += `</table>`;
+
+  h += `<div class="a-sec">Payment Terms</div>`;
+  h += `<div style="font-size:10px;margin:5px 0 7px;">
+    <b>Payment Method:</b> &nbsp; ${box(a.payMethod === "dues")} Membership Dues Card on File &nbsp;&nbsp;&nbsp; ${box(a.payMethod === "tab")} Club Tab Card on File</div>`;
+  h += `<table class="a-grid">`;
+  h += row("Today\u2019s Payment", "$" + m.today.toLocaleString() + ", plus applicable taxes, surcharge fees and public improvement fees");
+  if(kind === "recurring"){
+    h += row("Recurring Payment", "$" + m.monthly.toLocaleString() + " per month");
+    h += row("Payment Schedule", "The " + (day ? ordinal(day) : "same") + " of each month \u2014 the same calendar day as signing \u2014 continuing month to month until cancelled. Where that day does not exist in a given month, the draft falls on the last day of that month.");
+  } else {
+    h += row("Recurring Payment", "None \u2014 paid in full today");
+  }
+  h += row("Life Time Associate", a.assoc);
+  h += `</table>`;
+
+  h += `<div class="a-sec">Terms</div><ol class="a-terms">`;
+  agTerms(c).forEach(t => { h += `<li>${t}</li>`; });
+  h += `</ol>`;
+
+  h += `<div class="a-sigbox">
+    <div style="font-size:9.5px;font-weight:800;margin-bottom:6px;">SIGNATURE \u2014 I have read, understand, and received a copy of this Agreement, and have knowingly and voluntarily signed it.</div>
+    ${a.sigData ? `<img class="a-sigimg" src="${a.sigData}" alt="signature">` : `<div class="a-line"></div>`}
+    <div style="border-top:1px solid #000;font-size:9px;padding-top:3px;">Member signature &nbsp;\u00b7&nbsp; Date: ${fmtLongDate(a.sigDate) || "________________"}</div>
+    <div style="margin-top:16px;font-size:9.5px;font-weight:800;">SIGNED BY LIFE TIME</div>
+    <div class="a-line"></div>
+    <div class="a-cap">Per: ${esc(a.assoc)} \u00b7 Authorized Signing Person</div>
+  </div>`;
+
+  h += `<div class="a-note" ${cx}><b>Member\u2019s copy.</b> This restates the Life Time Fitness Services Agreement in plain language. The signed original held at the club is the controlling document.</div>`;
+  h += `<div class="p-foot">#ERN_IT \u00b7 I build bodies. Not excuses.</div>`;
+  return h;
+}
+
+function exportAgreementPdf(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const a = agOf(c);
+  if(a.sigData){ a.pdfAt = new Date().toISOString(); agSave(); }
+  let area = document.getElementById("printArea");
+  if(!area){ area = document.createElement("div"); area.id = "printArea"; document.body.appendChild(area); }
+  area.innerHTML = buildAgreementPrintHtml(c);
+  document.body.classList.add("printing");
+  window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
+  setTimeout(()=>{ window.print(); }, 80);
+}
+
+/* ---------- the tab ---------- */
+function renderAgreementTab(c){
+  const a = agAuto(c);
+  const m = agMoney(c), kind = agKind(c);
+
+  const fld = (id, label, val, extra) => `<div class="field-group"><label class="field-label">${label}</label>
+    <input class="field-input" id="ag_${id}" value="${esc(val)}" ${extra || ""}></div>`;
+
+  const noProgram = m.o ? "" : `<div class="flag-banner" style="margin-top:0;">
+      <div class="fb-title">No program selected yet</div>
+      <div class="fb-body">Pick it on <b>Program Rec</b> \u2014 service type, fees, and the payment schedule all fill in from that choice.</div>
+    </div>`;
+
+  const kindRow = `<div class="rate-row">
+      <div class="rate-btn ${kind === "pack" ? "on" : ""}" onclick="setAgField('kind','pack')">Session Package</div>
+      <div class="rate-btn ${kind === "recurring" ? "on" : ""}" onclick="setAgField('kind','recurring')">Recurring Program</div>
+    </div>`;
+
+  const payRow = `<div class="rate-row">${AG_PAY.map(p =>
+    `<div class="rate-btn ${a.payMethod === p.k ? "on" : ""}" style="font-size:11.5px;" onclick="setAgField('payMethod','${p.k}')">${a.payMethod === p.k ? "\u2713 " : ""}${p.label}</div>`).join("")}</div>`;
+
+  const emailBtn = c.email
+    ? `<a class="scan-btn" style="flex:1;text-align:center;text-decoration:none;display:block;" href="${agMailHref(c)}">Email Member\u2019s Copy</a>`
+    : `<div class="scan-btn" style="flex:1;text-align:center;opacity:.45;">Add an email on Overview</div>`;
+
+  return `
+    ${noProgram}
+    <div style="font-size:10.5px;color:var(--grey-dim);margin:0 0 14px;line-height:1.45;">Stored on this device only \u00b7 never synced to the cloud. Back it up from the roster if you switch iPads.</div>
+
+    <div class="section-head">Information</div>
+    <div class="field-row2">${fld("first", "First Name", a.first)}${fld("last", "Last Name", a.last)}</div>
+    <div class="field-row2">${fld("city", "City", a.city)}${fld("state", "State", a.state)}</div>
+    <div class="field-row2">${fld("zip", "Zip", a.zip, 'inputmode="numeric"')}${fld("memberNo", "Member Number", a.memberNo)}</div>
+    <div class="field-row2">${fld("phoneHome", "Phone (home)", a.phoneHome, 'type="tel" inputmode="tel"')}
+      <div class="field-group"><label class="field-label">Cell \u00b7 Email</label>
+        <input class="field-input" value="${esc(c.phone)}${c.phone && c.email ? " \u00b7 " : ""}${esc(c.email)}" disabled style="opacity:.55;"></div></div>
+
+    <div class="section-head" style="margin-top:20px;">Fitness Service Details</div>
+    <div class="field-row2">${fld("serviceType", "Service Type", a.serviceType)}${fld("trainerLevel", "Trainer Level", a.trainerLevel)}</div>
+    <div class="field-row2">${fld("startDate", "Start Date", a.startDate, 'type="date"')}${fld("assoc", "Life Time Associate", a.assoc)}</div>
+    <div class="field-group" style="margin-top:4px;"><label class="field-label">Agreement Type</label>${kindRow}</div>
+
+    <div class="section-head" style="margin-top:20px;">Payment Terms</div>
+    <div class="field-group"><label class="field-label">Payment Method</label>${payRow}</div>
+    <div class="ag-row"><span class="ag-k">Service</span><span class="ag-v">${esc(a.serviceType) || "\u2014"}</span></div>
+    ${m.extras.map(e => `<div class="ag-row"><span class="ag-k">${e.label}</span><span class="ag-v">$${e.price}</span></div>`).join("")}
+    <div class="ag-row"><span class="ag-k">Redemption period</span><span class="ag-v">${kind === "pack" ? "90 days" : "N/A \u2014 recurring"}</span></div>
+    <div class="rec-total-bar" style="margin-top:12px;">
+      <span class="rt-lbl">Today\u2019s Payment</span>
+      <span class="rt-val">$${m.today.toLocaleString()}</span>
+    </div>
+    <div id="agSched" style="margin-top:8px;">${agSchedHtml(c)}</div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;">Plus applicable taxes, surcharge fees, and public improvement fees.</div>
+
+    <div class="section-head" style="margin-top:20px;">Terms</div>
+    <ol class="ag-sum">${agTerms(c).map(t => `<li>${t}</li>`).join("")}</ol>
+
+    <div class="section-head" style="margin-top:20px;">Signature</div>
+    <canvas id="sigPad" class="sig-pad"></canvas>
+    <div style="display:flex;gap:10px;margin-top:9px;align-items:center;">
+      <div class="rate-btn" style="flex:0 0 auto;" onclick="sigClear()">Clear</div>
+      <div class="sig-meta" id="sigMeta">${sigMetaHtml(c)}</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="scan-btn" style="flex:1;" onclick="exportAgreementPdf()">Print / Save PDF</button>
+      ${emailBtn}
+    </div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.45;">Mail links can\u2019t attach files \u2014 the email carries the terms as text. Print / Save PDF gives you the signed copy for their file.</div>
+    ${agRecordHtml(c)}
+  `;
 }
 
 /* ============ INIT ============ */
