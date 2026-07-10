@@ -499,7 +499,7 @@ function saveClients(obj){ localStorage.setItem(STORE_KEY, JSON.stringify(obj));
 const AG_KEY = "ernit_agreements_v1";
 const AG_DEF = {first:"", last:"", city:"", state:"MD", zip:"", memberNo:"", phoneHome:"",
   serviceType:"", trainerLevel:"", startDate:"", payMethod:"", kind:"",
-  draftDay:"", sigData:"", sigDate:"", sigAt:"", pdfAt:"", assoc:"Ernest Joseph Jr."};
+  draftDay:"", printDraftDay:false, todayOverride:"", sigData:"", sigStrokes:null, sigDate:"", sigAt:"", pdfAt:"", assoc:"Ernest Joseph Jr."};
 
 function loadAgreements(){ try{ return JSON.parse(localStorage.getItem(AG_KEY)) || {}; }catch(e){ return {}; } }
 let agreements = loadAgreements();
@@ -2029,7 +2029,7 @@ function collectFormIntoClient(){
     if(waEl) c.program.workoutAText = waEl.value;
   } else if(activeTab === "agreement"){
     const a = agOf(c);
-    ["first","last","city","state","zip","memberNo","phoneHome","serviceType","trainerLevel","startDate","assoc"].forEach(k=>{
+    ["first","last","city","state","zip","memberNo","phoneHome","serviceType","trainerLevel","startDate","assoc","todayOverride"].forEach(k=>{
       const el = document.getElementById("ag_" + k);
       if(el) a[k] = el.value;
     });
@@ -4324,6 +4324,13 @@ function renderOverviewTab(c){
       <textarea class="field-textarea" id="f_newNote" placeholder="Add a dated note \u2014 session feedback, follow-up reminder, life context..."></textarea>
     </div>
     ${notesHtml}
+
+    <div class="section-head" style="margin-top:22px;">Their File</div>
+    <div style="display:flex;gap:10px;">
+      <button class="scan-btn" id="agPacketBtn" style="flex:1;" onclick="saveClientPacket()">Save to Files</button>
+      <button class="scan-btn" style="flex:1;" onclick="newClientFolder()">New Folder</button>
+    </div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.5;"><b>Save to Files</b> opens the share sheet \u2014 choose <i>Save to Files</i>, then <i>New Folder</i>. Sends the signed agreement PDF and a text summary together.<br><b>New Folder</b> hands off to a Shortcut named \u201c${AG_SHORTCUT}\u201d. You have to build that Shortcut once; it can create the folder directly.</div>
   `;
 }
 
@@ -5195,12 +5202,28 @@ function agKind(c){
   return o.recur ? "recurring" : "pack";
 }
 
+function nMoney(n){
+  n = Math.round((Number(n) || 0) * 100) / 100;
+  return n % 1 === 0 ? n.toLocaleString() : n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function agDaysInMonth(y, m){ return new Date(y, m, 0).getDate(); }
+
 function agMoney(c){
   const o = selectedProgram(c);
   const extras = selectedExtras(c);
   const extraSum = extras.reduce((s, e) => s + e.price, 0);
   const base = o ? o.price : 0;
-  return {o, extras, extraSum, base, today: base + extraSum, monthly: (o && agKind(c) === "recurring") ? base : 0};
+  const kind = agKind(c);
+  const monthly = (o && kind === "recurring") ? base : 0;
+  const m = {o, extras, extraSum, base, monthly, today: base + extraSum};
+
+  /* billing runs on the signing-date anniversary, so month one is paid in full */
+  const raw = String(agOf(c).todayOverride || "").replace(/[^0-9.]/g, "");
+  const ov = parseFloat(raw);
+  m.overridden = isFinite(ov) && ov >= 0;
+  m.todayDue = (m.overridden ? ov : base) + extraSum;
+  return m;
 }
 
 /* the calendar day they signed */
@@ -5211,11 +5234,33 @@ function agSignDay(c){
   return isNaN(day) ? null : day;
 }
 
-/* the day the card actually gets hit \u2014 one of Life Time's five */
+/* the day the card gets hit: the signing-date anniversary unless he picks a fixed box */
 function agBillDay(c){
   const a = agOf(c);
   if(a.draftDay) return parseInt(a.draftDay, 10);
-  return agPaperBox(agSignDay(c));
+  return agSignDay(c);
+}
+
+/* first recurring draft \u2014 one month from signing, or the next fixed box */
+function agFirstDraft(c){
+  const a = agOf(c);
+  const iso = a.sigDate || a.startDate || todayISO();
+  const p = String(iso).split("-").map(Number);
+  if(p.length !== 3) return null;
+  let [yy, mm, dd] = p;
+  if(a.draftDay){
+    const day = parseInt(a.draftDay, 10);
+    if(day <= dd){ mm++; if(mm > 12){ mm = 1; yy++; } }
+    return {yy, mm, dd: Math.min(day, agDaysInMonth(yy, mm))};
+  }
+  mm++; if(mm > 12){ mm = 1; yy++; }
+  return {yy, mm, dd: Math.min(dd, agDaysInMonth(yy, mm))};    /* Jan 31 -> Feb 28 */
+}
+
+function agFirstDraftIso(c){
+  const d = agFirstDraft(c);
+  if(!d) return "";
+  return d.yy + "-" + String(d.mm).padStart(2, "0") + "-" + String(d.dd).padStart(2, "0");
 }
 
 function agLevelNum(c){
@@ -5264,10 +5309,11 @@ function agTerms(c){
   const t = [];
 
   if(kind === "recurring"){
-    t.push(`Your program bills <b>$${m.monthly.toLocaleString()} per month</b>, drafted from the payment method on file on or about the <b>${day ? ordinal(day) : "same"}</b> of every month, continuing month to month until you cancel.`);
+    t.push(`Today you pay <b>$${nMoney(m.todayDue)}</b> \u2014 your first full month${m.extraSum ? `, plus $${nMoney(m.extraSum)} in add-ons` : ""}. Nothing is prorated.`);
+    t.push(`Your next charge is <b>${fmtLongDate(agFirstDraftIso(c))}</b>, one month from signing. After that, <b>$${nMoney(m.monthly)}</b> is drafted from the payment method on file on or about the <b>${day ? ordinal(day) : "same"}</b> of every month, continuing month to month until you cancel.`);
     t.push(`Cancel any time with <b>30 days\u2019 written notice</b> to the club. Cancellation is effective 30 days after Life Time receives it.`);
   } else if(kind === "pack"){
-    t.push(`This is a one-time session package. You pay <b>$${m.today.toLocaleString()}</b> today. Nothing recurs.`);
+    t.push(`This is a one-time session package. You pay <b>$${nMoney(m.today)}</b> today. Nothing recurs.`);
     t.push(`Sessions are redeemed within the <b>90-day redemption period</b>. A package paid in full can only be cancelled for the causes Maryland law provides \u2014 death, disability, or relocation \u2014 and any refund is pro-rated.`);
   }
 
@@ -5296,6 +5342,31 @@ function agPlainTerms(c){
 
 /* ---------- signature pad ---------- */
 let sigDrawing = false;
+let sigStrokes = [];   /* working copy while the pad is open */
+
+function sigCtx(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = cv.width / Math.max(rect.width, 1);
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+  return {ctx, rect};
+}
+
+function sigRedraw(){
+  const cv = document.getElementById("sigPad");
+  if(!cv) return;
+  const {ctx, rect} = sigCtx(cv);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+  sigStrokes.forEach(st => {
+    if(!st.length) return;
+    ctx.beginPath();
+    ctx.moveTo(st[0].x, st[0].y);
+    if(st.length === 1) ctx.lineTo(st[0].x + 0.1, st[0].y);
+    else for(let i = 1; i < st.length; i++) ctx.lineTo(st[i].x, st[i].y);
+    ctx.stroke();
+  });
+}
 
 function initSigPad(){
   const cv = document.getElementById("sigPad");
@@ -5305,25 +5376,37 @@ function initSigPad(){
   const dpr = window.devicePixelRatio || 1;
   cv.width  = Math.max(1, Math.round(rect.width  * dpr));
   cv.height = Math.max(1, Math.round(rect.height * dpr));
-  const ctx = cv.getContext("2d");
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, rect.width, rect.height);   /* transparent \u2014 see fillOfficialPdf */
-  ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
 
-  if(a.sigData){
+  sigStrokes = Array.isArray(a.sigStrokes) ? a.sigStrokes.map(st => st.slice()) : [];
+
+  if(!sigStrokes.length && a.sigData){
+    /* legacy bitmap signature \u2014 show it, but it can\u2019t be undone stroke by stroke */
+    const {ctx} = sigCtx(cv);
     const img = new Image();
-    img.onload = ()=>{ ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+    img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
     img.src = a.sigData;
+  } else {
+    sigRedraw();
   }
 
-  const pos = (e)=>{ const r = cv.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  const pos = (e)=>{ const r = cv.getBoundingClientRect(); return {x:+(e.clientX - r.left).toFixed(1), y:+(e.clientY - r.top).toFixed(1)}; };
   cv.onpointerdown = (e)=>{
     e.preventDefault();
     try{ cv.setPointerCapture(e.pointerId); }catch(_){}
     sigDrawing = true;
-    const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 0.1, p.y); ctx.stroke();
+    sigStrokes.push([pos(e)]);
+    sigRedraw();
   };
-  cv.onpointermove = (e)=>{ if(!sigDrawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  cv.onpointermove = (e)=>{
+    if(!sigDrawing) return;
+    e.preventDefault();
+    const st = sigStrokes[sigStrokes.length - 1];
+    const p = pos(e), last = st[st.length - 1];
+    if(Math.abs(p.x - last.x) + Math.abs(p.y - last.y) < 0.7) return;
+    st.push(p);
+    const {ctx} = sigCtx(cv);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+  };
   cv.onpointerup = ()=>{ if(!sigDrawing) return; sigDrawing = false; sigCommit(); };
   cv.onpointercancel = ()=>{ sigDrawing = false; };
 }
@@ -5331,21 +5414,29 @@ function initSigPad(){
 function sigCommit(){
   const cv = document.getElementById("sigPad");
   if(!cv) return;
-  const c = clients[activeClientId];
-  const a = agOf(c);
+  const c = clients[activeClientId], a = agOf(c);
+  a.sigStrokes = sigStrokes;
   a.sigData = cv.toDataURL("image/png");
   if(!a.sigDate) a.sigDate = todayISO();
   a.sigAt = new Date().toISOString();
   agSave();
   const meta = document.getElementById("sigMeta");
   if(meta) meta.innerHTML = sigMetaHtml(c);
-  const sched = document.getElementById("agSched");
-  if(sched) sched.innerHTML = agSchedHtml(c);
+}
+
+function sigUndo(){
+  const c = clients[activeClientId], a = agOf(c);
+  if(!Array.isArray(a.sigStrokes) || !a.sigStrokes.length){ sigClear(); return; }
+  sigStrokes.pop();
+  sigRedraw();
+  if(!sigStrokes.length){ sigClear(); return; }
+  sigCommit();
 }
 
 function sigClear(){
   const a = agOf(clients[activeClientId]);
-  a.sigData = ""; a.sigDate = ""; a.sigAt = ""; a.pdfAt = "";
+  a.sigData = ""; a.sigStrokes = null; a.sigDate = ""; a.sigAt = ""; a.pdfAt = "";
+  sigStrokes = [];
   agSave();
   renderModal();
 }
@@ -5370,17 +5461,38 @@ function agRecordHtml(c){
   return `<div style="font-size:10.5px;color:#5fbf7f;margin-top:12px;">\u2713 PDF saved ${when.toLocaleDateString(undefined,{month:"short",day:"numeric"})} at ${when.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</div>`;
 }
 
+function agProrationHtml(c){
+  const m = agMoney(c), a = agOf(c);
+  if(agKind(c) !== "recurring") return "";
+  return `<div style="font-size:11px;color:var(--grey-dim);margin-top:7px;line-height:1.5;">
+      Full first month \u2014 no proration.${m.extraSum ? ` Includes $${nMoney(m.extraSum)} in add-ons.` : ""} Next charge <b style="color:var(--grey);">${fmtLongDate(agFirstDraftIso(c))}</b>, one month out.
+      ${m.overridden ? `<span style="color:var(--amber);"> Overridden.</span>` : ""}
+    </div>
+    <div class="field-group" style="margin-top:8px;">
+      <label class="field-label">Override Today\u2019s Payment (leave blank for the full month)</label>
+      <input class="field-input" id="ag_todayOverride" value="${esc(a.todayOverride)}" inputmode="decimal" placeholder="${nMoney(m.base)}">
+    </div>`;
+}
+
 function agSchedHtml(c){
   const m = agMoney(c), kind = agKind(c);
   if(kind !== "recurring"){
     return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">One-time payment. Nothing recurs. Sessions redeem inside 90 days.</div>`;
   }
-  const day = agBillDay(c), sign = agSignDay(c), auto = agPaperBox(sign);
-  const picks = AG_PAPER_DAYS.map(d =>
-    `<div class="rate-btn ${d === day ? "on" : ""}" style="font-size:11.5px;padding:8px 6px;" onclick="setAgField('draftDay','${d}')">${ordinal(d)}</div>`).join("");
-  return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">Then <b style="color:var(--white);">$${m.monthly.toLocaleString()}/mo</b> on the <b style="color:var(--white);">${day ? ordinal(day) : "\u2014"}</b> of every month, until cancelled with 30 days\u2019 notice.</div>
-    <div class="rate-row" style="margin-top:9px;">${picks}</div>
-    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">Signed the ${sign ? ordinal(sign) : "\u2014"} \u2192 auto-picks the <b style="color:var(--grey);">${auto ? ordinal(auto) : "\u2014"}</b>, the next date Life Time\u2019s system bills. Tick the same box on the paper form.</div>`;
+  const a = agOf(c);
+  const day = agBillDay(c);
+  const anniv = !a.draftDay;
+  const picks = `<div class="rate-btn ${anniv ? "on" : ""}" style="font-size:11.5px;padding:8px 6px;" onclick="setAgField('draftDay','')">Signing day</div>` +
+    AG_PAPER_DAYS.map(d =>
+      `<div class="rate-btn ${(!anniv && d === day) ? "on" : ""}" style="font-size:11.5px;padding:8px 6px;" onclick="setAgField('draftDay','${d}')">${ordinal(d)}</div>`).join("");
+  return `<div style="font-size:11.5px;color:var(--grey);line-height:1.5;">Then <b style="color:var(--white);">$${nMoney(m.monthly)}/mo</b> on the <b style="color:var(--white);">${day ? ordinal(day) : "\u2014"}</b>, starting <b style="color:var(--white);">${fmtLongDate(agFirstDraftIso(c))}</b>, until cancelled with 30 days\u2019 notice.</div>
+    <div class="rate-row" style="margin-top:9px;flex-wrap:wrap;">${picks}</div>
+    <div class="rate-row" style="margin-top:9px;">
+      <div class="rate-btn ${a.printDraftDay ? "on" : ""}" style="font-size:11.5px;" onclick="setAgField('printDraftDay',${a.printDraftDay ? "false" : "true"})">${a.printDraftDay ? "\u2713 " : ""}Print the date on the form</div>
+    </div>
+    <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;line-height:1.45;">${a.printDraftDay
+      ? `The Payment Schedule blanks will be filled in.`
+      : `Payment Schedule blanks stay <b style="color:var(--grey);">empty</b> on the printed form, the way the club runs it. The date above still drives the member\u2019s copy and the terms.`}</div>`;
 }
 
 /* ---------- email ---------- */
@@ -5395,10 +5507,10 @@ function agMailHref(c){
   lines.push("Service: " + (a.serviceType || "\u2014") + " (" + (a.trainerLevel || "Personal Training") + ")");
   lines.push("Start date: " + (fmtLongDate(a.startDate) || "\u2014"));
   if(kind === "recurring"){
-    lines.push("Today: $" + m.today.toLocaleString() + (m.extraSum ? " (includes add-ons)" : ""));
-    lines.push("Then: $" + m.monthly.toLocaleString() + "/month on the " + (day ? ordinal(day) : "same day") + ", month to month until cancelled");
+    lines.push("Today: $" + nMoney(m.todayDue) + " (first full month" + (m.extraSum ? " + add-ons" : "") + ")");
+    lines.push("Then: $" + nMoney(m.monthly) + "/month on the " + (day ? ordinal(day) : "same day") + ", first charge " + fmtLongDate(agFirstDraftIso(c)) + ", month to month until cancelled");
   } else {
-    lines.push("Total today: $" + m.today.toLocaleString());
+    lines.push("Total today: $" + nMoney(m.today));
     lines.push("Redemption period: 90 days");
   }
   if(m.extras.length) lines.push("Add-ons: " + m.extras.map(e => e.label + " ($" + e.price + ")").join(", "));
@@ -5438,7 +5550,7 @@ function buildAgreementPrintHtml(c){
   h += f("Start Date", fmtLongDate(a.startDate));
   h += f("Redemption Period", kind === "pack" ? "90 days" : "N/A \u2014 recurring");
   h += f("Agreement Type", kind === "recurring" ? "Recurring Program \u2014 month to month" : kind === "pack" ? "Session Package \u2014 one-time" : "");
-  h += f("Fees", "$" + m.today.toLocaleString());
+  h += f("Fees", "$" + nMoney(kind === "recurring" ? m.monthly : m.today));
   if(m.extras.length) h += f("Add-Ons", m.extras.map(e => e.label + " ($" + e.price + ")").join("; "), true);
   h += `</div>`;
 
@@ -5449,8 +5561,8 @@ function buildAgreementPrintHtml(c){
       AG_PAPER_DAYS.map(d => `<span>${box(d === day)} ${ordinal(d)} of Month</span>`).join("") + `</div>`;
   }
   h += `<div class="a-fields" style="margin-top:6px;">`;
-  h += f("Today\u2019s Payment", "$" + m.today.toLocaleString() + " (plus applicable taxes, surcharge fees and public improvement fees)", true);
-  h += f("Recurring Payment", kind === "recurring" ? "$" + m.monthly.toLocaleString() + " per month" : "None \u2014 paid in full today");
+  h += f("Today\u2019s Payment", "$" + nMoney(m.todayDue) + " (first full month) plus applicable taxes, surcharge fees and public improvement fees", true);
+  h += f("Recurring Payment", kind === "recurring" ? "$" + nMoney(m.monthly) + " per month, first draft " + fmtLongDate(agFirstDraftIso(c)) : "None \u2014 paid in full today");
   h += f("Life Time Associate", a.assoc);
   h += `</div>`;
 
@@ -5541,9 +5653,10 @@ function renderAgreementTab(c){
     <div class="ag-row"><span class="ag-k">Redemption period</span><span class="ag-v">${kind === "pack" ? "90 days" : "N/A \u2014 recurring"}</span></div>
     <div class="rec-total-bar" style="margin-top:12px;">
       <span class="rt-lbl">Today\u2019s Payment</span>
-      <span class="rt-val">$${m.today.toLocaleString()}</span>
+      <span class="rt-val">$${nMoney(m.todayDue)}</span>
     </div>
-    <div id="agSched" style="margin-top:8px;">${agSchedHtml(c)}</div>
+    ${agProrationHtml(c)}
+    <div id="agSched" style="margin-top:10px;">${agSchedHtml(c)}</div>
     <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;">Plus applicable taxes, surcharge fees, and public improvement fees.</div>
 
     <div class="section-head" style="margin-top:20px;">Terms</div>
@@ -5552,6 +5665,7 @@ function renderAgreementTab(c){
     <div class="section-head" style="margin-top:20px;">Signature</div>
     <canvas id="sigPad" class="sig-pad"></canvas>
     <div style="display:flex;gap:10px;margin-top:9px;align-items:center;">
+      <div class="rate-btn" style="flex:0 0 auto;" onclick="sigUndo()">Undo</div>
       <div class="rate-btn" style="flex:0 0 auto;" onclick="sigClear()">Clear</div>
       <div class="sig-meta" id="sigMeta">${sigMetaHtml(c)}</div>
     </div>
@@ -5591,7 +5705,8 @@ const AG_XY = {
 const AG_OVAL = {dues:{x:71.1,y:359.2}, tab:{x:272.9,y:360.9}, recurring:{x:71.1,y:394.8}};
 const AG_DAYBOX = {3:159.05, 10:250.5, 17:339.2, 24:431.75, 28:523.0};
 const AG_DAYBOX_Y = 415.9;
-const AG_SIG = {x:115, y:132.8, maxW:250, maxH:36};
+const AG_ANNIV = {x:256, y:399.5, w:270};   /* after "Recurring Payments (on or about the):" */
+const AG_SIG = {x:115, y:133.2, maxW:240, maxH:15};   /* ack line bottoms out at 118.5; rule sits at 133.98 */
 const AG_SIGDATE = {x:420, y:132.5};
 
 function loadPdfLib(){
@@ -5634,8 +5749,24 @@ function b64ToBytes(dataUrl){
   return out;
 }
 
-/* older signatures were saved on a white background \u2014 knock it out */
-function sigTransparent(dataUrl){
+/* strokes -> an SVG path, tight to the ink */
+function sigSvgPath(strokes){
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  strokes.forEach(st => st.forEach(p => {
+    if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x;
+    if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
+  }));
+  if(maxX < minX) return null;
+  const d = strokes.filter(st => st.length).map(st => {
+    const pts = st.map(p => (p.x - minX).toFixed(2) + " " + (p.y - minY).toFixed(2));
+    if(pts.length === 1) return "M" + pts[0] + " L" + (st[0].x - minX + 0.3).toFixed(2) + " " + (st[0].y - minY).toFixed(2);
+    return "M" + pts[0] + " L" + pts.slice(1).join(" L");
+  }).join(" ");
+  return {d, w:Math.max(maxX - minX, 1), h:Math.max(maxY - minY, 1)};
+}
+
+/* legacy bitmap signature: knock out the white background and crop to the ink */
+function sigTrimBitmap(dataUrl){
   return new Promise((res)=>{
     const img = new Image();
     img.onload = ()=>{
@@ -5643,17 +5774,30 @@ function sigTransparent(dataUrl){
       cv.width = img.width; cv.height = img.height;
       const cx = cv.getContext("2d");
       cx.drawImage(img, 0, 0);
-      try{
-        const d = cx.getImageData(0, 0, cv.width, cv.height);
-        const px = d.data;
-        for(let i = 0; i < px.length; i += 4){
-          if(px[i] > 235 && px[i+1] > 235 && px[i+2] > 235) px[i+3] = 0;
+      let d;
+      try{ d = cx.getImageData(0, 0, cv.width, cv.height); }catch(e){ return res({url:dataUrl}); }
+      const px = d.data;
+      let x0 = cv.width, y0 = cv.height, x1 = -1, y1 = -1;
+      for(let y = 0; y < cv.height; y++){
+        for(let x = 0; x < cv.width; x++){
+          const i = (y * cv.width + x) * 4;
+          if(px[i+3] < 24 || (px[i] > 235 && px[i+1] > 235 && px[i+2] > 235)){ px[i+3] = 0; continue; }
+          if(x < x0) x0 = x; if(x > x1) x1 = x;
+          if(y < y0) y0 = y; if(y > y1) y1 = y;
         }
-        cx.putImageData(d, 0, 0);
-      }catch(e){}
-      res(cv.toDataURL("image/png"));
+      }
+      cx.putImageData(d, 0, 0);
+      if(x1 < 0) return res({url:dataUrl});
+      const pad = 3;
+      x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+      x1 = Math.min(cv.width - 1, x1 + pad); y1 = Math.min(cv.height - 1, y1 + pad);
+      const w = x1 - x0 + 1, h = y1 - y0 + 1;
+      const out = document.createElement("canvas");
+      out.width = w; out.height = h;
+      out.getContext("2d").drawImage(cv, x0, y0, w, h, 0, 0, w, h);
+      res({url:out.toDataURL("image/png")});
     };
-    img.onerror = ()=> res(dataUrl);
+    img.onerror = ()=> res({url:dataUrl});
     img.src = dataUrl;
   });
 }
@@ -5661,14 +5805,9 @@ function sigTransparent(dataUrl){
 /* which month the recurring draft first lands in */
 function agBeginMonth(c){
   if(agKind(c) !== "recurring") return "";
-  const a = agOf(c);
-  const iso = a.sigDate || a.startDate || todayISO();
-  const p = String(iso).split("-").map(Number);
-  if(p.length !== 3) return "";
-  let [yy, mm, dd] = p;
-  const draft = agBillDay(c);
-  if(draft && dd > draft){ mm++; if(mm > 12){ mm = 1; yy++; } }
-  return new Date(yy, mm - 1, 1).toLocaleDateString(undefined, {month:"short"}) + " " + yy;
+  const d = agFirstDraft(c);
+  if(!d) return "";
+  return new Date(d.yy, d.mm - 1, 1).toLocaleDateString(undefined, {month:"short"}) + " " + d.yy;
 }
 
 /* StandardFonts are WinAnsi \u2014 anything exotic throws on draw */
@@ -5683,7 +5822,6 @@ function agAscii(t){
 
 function agFormData(c){
   const a = agOf(c), m = agMoney(c), kind = agKind(c);
-  const num = (n) => n ? n.toLocaleString() : "";
   return {
     date: fmtLongDate(a.sigDate || a.startDate),
     last: a.last, first: a.first,
@@ -5693,11 +5831,11 @@ function agFormData(c){
     service: [a.serviceType, a.trainerLevel].filter(Boolean).join("  \u00b7  "),
     startDate: fmtLongDate(a.startDate),
     redemption: kind === "pack" ? "90 days" : "N/A",
-    fees: num(m.today),
-    totalAmt: kind === "pack" ? num(m.today) : "",
+    fees: kind === "recurring" ? nMoney(m.monthly) : nMoney(m.today),
+    totalAmt: kind === "pack" ? nMoney(m.today) : "",   /* blank on recurring \u2014 the form says so */
     associate: a.assoc,
-    todayPay: num(m.today),
-    recurAmt: kind === "recurring" ? num(m.monthly) : "",
+    todayPay: nMoney(m.todayDue),
+    recurAmt: kind === "recurring" ? nMoney(m.monthly) : "",
     beginMonth: agBeginMonth(c),
   };
 }
@@ -5751,21 +5889,146 @@ async function buildOfficialPdf(c){
 
   if(kind === "recurring"){
     dot(AG_OVAL.recurring);
-    const day = agBillDay(c);
-    if(AG_DAYBOX[day]){
-      const w = bold.widthOfTextAtSize("X", 10);
-      p1.drawText("X", {x:AG_DAYBOX[day] - w/2, y:TY(AG_DAYBOX_Y), size:10, font:bold, color:ink});
+    /* the club leaves the draft-date blanks empty \u2014 opt in per client */
+    if(a.printDraftDay){
+      const day = agBillDay(c);
+      if(AG_DAYBOX[day]){
+        const w = bold.widthOfTextAtSize("X", 10);
+        p1.drawText("X", {x:AG_DAYBOX[day] - w/2, y:TY(AG_DAYBOX_Y), size:10, font:bold, color:ink});
+      } else if(day){
+        const t = agAscii(ordinal(day) + " of Month");
+        p1.drawText(t, {x:AG_ANNIV.x, y:TY(AG_ANNIV.y), size:fit(font, t, 9.5, AG_ANNIV.w), font, color:ink});
+      }
     }
   }
 
-  if(a.sigData){
-    const png = await pdf.embedPng(await sigTransparent(a.sigData));
+  const sp = (Array.isArray(a.sigStrokes) && a.sigStrokes.length) ? sigSvgPath(a.sigStrokes) : null;
+  if(sp){
+    const sc = Math.min(AG_SIG.maxW / sp.w, AG_SIG.maxH / sp.h);
+    const inkTop = AG_SIG.y - sp.h * sc;
+    pLast.drawSvgPath(sp.d, {
+      x: AG_SIG.x, y: TY(inkTop), scale: sc,
+      borderColor: ink, borderWidth: Math.max(0.85, 2.0 * sc),
+      borderLineCap: 1,
+    });
+  } else if(a.sigData){
+    const trimmed = await sigTrimBitmap(a.sigData);
+    const png = await pdf.embedPng(trimmed.url);
     const sc = Math.min(AG_SIG.maxW / png.width, AG_SIG.maxH / png.height);
     pLast.drawImage(png, {x:AG_SIG.x, y:TY(AG_SIG.y), width:png.width * sc, height:png.height * sc});
+  }
+  if(a.sigData || sp){
     pLast.drawText(agAscii(fmtLongDate(a.sigDate)), {x:AG_SIGDATE.x, y:TY(AG_SIGDATE.y), size:9.5, font, color:ink});
   }
 
   return pdf.save();
+}
+
+/* ================================================================
+   FILES HAND-OFF
+   Safari can't create folders or open Files to a path. Two things
+   it CAN do: hand a bundle to the iOS share sheet (which has a
+   "Save to Files" destination with a New Folder button), and hand
+   off to a Shortcut, which CAN create a folder.
+   ================================================================ */
+const AG_SHORTCUT = "ERN IT New Client";
+
+function clientSlug(c){
+  return String(c.name || "client").trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-") || "client";
+}
+
+/* opens Shortcuts, which has a real Files "Create Folder" action */
+function newClientFolder(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const url = "shortcuts://run-shortcut?name=" + encodeURIComponent(AG_SHORTCUT)
+    + "&input=text&text=" + encodeURIComponent(c.name || "New Client");
+  window.location.href = url;
+}
+
+function packetTxt(c){
+  const a = agOf(c), m = agMoney(c), kind = agKind(c);
+  const ds = designSummary(c);
+  const L = [];
+  L.push("ERN IT \u00b7 CLIENT FILE");
+  L.push(c.name || "\u2014");
+  L.push("Opened " + fmtLongDate(todayISO()));
+  L.push("");
+  L.push("CONTACT");
+  L.push("  Phone   " + (c.phone || "\u2014"));
+  L.push("  Email   " + (c.email || "\u2014"));
+  if(a.city || a.zip) L.push("  Area    " + [a.city, a.state, a.zip].filter(Boolean).join(", "));
+  if(a.memberNo) L.push("  Member  " + a.memberNo);
+  L.push("");
+  if(m.o){
+    L.push("AGREEMENT");
+    L.push("  Service       " + [a.serviceType, a.trainerLevel].filter(Boolean).join(" \u00b7 "));
+    L.push("  Type          " + (kind === "recurring" ? "Recurring, month to month" : "Session package"));
+    L.push("  Start         " + (fmtLongDate(a.startDate) || "\u2014"));
+    L.push("  Paid today    $" + nMoney(m.todayDue));
+    if(kind === "recurring"){
+      L.push("  Then          $" + nMoney(m.monthly) + "/mo, first draft " + fmtLongDate(agFirstDraftIso(c)));
+    } else {
+      L.push("  Redemption    90 days");
+    }
+    if(m.extras.length) L.push("  Add-ons       " + m.extras.map(e => e.label + " ($" + e.price + ")").join(", "));
+    L.push("  Payment       " + ((AG_PAY.find(p => p.k === a.payMethod) || {}).label || "\u2014"));
+    L.push("  Signed        " + (a.sigDate ? fmtLongDate(a.sigDate) : "not yet"));
+    L.push("");
+  }
+  if(ds.hasPlan){
+    L.push("24-WEEK PROGRAM DESIGN");
+    L.push("  " + ds.totals.trainer + " coached \u00b7 " + ds.totals.total + " total sessions \u00b7 " + ds.totals.days + " training days");
+    DESIGN_PHASES.forEach((ph, i) => {
+      const p = ds.perWeek[i];
+      const bits = [];
+      if(p.trainer) bits.push(p.trainer + "x trainer");
+      if(p.stretch) bits.push(p.stretch + "x stretch");
+      if(p.ghost)   bits.push(p.ghost + " ghost");
+      if(p.cardio)  bits.push(p.cardio + " cardio");
+      if(p.classes) bits.push(p.classes + " class");
+      L.push("  " + ph.n + " (wks " + ph.wks[0] + "\u2013" + ph.wks[1] + "): " + (bits.join(", ") || "\u2014"));
+    });
+    L.push("");
+  }
+  if((c.notes || []).length){
+    L.push("COACH NOTES");
+    c.notes.slice().reverse().forEach(n => L.push("  " + n.date + " \u2014 " + n.text));
+    L.push("");
+  }
+  L.push("#ERN_IT \u00b7 I build bodies. Not excuses.");
+  return L.join("\n");
+}
+
+async function saveClientPacket(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const btn = document.getElementById("agPacketBtn");
+  if(btn) btn.textContent = "Preparing\u2026";
+  const slug = clientSlug(c);
+  const files = [];
+  try{
+    const a = agOf(c);
+    if(agBlank() && a.sigData){
+      files.push(new File([await buildOfficialPdf(c)], agFileName(c), {type:"application/pdf"}));
+    }
+    files.push(new File([packetTxt(c)], slug + "-Client-File.txt", {type:"text/plain"}));
+
+    if(navigator.canShare && navigator.canShare({files})){
+      await navigator.share({files, title:c.name || "Client file"});
+      agMarkExported(c);
+    } else {
+      files.forEach(f => {
+        const url = URL.createObjectURL(f);
+        const link = document.createElement("a");
+        link.href = url; link.download = f.name;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(()=> URL.revokeObjectURL(url), 4000);
+      });
+      agMarkExported(c);
+    }
+  }catch(e){ if(e && e.name !== "AbortError") alert(e.message || "Couldn\u2019t build the packet."); }
+  renderModal();
 }
 
 function agFileName(c){
