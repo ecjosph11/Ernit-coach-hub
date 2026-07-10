@@ -5926,7 +5926,7 @@ async function buildOfficialPdf(c){
 
   const fit = (f, t, size, maxW) => { let s = size; while(s > 5.5 && f.widthOfTextAtSize(t, s) > maxW) s -= 0.25; return s; };
 
-  const a = agOf(c), kind = agKind(c);
+  const a = agOf(c), kind = agKind(c), m = agMoney(c);
   const data = agFormData(c);
   Object.keys(data).forEach(k => {
     if(k === "service") return;                 /* handled below \u2014 it can wrap */
