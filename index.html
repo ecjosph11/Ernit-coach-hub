@@ -124,13 +124,20 @@
   .calc-row .val{font-weight:800;color:var(--white);}
   .calc-row .val.hi{color:var(--red);}
 
-  .day-block{background:var(--card);border:1px solid var(--line);border-radius:10px;
-    padding:12px;margin-bottom:12px;}
-  .day-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-  .day-name-input{background:var(--dark);border:1px solid var(--line);border-radius:7px;
-    color:var(--white);padding:8px 10px;font-weight:800;font-size:14px;flex:1;margin-right:8px;}
-  .day-del{background:var(--card);border:1px solid var(--line);color:var(--grey);
-    width:30px;height:30px;border-radius:7px;font-size:14px;flex-shrink:0;}
+  .day-block{background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:0;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.4);}
+  .day-hd{display:flex;align-items:center;gap:11px;padding:12px 13px;
+    background:linear-gradient(90deg,var(--red) 0%,#7a0000 100%);position:relative;}
+  .day-num{flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,.28);
+    color:#fff;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;letter-spacing:-.5px;}
+  .day-name-input{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.18);border-radius:8px;
+    color:#fff;padding:9px 11px;font-weight:800;font-size:14.5px;flex:1;}
+  .day-name-input::placeholder{color:rgba(255,255,255,.6);}
+  .day-del{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.18);color:#fff;
+    width:32px;height:32px;border-radius:8px;font-size:14px;flex-shrink:0;}
+  .day-body{padding:12px 13px 13px;}
+  .day-ex-count{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--grey-dim);
+    text-transform:uppercase;margin-bottom:9px;}
 
   .ex-row{background:var(--dark);border:1px solid var(--line);border-radius:8px;
     padding:10px;margin-bottom:8px;}
@@ -223,10 +230,19 @@
   .fix-item b{color:var(--white);}
   .fix-item .fx{color:var(--grey);}
 
-  .phase-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;}
-  .phase-tab{flex-shrink:0;padding:8px 13px;border-radius:8px;background:var(--card);
-    border:1px solid var(--line);font-size:11.5px;font-weight:800;color:var(--grey);}
-  .phase-tab.on{background:var(--red);border-color:var(--red);color:#fff;}
+  .ctx-bar{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:16px;}
+  .ctx-lbl{font-size:9.5px;font-weight:900;letter-spacing:1.3px;color:var(--grey-dim);text-transform:uppercase;margin-bottom:7px;}
+  .phase-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;}
+  .phase-tab{flex:1;min-width:0;text-align:center;padding:11px 10px;border-radius:9px;background:var(--dark);
+    border:1px solid var(--line);font-size:13px;font-weight:900;color:var(--grey);white-space:nowrap;letter-spacing:.3px;}
+  .phase-tab.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 10px rgba(204,0,0,.35);}
+  .week-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  .week-tab{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:20px;background:var(--dark);
+    border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--grey);white-space:nowrap;}
+  .week-tab.on{background:#fff;border-color:#fff;color:#0a0a0a;}
+  .week-dot{width:6px;height:6px;border-radius:50%;background:var(--grey-dim);flex:0 0 6px;}
+  .week-tab.built .week-dot{background:#37c871;}
+  .week-tab.on .week-dot{background:#0a0a0a;}
   .phase-focus{background:var(--red-dim);border:1px solid var(--red);border-radius:9px;
     padding:10px 12px;font-size:12px;color:#ffd6d6;line-height:1.45;margin-bottom:14px;}
   .phase-focus b{color:#fff;}
@@ -252,6 +268,30 @@
   .band-range{font-size:13px;color:var(--grey);margin-top:7px;}
   .band-means{font-size:14px;color:var(--white);font-weight:700;margin-top:3px;}
   .threshold-box{background:var(--dark);border:1px solid var(--line);border-left:4px solid #b80f0f;border-radius:9px;padding:11px 13px;font-size:12.5px;color:var(--grey);margin-bottom:12px;line-height:1.5;}
+  /* ===== v46 InBody charts ===== */
+  .bf-chart{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 15px 13px;margin-bottom:14px;}
+  .bf-chart-h{font-size:11px;letter-spacing:1.2px;font-weight:900;color:var(--grey-dim);text-transform:uppercase;margin-bottom:14px;}
+  .bf-ladder{display:flex;height:34px;border-radius:8px;overflow:hidden;position:relative;}
+  .bf-seg{position:relative;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:rgba(255,255,255,.9);letter-spacing:.2px;overflow:hidden;white-space:nowrap;}
+  .bf-scale{display:flex;position:relative;height:15px;margin-top:3px;}
+  .bf-tick{position:absolute;transform:translateX(-50%);font-size:8.5px;color:var(--grey-dim);font-weight:700;top:0;}
+  .bf-marker{position:absolute;top:-7px;bottom:-4px;width:3px;background:#fff;border-radius:2px;box-shadow:0 0 0 1.5px rgba(0,0,0,.55);z-index:3;}
+  .bf-flag{position:absolute;top:-30px;transform:translateX(-50%);background:#fff;color:#0a0a0a;font-size:11px;font-weight:900;padding:3px 8px;border-radius:6px;white-space:nowrap;z-index:4;box-shadow:0 2px 8px rgba(0,0,0,.5);}
+  .bf-flag:after{content:"";position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid #fff;}
+  .bf-legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:16px;}
+  .bf-leg{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--grey);}
+  .bf-leg i{width:11px;height:11px;border-radius:3px;flex:0 0 11px;display:inline-block;}
+  .bf-leg.here{color:var(--white);font-weight:800;}
+  .gauge{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px;margin-bottom:14px;}
+  .gauge-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .gauge-lbl{font-size:11px;letter-spacing:1.2px;font-weight:900;color:var(--grey-dim);text-transform:uppercase;}
+  .gauge-val{font-size:30px;font-weight:900;line-height:1;}
+  .gauge-val small{font-size:12px;font-weight:800;color:var(--grey-dim);letter-spacing:.3px;}
+  .gauge-track{height:11px;border-radius:6px;position:relative;overflow:visible;}
+  .gauge-mark{position:absolute;top:-4px;bottom:-4px;width:3px;background:#fff;border-radius:2px;box-shadow:0 0 0 1.5px rgba(0,0,0,.6);}
+  .gauge-scale{display:flex;justify-content:space-between;font-size:8.5px;color:var(--grey-dim);font-weight:700;margin-top:5px;}
+  .gauge-note{font-size:12px;margin-top:10px;font-weight:700;}
+  .gauge-empty{font-size:12px;color:var(--grey-dim);}
   .threshold-box b{color:var(--white);}
   .flag-banner{background:#2a1414;border:1px solid #b80f0f;border-radius:10px;padding:13px;margin-bottom:12px;}
   .flag-banner .fb-title{color:#ff8080;font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
@@ -428,6 +468,7 @@
     <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncText">—</span></div>
     <div class="search-row">
       <input class="search-input" id="searchInput" placeholder="Search clients..." oninput="renderRoster()">
+      <button class="add-btn" id="inboxBtn" onclick="openInbox()" style="background:#1f1f1f;border:1px solid var(--line);position:relative;">Inbox<span id="inboxBadge" style="display:none;position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;font-weight:900;min-width:18px;height:18px;border-radius:9px;padding:0 4px;line-height:18px;text-align:center;"></span></button>
       <button class="add-btn" onclick="openNewClient()">+ New Client</button>
     </div>
     <div class="filter-row" id="filterRow"></div>
@@ -484,6 +525,7 @@ if(firebaseSdkAvailable && HUB_FIREBASE_CONFIG){
     const app = firebase.initializeApp(HUB_FIREBASE_CONFIG);
     hubDb = app.database();
   }catch(e){ console.warn("Firebase init failed:", e.message); }
+  try{ wireInbox(); }catch(e){ console.warn("inbox wire failed:", e.message); }
 }
 
 function setSyncStatus(){
@@ -556,7 +598,7 @@ function blankClient(){
       healthWellness:""
     },
     inbody: {
-      weightLbs:"", bodyFatPct:"", muscleMassLbs:"", inbodyScore:"",
+      weightLbs:"", bodyFatPct:"", muscleMassLbs:"", fatFreeMassLbs:"", visceralFat:"", inbodyScore:"",
       weightGoal:"", bodyFatGoal:"", timelineWeeks:""
     },
     program: { days: [] },
@@ -662,8 +704,8 @@ const TABS = [
   {id:"intake", label:"Intake"},
   {id:"inbody", label:"InBody"},
   {id:"assess", label:"Assess"},
-  {id:"summary", label:"Summary"},
   {id:"design", label:"Program Design"},
+  {id:"summary", label:"Summary"},
   {id:"recommend", label:"Program Rec"},
   {id:"agreement", label:"Agreement"},
   {id:"program", label:"Builder"},
@@ -1062,7 +1104,7 @@ function collectFormIntoClient_OLD(){
     c.intake.selfAssessment = valOf("i_selfAssessment");
   } else if(activeTab === "inbody"){
     c.inbody.weightLbs = valOf("b_weightLbs"); c.inbody.bodyFatPct = valOf("b_bodyFatPct");
-    c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.inbodyScore = valOf("b_inbodyScore");
+    c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.fatFreeMassLbs = valOf("b_fatFreeMassLbs"); c.inbody.visceralFat = valOf("b_visceralFat"); c.inbody.inbodyScore = valOf("b_inbodyScore");
     c.inbody.weightGoal = valOf("b_weightGoal"); c.inbody.bodyFatGoal = valOf("b_bodyFatGoal");
     c.inbody.timelineWeeks = valOf("b_timelineWeeks");
   } else if(activeTab === "program"){
@@ -1161,6 +1203,7 @@ function migrateClient(c){
   if(c.assessment.plank.timeSec === undefined) c.assessment.plank.timeSec = "";
 
   c.recommend = c.recommend || {daysPerWeek:"",budget:"",style:"",nutrition:"",energy:"",decision:""};
+  c.recEmail = c.recEmail || null;
   if(c.recommend.selected === undefined) c.recommend.selected = "";
   if(!c.recommend.nutriSel) c.recommend.nutriSel = "none";
   if(!c.recommend.amaSel) c.recommend.amaSel = "none";
@@ -1208,6 +1251,8 @@ function migrateClient(c){
     p.days = p.days.slice(0,7).map(x => x || "");
   });
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
+  if(c.inbody.fatFreeMassLbs === undefined) c.inbody.fatFreeMassLbs = "";
+  if(c.inbody.visceralFat === undefined) c.inbody.visceralFat = "";
   c.followup = c.followup || null;
 
   agAdopt(c);
@@ -2008,7 +2053,7 @@ function collectFormIntoClient(){
     if(pt) c.assessment.plank.timeSec = pt.value;
   } else if(activeTab === "inbody"){
     c.inbody.weightLbs = valOf("b_weightLbs"); c.inbody.bodyFatPct = valOf("b_bodyFatPct");
-    c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.inbodyScore = valOf("b_inbodyScore");
+    c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.fatFreeMassLbs = valOf("b_fatFreeMassLbs"); c.inbody.visceralFat = valOf("b_visceralFat"); c.inbody.inbodyScore = valOf("b_inbodyScore");
     c.inbody.weightGoal = valOf("b_weightGoal"); c.inbody.bodyFatGoal = valOf("b_bodyFatGoal");
     c.inbody.timelineWeeks = valOf("b_timelineWeeks");
   } else if(activeTab === "program"){
@@ -2087,6 +2132,103 @@ const BF_BANDS = {
   ],
 };
 
+/* ---------- v46: InBody visual charts ---------- */
+/* display axis caps the open-ended top band so the ladder is readable */
+const BF_AXIS = { female:{min:10, max:50}, male:{min:2, max:42} };
+
+function bfChartHtml(c){
+  const gender = c.intake.gender;
+  const bands = BF_BANDS[gender];
+  if(!bands) return '<div style="font-size:12.5px;color:var(--grey-dim);margin-bottom:12px;">Set gender (Intake) to see the body-fat chart.</div>';
+  const axis = BF_AXIS[gender];
+  const span = axis.max - axis.min;
+  const bf = parseFloat(c.inbody.bodyFatPct);
+  const goal = parseFloat(c.inbody.bodyFatGoal);
+  const here = (!isNaN(bf)) ? bfClassify(gender, bf) : null;
+
+  /* each segment's visual width = its share of the capped axis */
+  const segs = bands.map(b => {
+    const lo = Math.max(b.lo, axis.min);
+    const hi = Math.min(b.hi, axis.max);
+    const w = Math.max(0, (hi - lo) / span * 100);
+    const isHere = here && here.name === b.name;
+    return `<div class="bf-seg" style="width:${w}%;background:${b.color};${isHere ? "box-shadow:inset 0 0 0 2px rgba(255,255,255,.85);" : ""}">${w > 9 ? b.name : ""}</div>`;
+  }).join("");
+
+  const pct = (v) => Math.max(0, Math.min(100, (v - axis.min) / span * 100));
+  const ticks = [];
+  for(let t = axis.min; t <= axis.max; t += (gender==="male"?8:10)) ticks.push(t);
+
+  const marker = !isNaN(bf)
+    ? `<div class="bf-flag" style="left:${pct(bf)}%;">${bf}%</div><div class="bf-marker" style="left:${pct(bf)}%;"></div>` : "";
+  const goalMark = (!isNaN(goal) && goal !== bf)
+    ? `<div class="bf-marker" style="left:${pct(goal)}%;background:#8fd6a6;box-shadow:0 0 0 1.5px rgba(0,0,0,.55);"></div>` : "";
+
+  const legend = bands.map(b => {
+    const isHere = here && here.name === b.name;
+    return `<div class="bf-leg ${isHere?"here":""}"><i style="background:${b.color};"></i>${b.name} \u00b7 ${b.range}${isHere?" \u2190 you":""}</div>`;
+  }).join("");
+
+  return `<div class="bf-chart">
+    <div class="bf-chart-h">Body Fat % \u2014 ${gender==="male"?"Men":"Women"}${here?` \u00b7 <span style="color:${here.color};">${here.name}</span>`:""}</div>
+    <div style="position:relative;padding-top:${!isNaN(bf)?"30px":"0"};">
+      <div class="bf-ladder">${segs}${marker}${goalMark}</div>
+      <div class="bf-scale">${ticks.map(t=>`<span class="bf-tick" style="left:${pct(t)}%;">${t}%</span>`).join("")}</div>
+    </div>
+    ${(!isNaN(goal) && goal !== bf) ? `<div style="font-size:10.5px;color:#8fd6a6;margin-top:14px;font-weight:700;">\u25ac Goal ${goal}%</div>` : ""}
+    <div class="bf-legend">${legend}</div>
+  </div>`;
+}
+
+function visceralGaugeHtml(c){
+  const v = parseFloat(c.inbody.visceralFat);
+  const MAX = 20, HEALTHY = 10;   /* InBody: 1-9 optimal, 10-14 elevated, 15+ high */
+  const pct = (n) => Math.max(0, Math.min(100, n / MAX * 100));
+  const track = `linear-gradient(90deg,
+    ${SHEET.green} 0%, ${SHEET.green} ${pct(9.5)}%,
+    ${SHEET.amber} ${pct(9.5)}%, ${SHEET.amber} ${pct(14.5)}%,
+    ${SHEET.red} ${pct(14.5)}%, ${SHEET.red} 100%)`;
+  let note = '<span class="gauge-empty">Enter the visceral fat level from the sheet.</span>';
+  let valColor = "var(--white)";
+  if(!isNaN(v)){
+    if(v <= HEALTHY - 1){ note = `<span style="color:${SHEET.green};">Healthy \u2014 at or under the level-10 threshold.</span>`; valColor = SHEET.green; }
+    else if(v <= 14){ note = `<span style="color:${SHEET.amber};">Elevated \u2014 above the healthy threshold. A fat-loss priority.</span>`; valColor = SHEET.amber; }
+    else { note = `<span style="color:${SHEET.red};">High \u2014 well over threshold. Flag for health, not just aesthetics.</span>`; valColor = SHEET.red; }
+  }
+  return `<div class="gauge">
+    <div class="gauge-top">
+      <span class="gauge-lbl">Visceral Fat</span>
+      <span class="gauge-val" style="color:${valColor};">${!isNaN(v)?v:"\u2014"}<small> / level ${HEALTHY} safe</small></span>
+    </div>
+    <div class="gauge-track" style="background:${track};">
+      ${!isNaN(v)?`<div class="gauge-mark" style="left:${pct(v)}%;"></div>`:""}
+    </div>
+    <div class="gauge-scale"><span>1</span><span>Healthy \u2264 ${HEALTHY}</span><span>Elevated</span><span>${MAX}+</span></div>
+    <div class="gauge-note">${note}</div>
+  </div>`;
+}
+
+function scoreGaugeHtml(c){
+  const sc = parseFloat(c.inbody.inbodyScore);
+  const pct = (n) => Math.max(0, Math.min(100, n));   /* 0-100 axis */
+  const track = `linear-gradient(90deg,
+    ${SHEET.red} 0%, ${SHEET.red} 60%,
+    ${SHEET.amber} 60%, ${SHEET.amber} 80%,
+    ${SHEET.green} 80%, ${SHEET.green} 100%)`;
+  const sb = !isNaN(sc) ? scoreBand(sc) : null;
+  return `<div class="gauge">
+    <div class="gauge-top">
+      <span class="gauge-lbl">InBody Score</span>
+      <span class="gauge-val" style="color:${sb?sb.color:"var(--white)"};">${!isNaN(sc)?sc:"\u2014"}<small> / 100</small></span>
+    </div>
+    <div class="gauge-track" style="background:${track};">
+      ${!isNaN(sc)?`<div class="gauge-mark" style="left:${pct(sc)}%;"></div>`:""}
+    </div>
+    <div class="gauge-scale"><span>0</span><span>High Risk</span><span>60</span><span>Avg</span><span>80</span><span>Optimal</span></div>
+    <div class="gauge-note">${sb?`<span style="color:${sb.color};">${sb.name} \u00b7 ${sb.means}</span>`:'<span class="gauge-empty">Enter the InBody score (0-100) from the sheet.</span>'}</div>
+  </div>`;
+}
+
 function bfClassify(gender, bf){
   const bands = BF_BANDS[gender];
   if(!bands) return null;
@@ -2103,11 +2245,16 @@ function scoreBand(score){
 }
 
 function lbmValue(c){
-  const v = parseFloat(c.inbody.muscleMassLbs);
-  if(!isNaN(v)) return v;
+  /* Lean/Fat-Free Mass drives protein. Prefer the measured FFM row;
+     fall back to weight-minus-fat; SMM is NOT lean body mass so it is
+     used only as a last resort when nothing else is present. */
+  const ffm = parseFloat(c.inbody.fatFreeMassLbs);
+  if(!isNaN(ffm)) return ffm;
   const w = parseFloat(c.inbody.weightLbs), bf = parseFloat(c.inbody.bodyFatPct);
-  if(isNaN(w) || isNaN(bf)) return NaN;
-  return Math.round(w * (1 - bf/100) * 10) / 10;
+  if(!isNaN(w) && !isNaN(bf)) return Math.round(w * (1 - bf/100) * 10) / 10;
+  const smm = parseFloat(c.inbody.muscleMassLbs);
+  if(!isNaN(smm)) return smm;
+  return NaN;
 }
 function lbmLow(c){
   const h = parseFloat(c.intake.heightIn);
@@ -2227,8 +2374,9 @@ function renderInbodyTab(c){
         <input class="field-input" id="b_inbodyScore" type="text" inputmode="numeric" value="${esc(b.inbodyScore)}"></div>
     </div>
 
-    <div class="section-head">Classifications — Roadmap Sheet</div>
+    <div class="section-head">Body Fat Classification Chart</div>
     ${threshold !== null ? `<div class="threshold-box"><b>HEALTH RISK THRESHOLD:</b> ${gender === "male" ? "Men" : "Women"} should target <b>${threshold}% body fat or below</b>. Body fat percentage — not just the number on the scale — is the true indicator of metabolic health.</div>` : ""}
+    ${bfChartHtml(c)}
 
     ${cls ? `<div class="band-card" style="border-color:${cls.color};">
         <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">Body Fat Classification</div>
@@ -2249,6 +2397,10 @@ function renderInbodyTab(c){
         <div class="fb-title">Low Lean Body Mass — ${lv} lbs</div>
         <div class="fb-body">Under 100 lbs LBM at 5'0"+ height. Muscle-building priority — nutrition plan adjusts automatically (see Nutrition tab).</div>
       </div>` : ""}
+
+    <div class="section-head">Visceral Fat &amp; InBody Score</div>
+    ${visceralGaugeHtml(c)}
+    ${scoreGaugeHtml(c)}
 
     <div class="section-head">Goals &amp; Timeline</div>
     <div class="field-row2">
@@ -3115,15 +3267,18 @@ function renderProgramTab(c){
     </div>
     ${importCardHtml("program")}
 
-    <div class="phase-tabs">` + phases.map((p, idx) =>
-      `<div class="phase-tab ${idx === progPhase ? "on" : ""}" onclick="setProgPhase(${idx})">P${idx + 1}</div>`).join("") + `</div>
-    <div class="phase-focus"><b>${ph.name}</b> \u00b7 ${ph.weeks}<br>${ph.focus}</div>
-
-    <div class="phase-tabs" style="margin-top:-4px;">` +
-      Array.from({length: totalWeeks}, (_, w) => {
-        const built = ph.weekPlans[w] && ph.weekPlans[w].days && ph.weekPlans[w].days.length;
-        return `<div class="phase-tab ${w === progWeek ? "on" : ""}" style="${built || w === progWeek ? "" : "opacity:0.5;"}" onclick="setProgWeek(${w})">WK ${w + 1}</div>`;
-      }).join("") + `</div>`;
+    <div class="ctx-bar">
+      <div class="ctx-lbl">Phase</div>
+      <div class="phase-tabs">` + phases.map((p, idx) =>
+        `<div class="phase-tab ${idx === progPhase ? "on" : ""}" onclick="setProgPhase(${idx})">P${idx + 1}</div>`).join("") + `</div>
+      <div class="phase-focus" style="margin-top:10px;"><b>${ph.name}</b> \u00b7 ${ph.weeks}<br>${ph.focus}</div>
+      <div class="ctx-lbl" style="margin-top:13px;">Week \u2014 green dot = built</div>
+      <div class="week-tabs">` +
+        Array.from({length: totalWeeks}, (_, w) => {
+          const built = ph.weekPlans[w] && ph.weekPlans[w].days && ph.weekPlans[w].days.length;
+          return `<div class="week-tab ${w === progWeek ? "on" : ""} ${built ? "built" : ""}" onclick="setProgWeek(${w})"><span class="week-dot"></span>Week ${w + 1}</div>`;
+        }).join("") + `</div>
+    </div>`;
 
   const prevBuilt = progWeek > 0 && ph.weekPlans[progWeek - 1] && ph.weekPlans[progWeek - 1].days.length;
   if(!ph.days.length && prevBuilt){
@@ -3157,14 +3312,19 @@ function renderProgramTab(c){
           ${setLogHtml(ex, dIdx, eIdx)}
         </div>`;
     });
+    const exCount = (day.exercises || []).length;
     html += `
       <div class="day-block">
-        <div class="day-head-row">
-          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="Day label (optional) — Day 1 \u00b7 Mon \u00b7 Push">
+        <div class="day-hd">
+          <div class="day-num">${dIdx + 1}</div>
+          <input class="day-name-input" data-pday="${dIdx}" data-pfield="dayName" value="${esc(day.name)}" placeholder="Name this day \u2014 Push \u00b7 Lower \u00b7 Full Body">
           <button class="day-del" onclick="pDelDay(${dIdx})">\u2715</button>
         </div>
-        ${exHtml}
-        <button class="add-row-btn" onclick="pAddEx(${dIdx})">+ Add Exercise</button>
+        <div class="day-body">
+          <div class="day-ex-count">${exCount ? exCount + (exCount === 1 ? " exercise" : " exercises") : "No exercises yet"}</div>
+          ${exHtml}
+          <button class="add-row-btn" onclick="pAddEx(${dIdx})">+ Add Exercise</button>
+        </div>
       </div>`;
   });
 
@@ -3657,6 +3817,138 @@ function toggleSumCoach(){
   renderModal();
 }
 
+/* ---------- Summary: recommendation email (Ernest / Life Time voice) ---------- */
+function summaryRecPitch(c){
+  const o = selectedProgram(c);
+  if(!o || o.key === "pdo") return "";        /* never pitch design-only */
+  const extras = selectedExtras(c);
+  const first = o.price + extras.reduce((s,e)=>s+e.price, 0);
+  let t = o.label + " \u2014 $" + o.price.toLocaleString() + (o.recur ? "/month" : "");
+  if(o.per) t += " (" + o.per + ")";
+  if(extras.length) t += ". Add-ons: " + extras.map(e => e.label + " ($" + e.price + ")").join(", ") + ", first payment $" + first.toLocaleString();
+  return t;
+}
+
+async function generateRecEmail(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  const btn = document.getElementById("recEmailBtn");
+  const status = document.getElementById("recEmailStatus");
+  const o = selectedProgram(c);
+  if(!o || o.key === "pdo"){
+    if(status) status.textContent = "Pick an in-person program on Program Rec first \u2014 design-only isn't pitched here.";
+    return;
+  }
+  if(btn){ btn.disabled = true; btn.textContent = "Writing\u2026"; }
+  if(status) status.textContent = "Writing the recommendation\u2026";
+
+  const fixes = assessmentFixes(c);
+  const calc = computeNutrition(c);
+  const nf = neededFrequency(c);
+  const tl = c.inbody.timelineWeeks;
+  const payload = {
+    formType: "recommendation",
+    client: {
+      name: c.name,
+      goals: (c.intake.goals||[]).join(" + "),
+      why: c.intake.whyImportant,
+      preventedBefore: c.intake.preventedBefore,
+      lifeChange: c.intake.lifeChange,
+      assessmentNotes: fixes.slice(0,3).map(f=>f.fault + " (" + f.test.split(" ")[0] + ")").join("; "),
+      currentStats: c.inbody.weightLbs
+        ? `${c.inbody.weightLbs} lbs, ${c.inbody.bodyFatPct}% BF now \u2014 goal ${c.inbody.weightGoal||"?"} lbs / ${c.inbody.bodyFatGoal||"?"}% BF${tl ? " over " + tl + " weeks" : ""}`
+        : "",
+      nutritionTargets: calc ? `${calc.calories} kcal, ${calc.protein}g protein` : "",
+      frequency: nf ? `${nf.freq}\u00d7 per week` : "",
+      programPitch: summaryRecPitch(c)
+    }
+  };
+  try{
+    const res = await fetch("/.netlify/functions/read-form", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){ if(status) status.textContent = data.error || "Generation failed."; if(btn) btn.disabled = false; return; }
+    let em = data.extracted || {};
+    const opener = "Hey " + (c.name.split(" ")[0] || c.name || "there") + " \u2014 this is Ernest, your trainer from Life Time.";
+    if(em.emailBody && !em.emailBody.startsWith("Hey")) em.emailBody = opener + "\n\n" + em.emailBody;
+    c.recEmail = { subject: em.emailSubject || "", body: em.emailBody || "", programKey: o.key, at: new Date().toISOString() };
+    saveClients(clients);
+    pushClientToFirebase(c.id, c);
+    renderModal();
+  }catch(e){
+    if(status) status.textContent = "Network error: " + e.message;
+    if(btn) btn.disabled = false;
+  }
+}
+
+function copyRecEmail(){
+  const c = clients[activeClientId];
+  if(!c.recEmail) return;
+  const txt = "Subject: " + (c.recEmail.subject||"") + "\n\n" + (c.recEmail.body||"");
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b = document.getElementById("recEmailCopy");
+    if(b){ const t = b.textContent; b.textContent = "Copied \u2713"; setTimeout(()=>{ b.textContent = t; }, 1400); }
+  });
+}
+
+function recEmailMailBtn(c){
+  if(!c.recEmail || !c.recEmail.body) return "";
+  if(!c.email) return `<span style="font-size:10.5px;color:var(--grey-dim);margin-left:8px;">add an email on Overview to send directly</span>`;
+  const href = "mailto:" + encodeURIComponent(c.email)
+    + "?subject=" + encodeURIComponent(c.recEmail.subject || "Your training plan \u2014 Ernest @ Life Time")
+    + "&body=" + encodeURIComponent(c.recEmail.body || "");
+  return `<a class="copy-btn" style="background:var(--red);color:#fff;border-color:var(--red);text-decoration:none;display:inline-block;" href="${href}">Send via Mail</a>`;
+}
+
+function printRecEmail(){
+  collectFormIntoClient();
+  const c = clients[activeClientId];
+  if(!c.recEmail || !c.recEmail.body){ alert("Generate the email first."); return; }
+  let area = document.getElementById("printArea");
+  if(!area){ area = document.createElement("div"); area.id = "printArea"; document.body.appendChild(area); }
+  const cx = 'style="-webkit-print-color-adjust:exact;print-color-adjust:exact;"';
+  const bodyHtml = esc(c.recEmail.body).replace(/\n/g, "<br>");
+  area.innerHTML = `<div class="a-doc" style="font-family:Georgia,'Times New Roman',serif;color:#111;">
+    <div ${cx} style="background:#CC0000 !important;color:#fff;padding:11px 14px;font-weight:900;font-size:13px;letter-spacing:.5px;display:flex;justify-content:space-between;">
+      <span>ERN IT \u00b7 YOUR TRAINING PLAN</span><span>${esc(c.name)}</span></div>
+    <div style="font-size:11px;color:#555;margin:10px 0 4px;"><b>To:</b> ${esc(c.email) || "\u2014"}</div>
+    <div style="font-size:11px;color:#555;margin-bottom:12px;"><b>Subject:</b> ${esc(c.recEmail.subject)}</div>
+    <div style="font-size:13px;line-height:1.65;">${bodyHtml}</div>
+    <div style="margin-top:22px;border-top:1px solid #999;padding-top:8px;font-size:9.5px;color:#777;">#ERN_IT \u00b7 I build bodies. Not excuses. \u00b7 Life Time Gaithersburg</div>
+  </div>`;
+  document.body.classList.add("printing");
+  window.onafterprint = ()=>{ document.body.classList.remove("printing"); };
+  setTimeout(()=>{ window.print(); }, 80);
+}
+
+function summaryEmailSection(c){
+  const o = selectedProgram(c);
+  const ready = o && o.key !== "pdo";
+  const stale = c.recEmail && c.recEmail.programKey && o && c.recEmail.programKey !== o.key;
+
+  let inner;
+  if(!ready){
+    inner = `<div style="font-size:12px;color:var(--grey);line-height:1.55;">Pick an in-person program on <b>Program Rec</b> and the recommendation email builds from it \u2014 their goal, what the assessment showed, the program, the price, and an invite to lock it in.</div>`;
+  } else {
+    inner = `<button class="scan-btn" id="recEmailBtn" style="width:100%;" onclick="generateRecEmail()">${c.recEmail ? "Rewrite" : "Write"} the Recommendation Email</button>
+      <div id="recEmailStatus" style="font-size:11.5px;color:var(--grey);margin-top:8px;">${stale ? '<span style="color:var(--amber);">Program changed since this was written \u2014 rewrite to match.</span>' : ""}</div>`;
+    if(c.recEmail && c.recEmail.body){
+      inner += `
+        <div class="followup-box" id="recEmailBox" style="margin-top:12px;"><b>Subject:</b> ${esc(c.recEmail.subject)}\n\n${esc(c.recEmail.body)}</div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:9px;">
+          <button class="copy-btn" id="recEmailCopy" onclick="copyRecEmail()">Copy</button>
+          ${recEmailMailBtn(c)}
+          <button class="copy-btn" onclick="printRecEmail()">Print / Save PDF</button>
+        </div>`;
+    }
+  }
+  return `<div class="sum-block" style="border:1px solid var(--red);">
+    <div class="sum-title">Recommendation Email</div>
+    ${inner}
+  </div>`;
+}
+
 function renderSummaryTab(c){
   const i = c.intake;
   const fixes = assessmentFixes(c);
@@ -3709,6 +4001,8 @@ function renderSummaryTab(c){
       </div>
       <div style="font-size:11px;color:var(--grey-dim);margin-top:10px;">Options for making this happen are on the next tab.</div>
     </div>
+
+    ${summaryEmailSection(c)}
 
     <button onclick="toggleSumCoach()" style="background:none;border:1px solid var(--line);border-radius:8px;color:var(--grey-dim);font-size:11px;font-weight:700;letter-spacing:.5px;padding:7px 13px;margin-bottom:14px;">COACH TOOLS ${sumCoachOpen ? "\u25be" : "\u25b8"}</button>
   `;
@@ -6235,6 +6529,137 @@ function agOfficialSection(c){
     <div style="font-size:10.5px;color:var(--grey-dim);margin-top:8px;line-height:1.45;">${ready
       ? "Fills page 1 and stamps the signature on the last page. <b>Share</b> opens the iOS sheet \u2014 pick Mail and the PDF rides along as an attachment."
       : "Sign above first. The fill needs a signature to stamp."}</div>`;
+}
+
+/* ================================================================
+   INTAKE INBOX  (v43)
+   Reads from a SEPARATE, create-only Firebase project \u2014 the same
+   one the standalone intake page writes to. The hub can read and
+   clear the inbox; the public form can only push. Two different
+   projects, so a leaked form link never touches the client DB.
+   Paste the inbox project's config below (NOT the hub's).
+   ================================================================ */
+const INBOX_FB = {
+  apiKey: "PASTE_apiKey",
+  authDomain: "PASTE_authDomain",
+  databaseURL: "PASTE_databaseURL",
+  projectId: "PASTE_projectId",
+  appId: "PASTE_appId"
+};
+
+let inboxDb = null, inboxItems = {}, inboxWired = false;
+
+function inboxConfigured(){ return INBOX_FB.apiKey && INBOX_FB.apiKey !== "PASTE_apiKey"; }
+
+function wireInbox(){
+  if(inboxWired || !inboxConfigured() || typeof firebase === "undefined") return;
+  try{
+    const app = firebase.apps.find(a => a.name === "inbox") || firebase.initializeApp(INBOX_FB, "inbox");
+    inboxDb = firebase.database(app);
+    inboxDb.ref("intakes").on("value", snap => {
+      inboxItems = snap.val() || {};
+      updateInboxBadge();
+      if(document.getElementById("inboxView")) renderInbox();
+    }, err => console.warn("inbox read failed:", err.message));
+    inboxWired = true;
+  }catch(e){ console.warn("inbox init failed:", e.message); }
+}
+
+function updateInboxBadge(){
+  const n = Object.keys(inboxItems).length;
+  const b = document.getElementById("inboxBadge");
+  if(!b) return;
+  b.textContent = n;
+  b.style.display = n ? "block" : "none";
+}
+
+function fmtInboxTime(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {month:"short", day:"numeric"}) + " \u00b7 " + d.toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"});
+}
+
+function openInbox(){
+  let v = document.getElementById("inboxView");
+  if(!v){ v = document.createElement("div"); v.id = "inboxView"; v.className = "modal-overlay"; document.body.appendChild(v); }
+  v.style.display = "flex";
+  renderInbox();
+}
+function closeInbox(){ const v = document.getElementById("inboxView"); if(v) v.style.display = "none"; }
+
+function renderInbox(){
+  const v = document.getElementById("inboxView");
+  if(!v) return;
+  const ids = Object.keys(inboxItems).sort((a,b)=>{
+    const ta = inboxItems[a].submittedAt || "", tb = inboxItems[b].submittedAt || "";
+    return tb.localeCompare(ta);
+  });
+
+  let body;
+  if(!inboxConfigured()){
+    body = `<div class="empty-state"><div class="big">Inbox not connected</div>Paste your intake-inbox Firebase config into the hub file (INBOX_FB) and redeploy. Until then, prospects can\u2019t reach you here.</div>`;
+  } else if(!ids.length){
+    body = `<div class="empty-state"><div class="big">No new intakes</div>Send a prospect your intake link. When they submit, it lands here \u2014 tap to pull it into a client file.<br><span style="color:#555;font-size:11px;font-weight:800;letter-spacing:.5px;">I BUILD BODIES. NOT EXCUSES.</span></div>`;
+  } else {
+    body = ids.map(id => {
+      const it = inboxItems[id], k = it.intake || {};
+      return `<div class="client-card" style="align-items:flex-start;">
+        <div class="client-info" style="flex:1;">
+          <div class="client-name">${esc(it.name) || "(no name)"}</div>
+          <div class="client-meta">${esc(it.phone)}${it.phone && it.email ? " \u00b7 " : ""}${esc(it.email)}</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:5px;line-height:1.5;">
+            <b style="color:var(--white);">Goal:</b> ${esc(k.goal1) || "\u2014"}${k.goal2 ? " / " + esc(k.goal2) : ""}
+            ${k.healthWellness ? `<br><b style="color:var(--red);">Health flag:</b> ${esc(k.healthWellness.slice(0,90))}${k.healthWellness.length > 90 ? "\u2026" : ""}` : ""}
+          </div>
+          <div style="font-size:10.5px;color:var(--grey-dim);margin-top:6px;">Submitted ${fmtInboxTime(it.submittedAt)}</div>
+          <div style="display:flex;gap:9px;margin-top:11px;">
+            <button class="rate-btn on" style="flex:0 0 auto;" onclick="importIntake('${id}')">Pull into a file</button>
+            <button class="rate-btn" style="flex:0 0 auto;" onclick="dismissIntake('${id}')">Dismiss</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  v.innerHTML = `<div class="modal-card" style="max-width:640px;">
+    <div class="modal-head">
+      <div class="modal-title">Intake Inbox${ids.length ? ` <span style="color:var(--grey-dim);font-weight:700;">(${ids.length})</span>` : ""}</div>
+      <button class="modal-close" onclick="closeInbox()">\u00d7</button>
+    </div>
+    <div class="scroll" style="padding:16px;">${body}</div>
+  </div>`;
+}
+
+function importIntake(id){
+  const it = inboxItems[id];
+  if(!it) return;
+  const c = blankClient();
+  migrateClient(c);                 /* give it the full 32-field intake shape */
+  c.name = it.name || "";
+  c.email = it.email || "";
+  c.phone = it.phone || "";
+  c.instagram = it.instagram || "";
+  c.status = "prospect";
+  const k = it.intake || {};
+  Object.keys(c.intake).forEach(f => {
+    if(k[f] === undefined) return;
+    if(Array.isArray(c.intake[f])) c.intake[f] = Array.isArray(k[f]) ? k[f].slice() : c.intake[f];
+    else c.intake[f] = k[f];
+  });
+  c.notes = [{ date: new Date().toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}),
+               text: "Intake submitted online " + fmtInboxTime(it.submittedAt) + ". Pulled from inbox." }];
+  clients[c.id] = c;
+  saveClients(clients);
+  pushClientToFirebase(c.id, c);
+  if(inboxDb) inboxDb.ref("intakes/" + id).remove().catch(e=>console.warn(e.message));
+  closeInbox();
+  openClient(c.id, false);
+}
+
+function dismissIntake(id){
+  if(!confirm("Dismiss this intake? It will be permanently removed from the inbox.")) return;
+  if(inboxDb) inboxDb.ref("intakes/" + id).remove().catch(e=>console.warn(e.message));
 }
 
 /* ============ INIT ============ */
