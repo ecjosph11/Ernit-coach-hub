@@ -29,20 +29,32 @@ Rules:
 - "struggles": array using EXACTLY: "Time","Money","Commitment","Education","Motivation","Nutrition".
 - Respond with ONLY the raw JSON object. No markdown fences, no commentary.`;
 
-const INBODY_SCHEMA_PROMPT = `You are reading a photo of a handwritten or printed InBody body composition scan / goal roadmap sheet.
-Extract into this exact JSON shape. Use empty string "" for anything absent or illegible.
-Never guess at smudged numbers — leave blank rather than invent.
+const INBODY_SCHEMA_PROMPT = `You are reading a photo of an InBody body composition scan sheet (e.g. InBody380/570/770) OR a handwritten "Roadmap to Achieving Your Goals" sheet. First decide which one it is, then extract into this exact JSON shape. Use empty string "" for anything absent or illegible. Never guess at a smudged number — leave it blank rather than invent.
 
 {
   "heightIn": "",
-  "weightLbs": "", "bodyFatPct": "", "muscleMassLbs": "", "inbodyScore": "",
+  "weightLbs": "", "bodyFatPct": "", "muscleMassLbs": "", "fatFreeMassLbs": "", "visceralFat": "", "inbodyScore": "",
   "weightGoal": "", "bodyFatGoal": "", "timelineWeeks": ""
 }
 
-Rules:
-- All numbers as plain number strings, no units or % signs.
-- "heightIn": total inches. Convert 5'7" -> "67". If height is printed in cm, divide by 2.54 and round.
-- Weights: if printed in kg, multiply by 2.2046, round to 1 decimal.
+CRITICAL — do not confuse these two rows, they are DIFFERENT numbers:
+- "muscleMassLbs" = SKELETAL MUSCLE MASS only. On an InBody sheet this is the row labeled exactly "SMM" or "Skeletal Muscle Mass" (in the Muscle-Fat Analysis section). It is the SMALLER number. Example: on a sheet showing SMM 59.5 and Fat Free Mass 106.9, muscleMassLbs = "59.5".
+- "fatFreeMassLbs" = FAT FREE MASS / LEAN BODY MASS — the row labeled "Fat Free Mass", "Lean Body Mass", or "LBM". It is the LARGER number (whole body minus fat). Example: "106.9". This is NOT skeletal muscle mass.
+- NEVER put the Fat Free Mass / Lean Body Mass value into "muscleMassLbs". If the sheet shows only one of the two, fill the field that matches its label and leave the other "".
+- On a handwritten Roadmap sheet the row is usually "Lean Body Mass" (no SMM row): put that value in "fatFreeMassLbs" and leave "muscleMassLbs" empty.
+
+Which value goes where else:
+- "weightLbs" = Total Weight (current).
+- "bodyFatPct" = Percent Body Fat (PBF) current, or "Body Fat %" current column on the Roadmap.
+- "inbodyScore" = the large InBody Score number (0-100), or the "InBody Score" current cell on the Roadmap.
+- "visceralFat" = the Visceral Fat LEVEL (a small integer, typically 1-20), from the "Visceral Fat Level" row on InBody or the "Visceral Fat" current cell on the Roadmap. Number only, no "level" text.
+- "weightGoal" / "bodyFatGoal": only from a Goal/Target column if one is present (the Roadmap has a "Goal" column). Leave "" on a standard InBody printout, which has no goal column.
+- "timelineWeeks": only if a target timeframe in weeks is written. Convert months to weeks (x4.33, rounded). Leave "" if absent.
+
+Number formatting:
+- Plain number strings, no units or % signs.
+- "heightIn": total inches. Convert 5'4" -> "64". If printed in cm, divide by 2.54 and round.
+- Weights: if printed in kg, multiply by 2.2046 and round to 1 decimal. InBody sheets in the US print lb already.
 - Respond with ONLY the raw JSON object. No markdown fences, no commentary.`;
 
 const IMPORT_PROGRAM_PROMPT = `You are reading a client training program document (PDF or photo).
@@ -105,6 +117,47 @@ Personal Training Leader · Life Time
 - No emojis. Plain text only, use \\n for line breaks in emailBody.`;
 }
 
+function recommendationPrompt(client) {
+  return `You are Ernest Joseph, a Personal Training Leader at Life Time. A prospective client just finished a full assessment with you \u2014 movement screen, InBody, goal-setting. Write the recommendation email that lands their program and invites the next step.
+
+Voice: direct, confident, human. You are the expert who just measured them and knows exactly what they need. No fluff, no hype, no guilt. This is the email that makes them feel SEEN \u2014 reference their specific goal, their "why", and one concrete finding from the session so it reads as built-for-them, never templated.
+
+Client:
+- Name: ${client.name || "there"}
+- Goals: ${client.goals || "not stated"}
+- Their why: ${client.why || "not stated"}
+- What blocked them before: ${client.preventedBefore || "not stated"}
+- How life changes when they succeed: ${client.lifeChange || "not stated"}
+- Movement screen \u2014 what we fix first: ${client.assessmentNotes || "clean screen, strong base"}
+- Body comp now vs goal: ${client.currentStats || "not measured"}
+- Nutrition targets set: ${client.nutritionTargets || "not set"}
+- Training frequency I recommend: ${client.frequency || "not set"}
+- THE PROGRAM I am recommending (name it, carry its price exactly): ${client.programPitch || "not set"}
+
+Structure the email:
+1. Open with the exact opener line given in the rules.
+2. One or two lines that reflect back their goal and why \u2014 prove you listened.
+3. State what the assessment showed \u2014 one honest, specific finding (a movement fault we\u2019re correcting, or their body-comp starting point). Frame it as the reason the plan looks the way it does.
+4. Name the program and the price plainly, as a confident recommendation \u2014 not a menu, not an apology. This is what you need and here\u2019s what it costs.
+5. Close by inviting a quick follow-up to lock it in \u2014 reply or a short call. Warm, direct, no pressure.
+
+NEVER mention "Program Design Only" or any design-only / no-in-person option. The recommendation is in-person training. Do not offer alternatives or downsells.
+
+Respond with ONLY this raw JSON object (no markdown fences, no commentary):
+{
+  "emailSubject": "",
+  "emailBody": ""
+}
+
+Rules:
+- emailBody: 130\u2013180 words. Plain text, use \\n for line breaks. Name the program and its price exactly as given. One clear call to action at the end.
+- Sign off exactly:
+Ernest Joseph
+Personal Training Leader \u00b7 Life Time
+- Subject: short, personal, no clickbait. Reference their goal or name.
+- No emojis.`;
+}
+
 function workoutBCPrompt(c) {
   return `You are Ernest Joseph, an elite ISSA-certified personal trainer. The client's Workout A for the current training phase is below, as the coach wrote it. Do two jobs:
 
@@ -157,6 +210,8 @@ exports.handler = async function (event) {
   if (formType === "workoutBC") {
     if (!client || !client.workoutA) return { statusCode: 400, body: JSON.stringify({ error: "Missing Workout A text" }) };
     messages = [{ role: "user", content: [{ type: "text", text: workoutBCPrompt(client) }] }];
+  } else if (formType === "recommendation") {
+    messages = [{ role: "user", content: [{ type: "text", text: recommendationPrompt(client) }] }];
   } else if (formType === "followup") {
     if (!client) return { statusCode: 400, body: JSON.stringify({ error: "Missing client summary" }) };
     messages = [{ role: "user", content: [{ type: "text", text: followupPrompt(client) }] }];
