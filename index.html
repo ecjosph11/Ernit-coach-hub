@@ -294,6 +294,20 @@
   .gauge-scale{display:flex;justify-content:space-between;font-size:8.5px;color:var(--grey-dim);font-weight:700;margin-top:5px;}
   .gauge-note{font-size:12px;margin-top:10px;font-weight:700;}
   .gauge-empty{font-size:12px;color:var(--grey-dim);}
+  /* ===== v55 roadmap table + timeframes ===== */
+  .rm-table{width:100%;border-collapse:collapse;margin-bottom:14px;}
+  .rm-table th{font-size:9px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:var(--grey-dim);text-align:left;padding:6px 6px;border-bottom:1.5px solid #3a3a3a;}
+  .rm-table td{padding:7px 6px;border-bottom:1px solid #222;font-size:13px;vertical-align:middle;}
+  .rm-metric{font-weight:800;font-size:12px;color:var(--white);}
+  .rm-cur{color:var(--grey);font-weight:700;}
+  .rm-goal-input{width:100%;max-width:86px;background:linear-gradient(180deg,#191919 0%,#151515 100%);border:1px solid #262626;border-radius:8px;color:var(--white);font-size:14px;padding:8px 9px;}
+  .rm-goal-input:focus{outline:none;border-color:var(--red);}
+  .rm-chg{font-weight:900;font-size:13px;white-space:nowrap;}
+  .tf-box{background:linear-gradient(180deg,#191919 0%,#141414 100%);border:1px solid #262626;border-left:3px solid var(--red);border-radius:12px;padding:13px 14px;margin-bottom:10px;}
+  .tf-lbl{font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--grey-dim);margin-bottom:4px;}
+  .tf-val{font-size:21px;font-weight:900;}
+  .tf-sub{font-size:11px;color:var(--grey-dim);margin-top:3px;}
+  .tf-prog{border:1px solid var(--red);border-left:3px solid var(--red);background:linear-gradient(180deg,#1c1010 0%,#140d0d 100%);}
   .threshold-box b{color:var(--white);}
   .flag-banner{background:#2a1414;border:1px solid #b80f0f;border-radius:10px;padding:13px;margin-bottom:12px;}
   .flag-banner .fb-title{color:#ff8080;font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
@@ -596,7 +610,7 @@ function newClientId(){ return "c_" + Date.now() + "_" + Math.random().toString(
 function blankClient(){
   return {
     id: newClientId(),
-    name: "", email: "", phone: "", instagram: "",
+    name: "", email: "", phone: "",
     status: "prospect",
     createdAt: new Date().toISOString(),
     intake: {
@@ -607,7 +621,8 @@ function blankClient(){
     },
     inbody: {
       weightLbs:"", bodyFatPct:"", muscleMassLbs:"", fatFreeMassLbs:"", visceralFat:"", inbodyScore:"",
-      weightGoal:"", bodyFatGoal:"", timelineWeeks:""
+      weightGoal:"", bodyFatGoal:"", timelineWeeks:"",
+      fatMassGoal:"", lbmGoal:"", smmGoal:"", visceralGoal:"", scoreGoal:""
     },
     program: { days: [] },
     nutrition: { calories:null, protein:null, fat:null, carbs:null, notes:"" },
@@ -619,6 +634,8 @@ function blankClient(){
 let clients = loadClients();
 let activeClientId = null;
 let activeTab = "overview";
+let recHiddenOpen = false;
+function toggleRecHidden(){ collectFormIntoClient(); recHiddenOpen = !recHiddenOpen; renderModal(); }
 let activeFilter = "all";
 
 /* ============ ROSTER RENDER ============ */
@@ -678,6 +695,7 @@ function openNewClient(){
 function openClient(id, isNew){
   activeClientId = id;
   activeTab = "overview";
+  recHiddenOpen = false;
   migrateClient(clients[id]);
   scanState = {
     intake: { base64: null, mediaType: null, status: "idle", message: "" },
@@ -771,8 +789,6 @@ function renderOverviewTab(c){
       <div class="field-group"><label class="field-label">Email</label>
         <input class="field-input" id="f_email" type="email" inputmode="email" value="${esc(c.email)}"></div>
     </div>
-    <div class="field-group"><label class="field-label">Instagram Handle</label>
-      <input class="field-input" id="f_instagram" value="${esc(c.instagram)}" placeholder="@handle"></div>
 
     <div class="section-head">Coach Notes</div>
     <div class="field-group">
@@ -1097,7 +1113,7 @@ function collectFormIntoClient_OLD(){
   if(!c) return;
 
   if(activeTab === "overview"){
-    c.name = valOf("f_name"); c.phone = valOf("f_phone"); c.email = valOf("f_email"); c.instagram = valOf("f_instagram");
+    c.name = valOf("f_name"); c.phone = valOf("f_phone"); c.email = valOf("f_email");
     const newNote = valOf("f_newNote");
     if(newNote && newNote.trim()){
       c.notes = c.notes || [];
@@ -1114,6 +1130,7 @@ function collectFormIntoClient_OLD(){
     c.inbody.weightLbs = valOf("b_weightLbs"); c.inbody.bodyFatPct = valOf("b_bodyFatPct");
     c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.fatFreeMassLbs = valOf("b_fatFreeMassLbs"); c.inbody.visceralFat = valOf("b_visceralFat"); c.inbody.inbodyScore = valOf("b_inbodyScore");
     c.inbody.weightGoal = valOf("b_weightGoal"); c.inbody.bodyFatGoal = valOf("b_bodyFatGoal");
+    ["fatMassGoal","lbmGoal","smmGoal","visceralGoal","scoreGoal"].forEach(k=>{ c.inbody[k] = valOf("b_" + k); });
     c.inbody.timelineWeeks = valOf("b_timelineWeeks");
   } else if(activeTab === "program"){
     document.querySelectorAll('#modalScroll [data-day][data-field="dayName"]').forEach(inp=>{
@@ -1194,7 +1211,7 @@ function migrateClient(c){
   if(!c) return;
   c.intake = c.intake || {};
   const i = c.intake;
-  const idef = {age:"",heightIn:"",gender:"",occupation:"",activityLevel:"",medical:"",medications:"",stressLevel:"",sleepHours:"",goals:[],scaleVsLook:"",loseInches:"",inchesWhere:"",whyImportant:"",currentPlan:"",preventedBefore:"",lifeChange:"",happySixMonths:"",sixMonthChange:"",fitnessLevel:"",typicalEating:"",nutritionRating:"",eatOutFreq:"",followGuide:"",wantCustom:"",monthlyInvestment:"",prevTrainer:"",prevTrainerExp:"",availability:"",commitment:"",struggles:[],readyToday:""};
+  const idef = {age:"",heightIn:"",gender:"",occupation:"",activityLevel:"",medical:"",medications:"",stressLevel:"",sleepHours:"",goals:[],scaleVsLook:"",loseInches:"",inchesWhere:"",whyImportant:"",currentPlan:"",preventedBefore:"",lifeChange:"",happySixMonths:"",sixMonthChange:"",fitnessLevel:"",typicalEating:"",nutritionRating:"",eatOutFreq:"",followGuide:"",wantCustom:"",monthlyInvestment:"",prevTrainer:"",prevTrainerExp:"",availability:"",commitment:"",struggles:[],readyToday:"",introGoal:""};
   Object.keys(idef).forEach(k=>{ if(i[k]===undefined) i[k] = idef[k]; });
   /* legacy field mapping */
   if((!i.goals || !i.goals.length) && (i.goal1 || i.goal2)) i.goals = [i.goal1, i.goal2].filter(Boolean);
@@ -1261,6 +1278,7 @@ function migrateClient(c){
   if(c.nutrition.notes === undefined) c.nutrition.notes = "";
   if(c.inbody.fatFreeMassLbs === undefined) c.inbody.fatFreeMassLbs = "";
   if(c.inbody.visceralFat === undefined) c.inbody.visceralFat = "";
+  ["fatMassGoal","lbmGoal","smmGoal","visceralGoal","scoreGoal"].forEach(k=>{ if(c.inbody[k] === undefined) c.inbody[k] = ""; });
   c.followup = c.followup || null;
 
   agAdopt(c);
@@ -1416,6 +1434,8 @@ function renderIntakeTab(c){
       ${pillsHtml(STRUGGLE_OPTIONS, i.struggles || [], "toggleStrugglePill")}</div>
     <div class="field-group"><label class="field-label">Ready to start TODAY? (1 = need time · 5 = right now)</label>
       ${rateHtml("readyToday", i.readyToday)}</div>
+    <div class="field-group"><label class="field-label">What do they want from the intro session?</label>
+      <textarea class="field-textarea" id="i_introGoal" placeholder="Their expectation for the first meeting — what would make it a win for them">${esc(i.introGoal)}</textarea></div>
   `;
 }
 
@@ -2025,7 +2045,7 @@ function collectFormIntoClient(){
   if(!c) return;
 
   if(activeTab === "overview"){
-    c.name = valOf("f_name"); c.phone = valOf("f_phone"); c.email = valOf("f_email"); c.instagram = valOf("f_instagram");
+    c.name = valOf("f_name"); c.phone = valOf("f_phone"); c.email = valOf("f_email");
     const newNote = valOf("f_newNote");
     if(newNote && newNote.trim()){
       c.notes = c.notes || [];
@@ -2033,7 +2053,7 @@ function collectFormIntoClient(){
     }
   } else if(activeTab === "intake"){
     const i = c.intake;
-    ["age","heightIn","gender","occupation","medical","medications","sleepHours","inchesWhere","whyImportant","currentPlan","preventedBefore","lifeChange","sixMonthChange","typicalEating","eatOutFreq","monthlyInvestment","prevTrainerExp","availability"].forEach(k=>{
+    ["age","heightIn","gender","occupation","medical","medications","sleepHours","inchesWhere","whyImportant","currentPlan","preventedBefore","lifeChange","sixMonthChange","typicalEating","eatOutFreq","monthlyInvestment","prevTrainerExp","availability","introGoal"].forEach(k=>{
       const el = document.getElementById("i_" + k);
       if(el) i[k] = el.value;
     });
@@ -2049,6 +2069,7 @@ function collectFormIntoClient(){
     c.inbody.weightLbs = valOf("b_weightLbs"); c.inbody.bodyFatPct = valOf("b_bodyFatPct");
     c.inbody.muscleMassLbs = valOf("b_muscleMassLbs"); c.inbody.fatFreeMassLbs = valOf("b_fatFreeMassLbs"); c.inbody.visceralFat = valOf("b_visceralFat"); c.inbody.inbodyScore = valOf("b_inbodyScore");
     c.inbody.weightGoal = valOf("b_weightGoal"); c.inbody.bodyFatGoal = valOf("b_bodyFatGoal");
+    ["fatMassGoal","lbmGoal","smmGoal","visceralGoal","scoreGoal"].forEach(k=>{ c.inbody[k] = valOf("b_" + k); });
     c.inbody.timelineWeeks = valOf("b_timelineWeeks");
   } else if(activeTab === "program"){
     const ph = c.program.phases[progPhase];
@@ -2129,6 +2150,79 @@ const BF_BANDS = {
 /* ---------- v46: InBody visual charts ---------- */
 /* display axis caps the open-ended top band so the ladder is readable */
 const BF_AXIS = { female:{min:10, max:50}, male:{min:2, max:42} };
+
+/* ---------- v55: roadmap table + auto timeframes ---------- */
+const PACE_LBM_PER_MO = 1;   /* avg lbs of muscle gained per month */
+const PACE_FAT_PER_MO = 5;   /* avg lbs of fat lost per month */
+
+function roadmapNums(c){
+  const b = c.inbody;
+  const w = parseFloat(b.weightLbs), bf = parseFloat(b.bodyFatPct);
+  const fatCur = (!isNaN(w) && !isNaN(bf)) ? w * bf / 100 : NaN;
+  const lv = lbmValue(c);
+  const lbmCur = (lv === null || lv === undefined) ? NaN : parseFloat(lv);
+  const wg = parseFloat(b.weightGoal), bfg = parseFloat(b.bodyFatGoal);
+  const fatGoalDerived = (!isNaN(wg) && !isNaN(bfg)) ? wg * bfg / 100 : NaN;
+  const fatGoal = (b.fatMassGoal !== "" && !isNaN(parseFloat(b.fatMassGoal))) ? parseFloat(b.fatMassGoal) : fatGoalDerived;
+  const lbmGoal = parseFloat(b.lbmGoal);
+  const lbmMo = (!isNaN(lbmGoal) && !isNaN(lbmCur) && lbmGoal > lbmCur) ? (lbmGoal - lbmCur) / PACE_LBM_PER_MO : NaN;
+  const fatMo = (!isNaN(fatGoal) && !isNaN(fatCur) && fatCur > fatGoal) ? (fatCur - fatGoal) / PACE_FAT_PER_MO : NaN;
+  const parts = [lbmMo, fatMo].filter(x => !isNaN(x));
+  const progMo = parts.length ? parts.reduce((a, x) => a + x, 0) / parts.length : NaN;
+  return { fatCur, lbmCur, fatGoal, fatGoalDerived, lbmMo, fatMo, progMo };
+}
+
+function rmRow(label, cur, goalId, goalVal, curFmt, upGood, ph){
+  const curTxt = isNaN(cur) ? "\u2014" : (curFmt ? curFmt(cur) : cur);
+  const g = parseFloat(goalVal);
+  let chg = "\u2014", color = "var(--grey-dim)";
+  if(!isNaN(g) && !isNaN(cur)){
+    const d = g - cur;
+    const good = upGood ? d >= 0 : d <= 0;
+    color = good ? "#37c871" : "#ff9d5c";
+    chg = (d > 0 ? "+" : "") + (Math.round(d * 10) / 10);
+  }
+  return `<tr>
+    <td class="rm-metric">${label}</td>
+    <td class="rm-cur">${curTxt}</td>
+    <td><input class="rm-goal-input" id="${goalId}" type="text" inputmode="decimal" value="${esc(goalVal)}" placeholder="${ph || ""}"></td>
+    <td class="rm-chg" style="color:${color};">${chg}</td>
+  </tr>`;
+}
+
+function roadmapTableHtml(c){
+  const b = c.inbody, n = roadmapNums(c);
+  const w = parseFloat(b.weightLbs), bf = parseFloat(b.bodyFatPct);
+  const smm = parseFloat(b.muscleMassLbs), visc = parseFloat(b.visceralFat), sc = parseFloat(b.inbodyScore);
+  const f1 = v => Math.round(v * 10) / 10;
+  return `<table class="rm-table">
+    <tr><th>Metric</th><th>Current</th><th>Goal</th><th>Change</th></tr>
+    ${rmRow("Total Weight", w, "b_weightGoal", b.weightGoal, f1, false, "lbs")}
+    ${rmRow("Body Fat %", bf, "b_bodyFatGoal", b.bodyFatGoal, f1, false, "%")}
+    ${rmRow("Fat Mass", n.fatCur, "b_fatMassGoal", b.fatMassGoal, f1, false, isNaN(n.fatGoalDerived) ? "lbs" : f1(n.fatGoalDerived) + " (derived)")}
+    ${rmRow("Lean Body Mass", n.lbmCur, "b_lbmGoal", b.lbmGoal, f1, true, "lbs")}
+    ${rmRow("Skeletal Muscle Mass", smm, "b_smmGoal", b.smmGoal, f1, true, "lbs")}
+    ${rmRow("Visceral Fat", visc, "b_visceralGoal", b.visceralGoal, f1, false, "level")}
+    ${rmRow("InBody Score", sc, "b_scoreGoal", b.scoreGoal, f1, true, "/100")}
+  </table>`;
+}
+
+function timeframesHtml(c){
+  const n = roadmapNums(c);
+  const mo = v => (Math.round(v * 10) / 10);
+  const wk = v => Math.round(v * 4.345);
+  const box = (lbl, months, sub, cls) => `<div class="tf-box ${cls || ""}">
+      <div class="tf-lbl">${lbl}</div>
+      <div class="tf-val">${isNaN(months) ? "\u2014" : mo(months) + " months"}</div>
+      <div class="tf-sub">${isNaN(months) ? sub : "\u2248 " + wk(months) + " weeks \u00b7 " + sub}</div>
+    </div>`;
+  const useBtn = !isNaN(n.progMo)
+    ? `<button class="copy-btn" style="margin-top:2px;" onclick="document.getElementById('b_timelineWeeks').value='${wk(n.progMo)}'; collectFormIntoClient(); renderModal();">Use ${wk(n.progMo)} weeks as the timeline</button>` : "";
+  return box("Lean Body Mass Timeframe", n.lbmMo, "built on +" + PACE_LBM_PER_MO + " lb muscle / month", "")
+    + box("Fat Mass Timeframe", n.fatMo, "built on \u2212" + PACE_FAT_PER_MO + " lb fat / month", "")
+    + box("Program Timeframe", n.progMo, "average of the two paces above", "tf-prog")
+    + useBtn;
+}
 
 function bfChartHtml(c){
   const gender = c.intake.gender;
@@ -2396,14 +2490,14 @@ function renderInbodyTab(c){
     ${visceralGaugeHtml(c)}
     ${scoreGaugeHtml(c)}
 
-    <div class="section-head">Goals &amp; Timeline</div>
-    <div class="field-row2">
-      <div class="field-group"><label class="field-label">Weight Goal (lbs)</label>
-        <input class="field-input" id="b_weightGoal" type="text" inputmode="decimal" value="${esc(b.weightGoal)}"></div>
-      <div class="field-group"><label class="field-label">Body Fat Goal %</label>
-        <input class="field-input" id="b_bodyFatGoal" type="text" inputmode="decimal" value="${esc(b.bodyFatGoal)}"></div>
-    </div>
-    <div class="field-group"><label class="field-label">Timeline (weeks)</label>
+    <div class="section-head">Roadmap — Current \u2192 Goal</div>
+    ${roadmapTableHtml(c)}
+    <button class="copy-btn" style="margin-bottom:14px;" onclick="collectFormIntoClient(); renderModal();">\u21bb Recalculate</button>
+
+    <div class="section-head">Timeframes</div>
+    ${timeframesHtml(c)}
+
+    <div class="field-group" style="margin-top:14px;"><label class="field-label">Timeline (weeks)</label>
       <input class="field-input" id="b_timelineWeeks" type="text" value="${esc(b.timelineWeeks)}"></div>
   ${inbodyHistoryHtml(c)}`;
 }
@@ -3081,7 +3175,16 @@ const PROGRAM_OPTIONS = [
   {key:"p4",  group:"pack", label:"4-Session Pack",  price:700,  per:"$175/session \u00b7 90 days"},
   {key:"p8",  group:"pack", label:"8-Session Pack",  price:1320, per:"$165/session \u00b7 90 days"},
   {key:"p12", group:"pack", label:"12-Session Pack", price:1860, per:"$155/session \u00b7 90 days"},
-  {key:"pdo", group:"pack", label:"Program Design Only", price:300, per:"program + 1 check-in/mo", recur:true},
+  {key:"st30", group:"pack", label:"Stretch Session \u00b7 30-Min", price:80,  per:"$80/session \u00b7 hands-on"},
+  {key:"st60", group:"pack", label:"Stretch Session \u00b7 60-Min", price:150, per:"$150/session \u00b7 hands-on"},
+  /* ---- last resort: never shown unless the coach opens the hidden panel ---- */
+  {key:"pdo",   group:"lr",   label:"Program Design Only", price:300, per:"program + 1 check-in/mo", recur:true, hidden:true},
+  {key:"s30_1", group:"lr30", label:"30-Min \u00b7 1\u00d7/Week Monthly", price:360, per:"$90/session \u00b7 4/mo",  recur:true, hidden:true},
+  {key:"s30_2", group:"lr30", label:"30-Min \u00b7 2\u00d7/Week Monthly", price:664, per:"$83/session \u00b7 8/mo",  recur:true, hidden:true},
+  {key:"s30_3", group:"lr30", label:"30-Min \u00b7 3\u00d7/Week Monthly", price:912, per:"$76/session \u00b7 12/mo", recur:true, hidden:true},
+  {key:"pt_1", group:"lrpt", label:"Partner 60-Min \u00b7 1\u00d7/Week (per person)", price:360, per:"$90/person/session \u00b7 4/mo",  recur:true, hidden:true},
+  {key:"pt_2", group:"lrpt", label:"Partner 60-Min \u00b7 2\u00d7/Week (per person)", price:664, per:"$83/person/session \u00b7 8/mo",  recur:true, hidden:true},
+  {key:"pt_3", group:"lrpt", label:"Partner 60-Min \u00b7 3\u00d7/Week (per person)", price:912, per:"$76/person/session \u00b7 12/mo", recur:true, hidden:true},
 ];
 
 function selectedProgram(c){
@@ -3092,7 +3195,7 @@ function selectedProgram(c){
   }
   const rec = computeRecommendation(c);
   if(!rec) return null;
-  return PROGRAM_OPTIONS.find(o => o.price === rec.primary.priceNum && o.recur) || null;
+  return PROGRAM_OPTIONS.find(o => o.price === rec.primary.priceNum && o.recur && !o.hidden) || null;
 }
 
 function selectedExtras(c){
@@ -3100,8 +3203,8 @@ function selectedExtras(c){
   const items = [];
   if(r.nutriSel === "30") items.push({label:"Nutrition Consult 30 min", price:90});
   if(r.nutriSel === "60") items.push({label:"Nutrition Consult 60 min", price:175});
-  if(r.stretchSel === "30") items.push({label:"Dynamic Partner Stretch 30 min", price:80});
-  if(r.stretchSel === "60") items.push({label:"Dynamic Partner Stretch 60 min", price:150});
+  if(r.metaSel === "single" || r.metaSel === "yes") items.push({label:"Active Metabolic Assessment", price:189});
+  if(r.metaSel === "bundle") items.push({label:"AMA Test + Re-Test Bundle", price:300});
   return items;
 }
 
@@ -3149,18 +3252,32 @@ function renderSelectionSection(c){
           <div class="rate-btn ${r.nutriSel==="30"?"on":""}" onclick="setRecField('nutriSel','30')" style="font-size:11.5px;">30m $90</div>
           <div class="rate-btn ${r.nutriSel==="60"?"on":""}" onclick="setRecField('nutriSel','60')" style="font-size:11.5px;">60m $175</div>
         </div></div>
-      <div class="field-group"><label class="field-label">Dynamic Partner Stretch</label>
+      <div class="field-group"><label class="field-label">Active Metabolic Assessment</label>
         <div class="rate-row">
-          <div class="rate-btn ${(r.stretchSel||"none")==="none"?"on":""}" onclick="setRecField('stretchSel','none')" style="font-size:11.5px;">None</div>
-          <div class="rate-btn ${r.stretchSel==="30"?"on":""}" onclick="setRecField('stretchSel','30')" style="font-size:11.5px;">30m $80</div>
-          <div class="rate-btn ${r.stretchSel==="60"?"on":""}" onclick="setRecField('stretchSel','60')" style="font-size:11.5px;">60m $150</div>
+          <div class="rate-btn ${(r.metaSel||"none")==="none"?"on":""}" onclick="setRecField('metaSel','none')" style="font-size:11.5px;">None</div>
+          <div class="rate-btn ${(r.metaSel==="single"||r.metaSel==="yes")?"on":""}" onclick="setRecField('metaSel','single')" style="font-size:11.5px;">Single $189</div>
+          <div class="rate-btn ${r.metaSel==="bundle"?"on":""}" onclick="setRecField('metaSel','bundle')" style="font-size:11.5px;">Bundle $300</div>
         </div></div>
     </div>
 
     <div class="rec-total-bar">
       <span class="rt-lbl">Selected \u00b7 First Month</span>
       <span class="rt-val">$${total.toLocaleString()}${sel && sel.recur ? `<span style="font-size:13px;color:var(--grey);"> then $${sel.price.toLocaleString()}/mo</span>` : ""}</span>
-    </div>`;
+    </div>
+
+    <div style="text-align:right;margin-top:8px;">
+      <button onclick="toggleRecHidden()" style="background:none;border:none;color:#3a3a3a;font-size:16px;font-weight:900;letter-spacing:2px;padding:6px 10px;">\u00b7\u00b7\u00b7</button>
+    </div>
+    ${recHiddenOpen ? `
+      <div class="section-head" style="color:#c9a227;border-color:#4a3d12;">More Affordable Options \u2014 Coach Only</div>
+      <div style="font-size:11px;color:var(--grey-dim);margin-bottom:10px;line-height:1.5;">Not visible unless this panel is open. Partner pricing is per person \u2014 both partners sign at this rate for the shared hour.</div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">30-Minute Sessions \u00b7 Recurring Monthly</div>
+      <div class="pill-row" style="margin-bottom:12px;">${PROGRAM_OPTIONS.filter(o=>o.group==="lr30").map(pill).join("")}</div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">Partner \u00b7 60-Min at the 30-Min Rate (per person)</div>
+      <div class="pill-row" style="margin-bottom:12px;">${PROGRAM_OPTIONS.filter(o=>o.group==="lrpt").map(pill).join("")}</div>
+      <div style="font-size:11px;color:var(--grey-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">Design Only</div>
+      <div class="pill-row" style="margin-bottom:6px;">${PROGRAM_OPTIONS.filter(o=>o.group==="lr").map(pill).join("")}</div>
+    ` : ""}`;
 }
 
 function renderRecommendTab(c){
@@ -4094,6 +4211,7 @@ async function hubSignIn(){
   try{
     await firebase.auth().signInWithEmailAndPassword(email, pass);
     err.textContent = "";
+    inboxSignIn(email, pass);   /* unlock the intake inbox with the same coach login */
   }catch(e){
     const map = {
       "auth/invalid-credential": "Wrong email or password.",
@@ -4644,8 +4762,6 @@ function renderOverviewTab(c){
       <div class="field-group"><label class="field-label">Email</label>
         <input class="field-input" id="f_email" type="email" inputmode="email" value="${esc(c.email)}"></div>
     </div>
-    <div class="field-group"><label class="field-label">Instagram Handle</label>
-      <input class="field-input" id="f_instagram" value="${esc(c.instagram)}" placeholder="@handle"></div>
 
     <div class="section-head">Coach Notes</div>
     <div class="field-group">
@@ -6565,29 +6681,55 @@ function agOfficialSection(c){
    Paste the inbox project's config below (NOT the hub's).
    ================================================================ */
 const INBOX_FB = {
-  apiKey: "PASTE_apiKey",
-  authDomain: "PASTE_authDomain",
-  databaseURL: "PASTE_databaseURL",
-  projectId: "PASTE_projectId",
-  appId: "PASTE_appId"
+  apiKey: "AIzaSyCWbBxctTvxT3PeJZ6yvtY2dt5ER8v7yqI",
+  authDomain: "ern-it-intake.firebaseapp.com",
+  databaseURL: "https://ern-it-intake-default-rtdb.firebaseio.com",
+  projectId: "ern-it-intake",
+  appId: "1:278042316412:web:d52948a2d517d1f0b6c3f9"
 };
 
-let inboxDb = null, inboxItems = {}, inboxWired = false;
+let inboxDb = null, inboxItems = {}, inboxWired = false, inboxApp = null, inboxAuthed = false, inboxAuthErr = "";
 
 function inboxConfigured(){ return INBOX_FB.apiKey && INBOX_FB.apiKey !== "PASTE_apiKey"; }
 
 function wireInbox(){
   if(inboxWired || !inboxConfigured() || typeof firebase === "undefined") return;
   try{
-    const app = firebase.apps.find(a => a.name === "inbox") || firebase.initializeApp(INBOX_FB, "inbox");
-    inboxDb = firebase.database(app);
-    inboxDb.ref("intakes").on("value", snap => {
-      inboxItems = snap.val() || {};
-      updateInboxBadge();
-      if(document.getElementById("inboxView")) renderInbox();
-    }, err => console.warn("inbox read failed:", err.message));
+    inboxApp = firebase.apps.find(a => a.name === "inbox") || firebase.initializeApp(INBOX_FB, "inbox");
+    inboxDb = firebase.database(inboxApp);
     inboxWired = true;
+    /* the inbox rules are read-locked to auth != null \u2014 attach the listener only once this app is signed in */
+    firebase.auth(inboxApp).onAuthStateChanged(u => {
+      inboxAuthed = !!u;
+      if(u){
+        inboxAuthErr = "";
+        inboxDb.ref("intakes").on("value", snap => {
+          inboxItems = snap.val() || {};
+          updateInboxBadge();
+          if(document.getElementById("inboxView")) renderInbox();
+        }, err => console.warn("inbox read failed:", err.message));
+      } else {
+        inboxItems = {};
+        updateInboxBadge();
+      }
+      if(document.getElementById("inboxView")) renderInbox();
+    });
   }catch(e){ console.warn("inbox init failed:", e.message); }
+}
+
+/* same coach credentials, second project \u2014 the session persists, so this succeeds once and sticks */
+async function inboxSignIn(email, pass){
+  if(!inboxWired || !inboxApp) wireInbox();
+  if(!inboxApp) return;
+  try{
+    await firebase.auth(inboxApp).signInWithEmailAndPassword(email, pass);
+  }catch(e){
+    inboxAuthErr = (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential")
+      ? "Create the same coach login (email + password) in the ern-it-intake Firebase project \u2192 Authentication."
+      : e.message;
+    console.warn("inbox sign-in failed:", e.code || e.message);
+    if(document.getElementById("inboxView")) renderInbox();
+  }
 }
 
 function updateInboxBadge(){
@@ -6624,6 +6766,8 @@ function renderInbox(){
   let body;
   if(!inboxConfigured()){
     body = `<div class="empty-state"><div class="big">Inbox not connected</div>Paste your intake-inbox Firebase config into the hub file (INBOX_FB) and redeploy. Until then, prospects can\u2019t reach you here.</div>`;
+  } else if(!inboxAuthed){
+    body = `<div class="empty-state"><div class="big">Inbox locked</div>${inboxAuthErr ? esc(inboxAuthErr) : "Sign in to the hub and the inbox unlocks with the same coach login. If it stays locked, create the same email + password user in the ern-it-intake project\u2019s Authentication tab."}</div>`;
   } else if(!ids.length){
     body = `<div class="empty-state"><div class="big">No new intakes</div>Send a prospect your intake link. When they submit, it lands here \u2014 tap to pull it into a client file.<br><span style="color:#555;font-size:11px;font-weight:800;letter-spacing:.5px;">I BUILD BODIES. NOT EXCUSES.</span></div>`;
   } else {
@@ -6664,7 +6808,6 @@ function importIntake(id){
   c.name = it.name || "";
   c.email = it.email || "";
   c.phone = it.phone || "";
-  c.instagram = it.instagram || "";
   c.status = "prospect";
   const k = it.intake || {};
   Object.keys(c.intake).forEach(f => {
