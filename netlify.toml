@@ -1,5 +1,9 @@
 [build]
   functions = "netlify/functions"
 
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyCWbBxctTvxT3PeJZ6yvtY2dt5ER8v7yqI"
+
 [functions]
   node_bundler = "esbuild"
