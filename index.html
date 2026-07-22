@@ -2849,11 +2849,28 @@ function neededFrequency(c){
   }
 
   let rate = null, pct = null;
-  if(!isNaN(w) && !isNaN(gw) && !isNaN(wk) && wk > 0 && gw < w){
+  /* v57: the pace runs on FAT MASS, not scale weight — scale weight hides muscle gained */
+  let _rn = null;
+  try{ _rn = roadmapNums(c); }catch(e){ _rn = null; }
+  const _fatLoss = (_rn && !isNaN(_rn.fatCur) && !isNaN(_rn.fatGoal) && _rn.fatCur > _rn.fatGoal)
+    ? (_rn.fatCur - _rn.fatGoal) : NaN;
+
+  if(!isNaN(_fatLoss) && !isNaN(wk) && wk > 0){
+    rate = _fatLoss / wk;
+    pct = !isNaN(w) ? rate / w * 100 : NaN;
+    const inBand = isNaN(pct) || pct <= 1;
+    why.push(_fatLoss.toFixed(1) + " lbs of FAT \u00f7 " + wk + " wks = " + rate.toFixed(2) + " lb fat/wk"
+      + (isNaN(pct) ? "" : " (" + pct.toFixed(2) + "% BW/wk" + (inBand ? " — inside the safe 0.5\u20131% band" : " — ABOVE the safe 1% band; adjust the timeline or the expectation") + ")"));
+    if((!isNaN(pct) && pct > 0.85) || rate >= 1.5){
+      freq = 3;
+      why.push("Aggressive rate for this window — 3\u00d7/week lifting + the cardio Rx keeps the deficit muscle-sparing.");
+    }
+  } else if(!isNaN(w) && !isNaN(gw) && !isNaN(wk) && wk > 0 && gw < w){
+    /* no body fat % on file — fall back to scale weight and label it honestly */
     rate = (w - gw) / wk;
     pct = rate / w * 100;
     const inBand = pct <= 1;
-    why.push((w - gw).toFixed(1) + " lbs \u00f7 " + wk + " wks = " + rate.toFixed(2) + " lb/wk (" + pct.toFixed(2) + "% BW/wk" + (inBand ? " — inside the safe 0.5\u20131% band" : " — ABOVE the safe 1% band; adjust the timeline or the expectation") + ")");
+    why.push((w - gw).toFixed(1) + " lbs of SCALE WEIGHT \u00f7 " + wk + " wks = " + rate.toFixed(2) + " lb/wk (" + pct.toFixed(2) + "% BW/wk" + (inBand ? " — inside the safe 0.5\u20131% band" : " — ABOVE the safe 1% band; adjust the timeline or the expectation") + ") — add body fat % to run this on fat mass");
     if(pct > 0.85 || rate >= 1.5){
       freq = 3;
       why.push("Aggressive rate for this window — 3\u00d7/week lifting + the cardio Rx keeps the deficit muscle-sparing.");
